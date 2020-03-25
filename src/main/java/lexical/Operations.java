@@ -10,6 +10,11 @@ public class Operations {
         this.analyser = analyser;
     }
 
+    // TODO add parameters and call this method from the others
+    private LexicalUnit createUnit() {
+        return new LexicalUnit(analyser.row(), analyser.column());
+    }
+
     public LexicalUnit integerUnit() {
         return new LexicalUnit(analyser.row(), analyser.column());
     }
@@ -90,6 +95,14 @@ public class Operations {
         return new LexicalUnit(analyser.row(), analyser.column());
     }
 
+    public LexicalUnit characterUnit() {
+        return new LexicalUnit(analyser.row(), analyser.column());
+    }
+
+    public LexicalUnit stringUnit() {
+        return new LexicalUnit(analyser.row(), analyser.column());
+    }
+
     public LexicalUnit opOpeningParenthesesUnit() {
         return new LexicalUnit(analyser.row(), analyser.column());
     }
@@ -111,6 +124,10 @@ public class Operations {
     }
 
     public LexicalUnit opClosingCurlyUnit() {
+        return new LexicalUnit(analyser.row(), analyser.column());
+    }
+
+    public LexicalUnit opArrowUnit() {
         return new LexicalUnit(analyser.row(), analyser.column());
     }
 

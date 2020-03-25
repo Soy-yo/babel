@@ -1,6 +1,7 @@
 package lexical;
 
 import error.*;
+import java.util.function.Supplier;
 
 %%
 
@@ -23,8 +24,12 @@ import error.*;
     }
 
     public int column() {
-        updateColumn();
         return column;
+    }
+
+    private java_cup.runtime.Symbol onRead(Supplier<java_cup.runtime.Symbol> f) {
+        updateColumn();
+        return f.get();
     }
 
     private void updateColumn() {
@@ -75,14 +80,20 @@ class = class
 constructor = constructor
 this = this
 underscore = _
-identifier = \w+
+identifier = [a-zA-Z_]\w*
 
+escapeChar = \\[tbnrf0\\]
+character = '([\x20-\x26\x28-\x5b\x5d-\xff]|{escapeChar}|\\')'
+string = \"([\x20\x21\x23-\x5b\x5d-\xff]|{escapeChar}|\\\")*\"
+
+opSemicolon = ;
 opOpeningParentheses = \(
 opClosingParentheses = \)
 opOpeningSquare = \[
 opClosingSquare = \]
 opOpeningCurly = \{
 opClosingCurly = \}
+opArrow = ->
 opEllipsis = \.\.\.
 opPoint = \.
 opComma = ,
@@ -132,12 +143,15 @@ opOr = \|\|
 {this}                    {return ops.thisUnit();}
 {underscore}              {return ops.underscoreUnit();}
 {identifier}              {return ops.identifierUnit();}
+{character}               {return ops.characterUnit();}
+{string}                  {return ops.stringUnit();}
 {opOpeningParentheses}    {return ops.opOpeningParenthesesUnit();}
 {opClosingParentheses}    {return ops.opClosingParenthesesUnit();}
 {opOpeningSquare}         {return ops.opOpeningSquareUnit();}
 {opClosingSquare}         {return ops.opClosingSquareUnit();}
 {opOpeningCurly}          {return ops.opOpeningCurlyUnit();}
 {opClosingCurly}          {return ops.opClosingCurlyUnit();}
+{opArrow}                 {return ops.opArrowUnit();}
 {opEllipsis}              {return ops.opEllipsisUnit();}
 {opPoint}                 {return ops.opPointUnit();}
 {opComma}                 {return ops.opCommaUnit();}
