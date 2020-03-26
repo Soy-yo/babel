@@ -10,229 +10,233 @@ public class Operations {
         this.analyser = analyser;
     }
 
-    // TODO add parameters and call this method from the others
-    private LexicalUnit createUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+    private LexicalUnit createUnit(int lexicalClass) {
+        // TODO how to find file :/ (remove?)
+        return new LexicalUnit("TODO", analyser.row(), analyser.column(), lexicalClass, analyser.lexeme());
     }
 
     public LexicalUnit integerUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit realUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit ifUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit elseUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit switchUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit forUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit whileUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit inUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit returnUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit trueUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit falseUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit nothingUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit nullUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit constUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit importUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit classUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit constructorUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit thisUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit underscoreUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit identifierUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit characterUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit stringUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
+    }
+
+    public LexicalUnit opSemicolonUnit() {
+        return createUnit(0);
     }
 
     public LexicalUnit opOpeningParenthesesUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opClosingParenthesesUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opOpeningSquareUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opClosingSquareUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opOpeningCurlyUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opClosingCurlyUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opArrowUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opEllipsisUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opPointUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opCommaUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opPlusAssignUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opPlusUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opMinusAssignUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opMinusUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opMultAssignUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opMultUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opDivAssignUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opDivUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opModAssignUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opModUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opLessEqualUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opLowerThanUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opGreaterEqualUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opGreaterThanUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opIdentityUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opEqualsUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opNotEqualsUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opAssignmentUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opNotUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opAndUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit opOrUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public LexicalUnit eofUnit() {
-        return new LexicalUnit(analyser.row(), analyser.column());
+        return createUnit(0);
     }
 
     public void error() {
-        throw new LexicalException(analyser.row(), analyser.column(), analyser.lexeme());
+        throw new LexicalException("TODO", analyser.row(), analyser.column(), analyser.lexeme());
     }
 
 }

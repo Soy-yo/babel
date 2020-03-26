@@ -31,6 +31,11 @@ import java.util.function.Supplier;
         updateColumn();
         return f.get();
     }
+    
+    private void throwError() {
+        updateColumn();
+        ops.error();
+    }
 
     private void updateColumn() {
         String[] lines = lexeme().split("\n");
@@ -53,7 +58,7 @@ import java.util.function.Supplier;
     ops = new Operations(this);
 %init}
 
-ignore = [\s\t\v\r\b\n]
+ignore = [ \t\v\r\b\n]
 comment = (//[^\n]*)|(/\*([^(\*/)]|{ignore})*\*/)
 
 decimalNumber = ([1-9]\d*)|0
@@ -80,7 +85,7 @@ class = class
 constructor = constructor
 this = this
 underscore = _
-identifier = [a-zA-Z_]\w*
+identifier = [a-zA-Z_][0-9a-zA-Z_]*
 
 escapeChar = \\[tbnrf0\\]
 character = '([\x20-\x26\x28-\x5b\x5d-\xff]|{escapeChar}|\\')'
@@ -123,57 +128,58 @@ opOr = \|\|
 
 {ignore}                  {updateColumn();}
 {comment}                 {updateColumn();}
-{integer}                 {return ops.integerUnit();}
-{real}                    {return ops.realUnit();}
-{if}                      {return ops.ifUnit();}
-{else}                    {return ops.elseUnit();}
-{switch}                  {return ops.switchUnit();}
-{for}                     {return ops.forUnit();}
-{while}                   {return ops.whileUnit();}
-{in}                      {return ops.inUnit();}
-{return}                  {return ops.returnUnit();}
-{true}                    {return ops.trueUnit();}
-{false}                   {return ops.falseUnit();}
-{nothing}                 {return ops.nothingUnit();}
-{null}                    {return ops.nullUnit();}
-{const}                   {return ops.constUnit();}
-{import}                  {return ops.importUnit();}
-{class}                   {return ops.classUnit();}
-{constructor}             {return ops.constructorUnit();}
-{this}                    {return ops.thisUnit();}
-{underscore}              {return ops.underscoreUnit();}
-{identifier}              {return ops.identifierUnit();}
-{character}               {return ops.characterUnit();}
-{string}                  {return ops.stringUnit();}
-{opOpeningParentheses}    {return ops.opOpeningParenthesesUnit();}
-{opClosingParentheses}    {return ops.opClosingParenthesesUnit();}
-{opOpeningSquare}         {return ops.opOpeningSquareUnit();}
-{opClosingSquare}         {return ops.opClosingSquareUnit();}
-{opOpeningCurly}          {return ops.opOpeningCurlyUnit();}
-{opClosingCurly}          {return ops.opClosingCurlyUnit();}
-{opArrow}                 {return ops.opArrowUnit();}
-{opEllipsis}              {return ops.opEllipsisUnit();}
-{opPoint}                 {return ops.opPointUnit();}
-{opComma}                 {return ops.opCommaUnit();}
-{opPlusAssign}            {return ops.opPlusAssignUnit();}
-{opPlus}                  {return ops.opPlusUnit();}
-{opMinusAssign}           {return ops.opMinusAssignUnit();}
-{opMinus}                 {return ops.opMinusUnit();}
-{opMultAssign}            {return ops.opMultAssignUnit();}
-{opMult}                  {return ops.opMultUnit();}
-{opDivAssign}             {return ops.opDivAssignUnit();}
-{opDiv}                   {return ops.opDivUnit();}
-{opModAssign}             {return ops.opModAssignUnit();}
-{opMod}                   {return ops.opModUnit();}
-{opLessEqual}             {return ops.opLessEqualUnit();}
-{opLowerThan}             {return ops.opLowerThanUnit();}
-{opGreaterEqual}          {return ops.opGreaterEqualUnit();}
-{opGreaterThan}           {return ops.opGreaterThanUnit();}
-{opIdentity}              {return ops.opIdentityUnit();}
-{opEquals}                {return ops.opEqualsUnit();}
-{opNotEquals}             {return ops.opNotEqualsUnit();}
-{opAssignment}            {return ops.opAssignmentUnit();}
-{opNot}                   {return ops.opNotUnit();}
-{opAnd}                   {return ops.opAndUnit();}
-{opOr}                    {return ops.opOrUnit();}
-[^]                       {ops.error();}
+{integer}                 {return onRead(() -> ops.integerUnit());}
+{real}                    {return onRead(() -> ops.realUnit());}
+{if}                      {return onRead(() -> ops.ifUnit());}
+{else}                    {return onRead(() -> ops.elseUnit());}
+{switch}                  {return onRead(() -> ops.switchUnit());}
+{for}                     {return onRead(() -> ops.forUnit());}
+{while}                   {return onRead(() -> ops.whileUnit());}
+{in}                      {return onRead(() -> ops.inUnit());}
+{return}                  {return onRead(() -> ops.returnUnit());}
+{true}                    {return onRead(() -> ops.trueUnit());}
+{false}                   {return onRead(() -> ops.falseUnit());}
+{nothing}                 {return onRead(() -> ops.nothingUnit());}
+{null}                    {return onRead(() -> ops.nullUnit());}
+{const}                   {return onRead(() -> ops.constUnit());}
+{import}                  {return onRead(() -> ops.importUnit());}
+{class}                   {return onRead(() -> ops.classUnit());}
+{constructor}             {return onRead(() -> ops.constructorUnit());}
+{this}                    {return onRead(() -> ops.thisUnit());}
+{underscore}              {return onRead(() -> ops.underscoreUnit());}
+{identifier}              {return onRead(() -> ops.identifierUnit());}
+{character}               {return onRead(() -> ops.characterUnit());}
+{string}                  {return onRead(() -> ops.stringUnit());}
+{opSemicolon}             {return onRead(() -> ops.opSemicolonUnit());}
+{opOpeningParentheses}    {return onRead(() -> ops.opOpeningParenthesesUnit());}
+{opClosingParentheses}    {return onRead(() -> ops.opClosingParenthesesUnit());}
+{opOpeningSquare}         {return onRead(() -> ops.opOpeningSquareUnit());}
+{opClosingSquare}         {return onRead(() -> ops.opClosingSquareUnit());}
+{opOpeningCurly}          {return onRead(() -> ops.opOpeningCurlyUnit());}
+{opClosingCurly}          {return onRead(() -> ops.opClosingCurlyUnit());}
+{opArrow}                 {return onRead(() -> ops.opArrowUnit());}
+{opEllipsis}              {return onRead(() -> ops.opEllipsisUnit());}
+{opPoint}                 {return onRead(() -> ops.opPointUnit());}
+{opComma}                 {return onRead(() -> ops.opCommaUnit());}
+{opPlusAssign}            {return onRead(() -> ops.opPlusAssignUnit());}
+{opPlus}                  {return onRead(() -> ops.opPlusUnit());}
+{opMinusAssign}           {return onRead(() -> ops.opMinusAssignUnit());}
+{opMinus}                 {return onRead(() -> ops.opMinusUnit());}
+{opMultAssign}            {return onRead(() -> ops.opMultAssignUnit());}
+{opMult}                  {return onRead(() -> ops.opMultUnit());}
+{opDivAssign}             {return onRead(() -> ops.opDivAssignUnit());}
+{opDiv}                   {return onRead(() -> ops.opDivUnit());}
+{opModAssign}             {return onRead(() -> ops.opModAssignUnit());}
+{opMod}                   {return onRead(() -> ops.opModUnit());}
+{opLessEqual}             {return onRead(() -> ops.opLessEqualUnit());}
+{opLowerThan}             {return onRead(() -> ops.opLowerThanUnit());}
+{opGreaterEqual}          {return onRead(() -> ops.opGreaterEqualUnit());}
+{opGreaterThan}           {return onRead(() -> ops.opGreaterThanUnit());}
+{opIdentity}              {return onRead(() -> ops.opIdentityUnit());}
+{opEquals}                {return onRead(() -> ops.opEqualsUnit());}
+{opNotEquals}             {return onRead(() -> ops.opNotEqualsUnit());}
+{opAssignment}            {return onRead(() -> ops.opAssignmentUnit());}
+{opNot}                   {return onRead(() -> ops.opNotUnit());}
+{opAnd}                   {return onRead(() -> ops.opAndUnit());}
+{opOr}                    {return onRead(() -> ops.opOrUnit());}
+[^]                       {throwError();}

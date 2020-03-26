@@ -35,4 +35,9 @@ public class LexicalUnit extends Symbol {
         return column;
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + ": " + value();
+    }
+
 }

@@ -1,0 +1,14 @@
+Void print() {
+    /*
+        dummy function that does nothing
+        representing a print function
+    */
+}
+
+Void main() {
+    /*
+        main function
+        the program will start here
+    */
+    print("Hello world\n");
+}
