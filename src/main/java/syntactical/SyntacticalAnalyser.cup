@@ -1,0 +1,28 @@
+package syntactical;
+
+import java_cup.runtime.*;
+import lexical.LexicalAnalyser;
+import lexical.LexicalUnit;
+
+import java.util.*;
+
+scan with {:  return getScanner().next_token(); :}
+action code {: /* TODO tree root declaration */ :}
+parser code {: /* TODO ?? */ :}
+init with {:
+    LexicalAnalyser analyser = (LexicalAnalyser) getScanner();
+:}
+
+// TODO types etc
+
+terminal INT, REAL, CHAR, STRING, IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN,
+         TRUE, FALSE, NOTHING, NULL, CONST, IMPORT, CLASS, CONSTRUCTOR,
+         THIS, UNDERSCORE, IDENTIFIER, SEMICOLON, PARENTH_L, PARENTH_R,
+         SQUARE_L, SQUARE_R, CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT,
+         COMMA, PLUS_ASSIGN, PLUS, MINUS_ASSIGN, MINUS, MULT_ASSIGN, MULT,
+         DIV_ASSIGN, DIV, MOD_ASSIGN, MOD, LE, LT, GE, GT, IDENTITY, EQUALS,
+         NEQ, ASSIGNMENT, NOT, AND, OR;
+
+nonterminal Program;
+
+Program ::= ;

@@ -1,5 +1,4 @@
 package lexical;
-
 import java.util.function.Supplier;
 
 
@@ -28,17 +27,14 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
     public int column() {
         return column;
     }
-
     private java_cup.runtime.Symbol onRead(Supplier<java_cup.runtime.Symbol> f) {
         updateColumn();
         return f.get();
     }
-
     private void throwError() {
         updateColumn();
         ops.error();
     }
-
     private void updateColumn() {
         String[] lines = lexeme().split("\n");
         if (lines.length > 1) {

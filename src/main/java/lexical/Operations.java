@@ -2,6 +2,8 @@ package lexical;
 
 import error.LexicalException;
 
+import static syntactical.ClassConstants.*;
+
 public class Operations {
 
     private final LexicalAnalyser analyser;
@@ -11,232 +13,231 @@ public class Operations {
     }
 
     private LexicalUnit createUnit(int lexicalClass) {
-        // TODO how to find file :/ (remove?)
-        return new LexicalUnit("TODO", analyser.row(), analyser.column(), lexicalClass, analyser.lexeme());
+        return new LexicalUnit(analyser.row(), analyser.column(), lexicalClass, analyser.lexeme());
     }
 
     public LexicalUnit integerUnit() {
-        return createUnit(0);
+        return createUnit(INT);
     }
 
     public LexicalUnit realUnit() {
-        return createUnit(0);
+        return createUnit(REAL);
     }
 
     public LexicalUnit ifUnit() {
-        return createUnit(0);
+        return createUnit(IF);
     }
 
     public LexicalUnit elseUnit() {
-        return createUnit(0);
+        return createUnit(ELSE);
     }
 
     public LexicalUnit switchUnit() {
-        return createUnit(0);
+        return createUnit(SWITCH);
     }
 
     public LexicalUnit forUnit() {
-        return createUnit(0);
+        return createUnit(FOR);
     }
 
     public LexicalUnit whileUnit() {
-        return createUnit(0);
+        return createUnit(WHILE);
     }
 
     public LexicalUnit inUnit() {
-        return createUnit(0);
+        return createUnit(IN);
     }
 
     public LexicalUnit returnUnit() {
-        return createUnit(0);
+        return createUnit(RETURN);
     }
 
     public LexicalUnit trueUnit() {
-        return createUnit(0);
+        return createUnit(TRUE);
     }
 
     public LexicalUnit falseUnit() {
-        return createUnit(0);
+        return createUnit(FALSE);
     }
 
     public LexicalUnit nothingUnit() {
-        return createUnit(0);
+        return createUnit(NOTHING);
     }
 
     public LexicalUnit nullUnit() {
-        return createUnit(0);
+        return createUnit(NULL);
     }
 
     public LexicalUnit constUnit() {
-        return createUnit(0);
+        return createUnit(CONST);
     }
 
     public LexicalUnit importUnit() {
-        return createUnit(0);
+        return createUnit(IMPORT);
     }
 
     public LexicalUnit classUnit() {
-        return createUnit(0);
+        return createUnit(CLASS);
     }
 
     public LexicalUnit constructorUnit() {
-        return createUnit(0);
+        return createUnit(CONSTRUCTOR);
     }
 
     public LexicalUnit thisUnit() {
-        return createUnit(0);
+        return createUnit(THIS);
     }
 
     public LexicalUnit underscoreUnit() {
-        return createUnit(0);
+        return createUnit(UNDERSCORE);
     }
 
     public LexicalUnit identifierUnit() {
-        return createUnit(0);
+        return createUnit(IDENTIFIER);
     }
 
     public LexicalUnit characterUnit() {
-        return createUnit(0);
+        return createUnit(CHAR);
     }
 
     public LexicalUnit stringUnit() {
-        return createUnit(0);
+        return createUnit(STRING);
     }
 
     public LexicalUnit opSemicolonUnit() {
-        return createUnit(0);
+        return createUnit(SEMICOLON);
     }
 
     public LexicalUnit opOpeningParenthesesUnit() {
-        return createUnit(0);
+        return createUnit(PARENTH_L);
     }
 
     public LexicalUnit opClosingParenthesesUnit() {
-        return createUnit(0);
+        return createUnit(PARENTH_R);
     }
 
     public LexicalUnit opOpeningSquareUnit() {
-        return createUnit(0);
+        return createUnit(SQUARE_L);
     }
 
     public LexicalUnit opClosingSquareUnit() {
-        return createUnit(0);
+        return createUnit(SQUARE_R);
     }
 
     public LexicalUnit opOpeningCurlyUnit() {
-        return createUnit(0);
+        return createUnit(CURLY_L);
     }
 
     public LexicalUnit opClosingCurlyUnit() {
-        return createUnit(0);
+        return createUnit(CURLY_R);
     }
 
     public LexicalUnit opArrowUnit() {
-        return createUnit(0);
+        return createUnit(ARROW);
     }
 
     public LexicalUnit opEllipsisUnit() {
-        return createUnit(0);
+        return createUnit(ELLIPSIS);
     }
 
     public LexicalUnit opPointUnit() {
-        return createUnit(0);
+        return createUnit(POINT);
     }
 
     public LexicalUnit opCommaUnit() {
-        return createUnit(0);
+        return createUnit(COMMA);
     }
 
     public LexicalUnit opPlusAssignUnit() {
-        return createUnit(0);
+        return createUnit(PLUS_ASSIGN);
     }
 
     public LexicalUnit opPlusUnit() {
-        return createUnit(0);
+        return createUnit(PLUS);
     }
 
     public LexicalUnit opMinusAssignUnit() {
-        return createUnit(0);
+        return createUnit(MINUS_ASSIGN);
     }
 
     public LexicalUnit opMinusUnit() {
-        return createUnit(0);
+        return createUnit(MINUS);
     }
 
     public LexicalUnit opMultAssignUnit() {
-        return createUnit(0);
+        return createUnit(MULT_ASSIGN);
     }
 
     public LexicalUnit opMultUnit() {
-        return createUnit(0);
+        return createUnit(MULT);
     }
 
     public LexicalUnit opDivAssignUnit() {
-        return createUnit(0);
+        return createUnit(DIV_ASSIGN);
     }
 
     public LexicalUnit opDivUnit() {
-        return createUnit(0);
+        return createUnit(DIV);
     }
 
     public LexicalUnit opModAssignUnit() {
-        return createUnit(0);
+        return createUnit(MOD_ASSIGN);
     }
 
     public LexicalUnit opModUnit() {
-        return createUnit(0);
+        return createUnit(MOD);
     }
 
     public LexicalUnit opLessEqualUnit() {
-        return createUnit(0);
+        return createUnit(LE);
     }
 
     public LexicalUnit opLowerThanUnit() {
-        return createUnit(0);
+        return createUnit(LT);
     }
 
     public LexicalUnit opGreaterEqualUnit() {
-        return createUnit(0);
+        return createUnit(GE);
     }
 
     public LexicalUnit opGreaterThanUnit() {
-        return createUnit(0);
+        return createUnit(GT);
     }
 
     public LexicalUnit opIdentityUnit() {
-        return createUnit(0);
+        return createUnit(IDENTITY);
     }
 
     public LexicalUnit opEqualsUnit() {
-        return createUnit(0);
+        return createUnit(EQUALS);
     }
 
     public LexicalUnit opNotEqualsUnit() {
-        return createUnit(0);
+        return createUnit(NEQ);
     }
 
     public LexicalUnit opAssignmentUnit() {
-        return createUnit(0);
+        return createUnit(ASSIGNMENT);
     }
 
     public LexicalUnit opNotUnit() {
-        return createUnit(0);
+        return createUnit(NOT);
     }
 
     public LexicalUnit opAndUnit() {
-        return createUnit(0);
+        return createUnit(AND);
     }
 
     public LexicalUnit opOrUnit() {
-        return createUnit(0);
+        return createUnit(OR);
     }
 
     public LexicalUnit eofUnit() {
-        return createUnit(0);
+        return createUnit(EOF);
     }
 
     public void error() {
-        throw new LexicalException("TODO", analyser.row(), analyser.column(), analyser.lexeme());
+        throw new LexicalException(analyser.row(), analyser.column(), analyser.lexeme());
     }
 
 }

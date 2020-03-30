@@ -10,11 +10,12 @@ public class Main {
     public static void main(String[] args) throws IOException {
         String input = "src/main/resources/examples/helloWorld/helloWorld.bbl";
         LexicalAnalyser la = new LexicalAnalyser(new InputStreamReader(new FileInputStream(input)));
-        for (int i = 0; i < 30; i++) {
+        Symbol symbol;
+        do {
             System.out.println(la.row() + ":" + la.column());
-            Symbol symbol = la.next_token();
+            symbol = la.next_token();
             System.out.println("\t" + symbol);
-        }
+        } while (!symbol.value.equals(""));
     }
 
 }

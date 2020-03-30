@@ -1,6 +1,5 @@
 package lexical;
 
-import error.*;
 import java.util.function.Supplier;
 
 %%
@@ -59,7 +58,7 @@ import java.util.function.Supplier;
 %init}
 
 ignore = [ \t\v\r\b\n]
-comment = (//[^\n]*)|(/\*([^(\*/)]|{ignore})*\*/)
+comment = (//[^\n]*)|(/\*[^(\*/)]*\*/)
 
 decimalNumber = ([1-9]\d*)|0
 binaryNumber = 0b[01]+
