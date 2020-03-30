@@ -1,0 +1,16 @@
+
+Void main() {
+    Int x = 0; //creating a variable
+    Int y; //variable with no value
+    y = x + 1;
+    x += 1;
+    if x == y {
+        /*
+            Do something
+        */
+    } else {
+        /*
+            Do something else
+        */
+    }
+}
