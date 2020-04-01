@@ -17,12 +17,88 @@ init with {:
 
 terminal INT, REAL, CHAR, STRING, IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN,
          TRUE, FALSE, NOTHING, NULL, CONST, IMPORT, CLASS, CONSTRUCTOR,
-         THIS, UNDERSCORE, IDENTIFIER, SEMICOLON, PARENTH_L, PARENTH_R,
-         SQUARE_L, SQUARE_R, CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT,
-         COMMA, PLUS_ASSIGN, PLUS, MINUS_ASSIGN, MINUS, MULT_ASSIGN, MULT,
-         DIV_ASSIGN, DIV, MOD_ASSIGN, MOD, LE, LT, GE, GT, IDENTITY, EQUALS,
-         NEQ, ASSIGNMENT, NOT, AND, OR;
+         THIS, UNDERSCORE, IDENTIFIER, PARENTH_L, PARENTH_R, SQUARE_L, SQUARE_R,
+         CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT, COMMA, PLUS_ASSIGN, PLUS,
+         MINUS_ASSIGN, MINUS, MULT_ASSIGN, MULT, DIV_ASSIGN, DIV, MOD_ASSIGN, MOD,
+         LE, LT, GE, GT, IDENTITY, EQUALS, NEQ, ASSIGNMENT, NOT, AND, OR, END;
 
+// Program
 nonterminal Program;
+// Imports
+nonterminal ImportList;
+// Declarations
+nonterminal DeclarationList, Declaration;
+// Variables
+nonterminal BaseVarDeclaration, VarConstDeclaration, VarDeclaration, VarInitDeclaration,
+            ConstDeclaration, LocalConstDeclaration;
+// Functions
+nonterminal FunctionDeclaration, FunctionParameters, ParameterList;
+// Classes
+nonterminal ClassDeclaration, ClassBlock, AttributeDeclarationList, AttributeDeclaration, ConstructorDeclarationList,
+            ConstructorDeclaration, MethodDeclarationList, MethodDeclaration;
+// Blocks
+nonterminal Block;
+// Statements
+nonterminal StatementList, Statement;
+nonterminal VarDeclarationStatement, IfElseStatement, IfStatement, ElseStatement;
+// Expressions
+nonterminal Expression;
 
-Program ::= ;
+// TODO Statement, Expression + shift/reduce error
+
+// Program
+Program ::= ImportList DeclarationList;
+
+// Imports
+ImportList ::= IMPORT END ImportList
+             | ;
+
+// Declarations
+DeclarationList ::= DeclarationList Declaration
+                  | ;
+Declaration     ::= VarConstDeclaration
+                  | FunctionDeclaration
+                  | ClassDeclaration;
+
+// Variables
+VarConstDeclaration ::= BaseVarDeclaration END
+                      | VarInitDeclaration END
+                      | ConstDeclaration END;
+BaseVarDeclaration  ::= IDENTIFIER IDENTIFIER;
+VarInitDeclaration  ::= BaseVarDeclaration ASSIGNMENT Expression;
+ConstDeclaration    ::= CONST VarInitDeclaration;
+
+// Functions
+FunctionDeclaration ::= BaseVarDeclaration FunctionParameters Block;
+FunctionParameters  ::= PARENTH_L PARENTH_R
+                      | PARENTH_L ParameterList PARENTH_R;
+ParameterList       ::= BaseVarDeclaration
+                      | ParameterList COMMA BaseVarDeclaration;
+
+// Classes
+ClassDeclaration           ::= CLASS IDENTIFIER ClassBlock;
+ClassBlock                 ::= CURLY_L
+                               AttributeDeclarationList ConstructorDeclarationList MethodDeclarationList
+                               CURLY_R;
+AttributeDeclarationList   ::= VarConstDeclaration AttributeDeclarationList
+                             | ;
+ConstructorDeclarationList ::= ConstructorDeclaration ConstructorDeclarationList
+                             | ;
+ConstructorDeclaration     ::= CONSTRUCTOR FunctionParameters Block;
+MethodDeclarationList      ::= FunctionDeclaration MethodDeclarationList
+                             | ;
+
+// Blocks
+Block ::= CURLY_L StatementList CURLY_R;
+
+// Statements
+StatementList           ::= Statement StatementList
+                          | ;
+Statement               ::= VarDeclarationStatement
+                          | IfElseStatement;
+VarDeclarationStatement ::= VarConstDeclaration
+                          | LocalConstDeclaration;
+IfElseStatement         ::= IfStatement ElseStatement;
+IfStatement             ::= IF Expression Block;
+ElseStatement           ::= ELSE Block
+                          | ELSE IfElseStatement;

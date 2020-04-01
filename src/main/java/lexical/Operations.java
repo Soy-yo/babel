@@ -16,6 +16,10 @@ public class Operations {
         return new LexicalUnit(analyser.row(), analyser.column(), lexicalClass, analyser.lexeme());
     }
 
+    private LexicalUnit createUnit(int lexicalClass, String lexeme) {
+        return new LexicalUnit(analyser.row(), analyser.column(), lexicalClass, lexeme);
+    }
+
     public LexicalUnit integerUnit() {
         return createUnit(INT);
     }
@@ -73,7 +77,7 @@ public class Operations {
     }
 
     public LexicalUnit importUnit() {
-        return createUnit(IMPORT);
+        return createUnit(IMPORT, analyser.lexeme().split(" ")[1]);
     }
 
     public LexicalUnit classUnit() {
@@ -105,7 +109,7 @@ public class Operations {
     }
 
     public LexicalUnit opSemicolonUnit() {
-        return createUnit(SEMICOLON);
+        return createUnit(END);
     }
 
     public LexicalUnit opOpeningParenthesesUnit() {
