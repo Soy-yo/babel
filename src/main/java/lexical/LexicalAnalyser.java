@@ -281,16 +281,16 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
 		/* 42 */ YY_NO_ANCHOR,
 		/* 43 */ YY_NO_ANCHOR,
 		/* 44 */ YY_NO_ANCHOR,
-		/* 45 */ YY_NO_ANCHOR,
-		/* 46 */ YY_NO_ANCHOR,
-		/* 47 */ YY_NO_ANCHOR,
-		/* 48 */ YY_NO_ANCHOR,
-		/* 49 */ YY_NO_ANCHOR,
-		/* 50 */ YY_NO_ANCHOR,
-		/* 51 */ YY_NO_ANCHOR,
-		/* 52 */ YY_NO_ANCHOR,
-		/* 53 */ YY_NO_ANCHOR,
-		/* 54 */ YY_NO_ANCHOR,
+            /* 45 */ YY_NO_ANCHOR,
+            /* 46 */ YY_NO_ANCHOR,
+            /* 47 */ YY_NO_ANCHOR,
+            /* 48 */ YY_NO_ANCHOR,
+            /* 49 */ YY_NO_ANCHOR,
+            /* 50 */ YY_NO_ANCHOR,
+            /* 51 */ YY_NO_ANCHOR,
+            /* 52 */ YY_NO_ANCHOR,
+            /* 53 */ YY_NO_ANCHOR,
+            /* 54 */ YY_NO_ANCHOR,
             /* 55 */ YY_NO_ANCHOR,
             /* 56 */ YY_NO_ANCHOR,
             /* 57 */ YY_NO_ANCHOR,
@@ -339,23 +339,23 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
             /* 100 */ YY_NO_ANCHOR,
             /* 101 */ YY_NO_ANCHOR,
             /* 102 */ YY_NO_ANCHOR,
-		/* 103 */ YY_NO_ANCHOR,
-		/* 104 */ YY_NO_ANCHOR,
-		/* 105 */ YY_NO_ANCHOR,
-		/* 106 */ YY_NO_ANCHOR,
-		/* 107 */ YY_NO_ANCHOR,
-		/* 108 */ YY_NO_ANCHOR,
-		/* 109 */ YY_NO_ANCHOR,
-		/* 110 */ YY_NO_ANCHOR,
-		/* 111 */ YY_NO_ANCHOR,
-		/* 112 */ YY_NO_ANCHOR,
-		/* 113 */ YY_NO_ANCHOR,
-		/* 114 */ YY_NO_ANCHOR,
-		/* 115 */ YY_NO_ANCHOR,
-		/* 116 */ YY_NO_ANCHOR,
-		/* 117 */ YY_NO_ANCHOR,
-		/* 118 */ YY_NO_ANCHOR,
-		/* 119 */ YY_NO_ANCHOR,
+            /* 103 */ YY_NO_ANCHOR,
+            /* 104 */ YY_NO_ANCHOR,
+            /* 105 */ YY_NO_ANCHOR,
+            /* 106 */ YY_NO_ANCHOR,
+            /* 107 */ YY_NO_ANCHOR,
+            /* 108 */ YY_NO_ANCHOR,
+            /* 109 */ YY_NO_ANCHOR,
+            /* 110 */ YY_NO_ANCHOR,
+            /* 111 */ YY_NO_ANCHOR,
+            /* 112 */ YY_NO_ANCHOR,
+            /* 113 */ YY_NO_ANCHOR,
+            /* 114 */ YY_NO_ANCHOR,
+            /* 115 */ YY_NO_ANCHOR,
+            /* 116 */ YY_NO_ANCHOR,
+            /* 117 */ YY_NO_ANCHOR,
+            /* 118 */ YY_NO_ANCHOR,
+            /* 119 */ YY_NO_ANCHOR,
             /* 120 */ YY_NO_ANCHOR,
             /* 121 */ YY_NO_ANCHOR,
             /* 122 */ YY_NO_ANCHOR,
@@ -417,15 +417,15 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
                     "1:28,8:8,-1,8:2,126,8:17,-1:28,8:8,-1,8:16,127,8:3,-1:28,8:8,-1,8:6,128,8:1" +
                     "3,-1:28,8:8,-1,8:12,129,8:7,-1:21");
 
-	public java_cup.runtime.Symbol next_token ()
-		throws java.io.IOException {
-		int yy_lookahead;
-		int yy_anchor = YY_NO_ANCHOR;
-		int yy_state = yy_state_dtrans[yy_lexical_state];
-		int yy_next_state = YY_NO_STATE;
-		int yy_last_accept_state = YY_NO_STATE;
-		boolean yy_initial = true;
-		int yy_this_accept;
+    public java_cup.runtime.Symbol next_token()
+            throws java.io.IOException {
+        int yy_lookahead;
+        int yy_anchor = YY_NO_ANCHOR;
+        int yy_state = yy_state_dtrans[yy_lexical_state];
+        int yy_next_state = YY_NO_STATE;
+        int yy_last_accept_state = YY_NO_STATE;
+        boolean yy_initial = true;
+        int yy_this_accept;
 
 		yy_mark_start();
 		yy_this_accept = yy_acpt[yy_state];
@@ -654,18 +654,21 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
 						{return onRead(() -> ops.trueUnit());}
 					case -49:
 						break;
-					case 49:
-						{return onRead(() -> ops.nullUnit());}
-					case -50:
-						break;
-					case 50:
-						{return onRead(() -> ops.falseUnit());}
-					case -51:
-						break;
-					case 51:
-						{return onRead(() -> ops.whileUnit());}
-					case -52:
-                        break;
+					case 49: {
+                        return onRead(() -> ops.nullUnit());
+                    }
+                        case -50:
+                            break;
+                        case 50: {
+                            return onRead(() -> ops.falseUnit());
+                        }
+                        case -51:
+                            break;
+                        case 51: {
+                            return onRead(() -> ops.whileUnit());
+                        }
+                        case -52:
+                            break;
                         case 52: {
                             return onRead(() -> ops.classUnit());
                         }
@@ -701,16 +704,19 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
                         }
                         case -59:
                             break;
-					case 60:
-						{updateColumn();}
-					case -60:
-						break;
-					case 61:
-						{throwError();}
-					case -61:
-						break;
-					case 62:
-						{return onRead(() -> ops.integerUnit());}
+                        case 60: {
+                            updateColumn();
+                        }
+                        case -60:
+                            break;
+                        case 61: {
+                            throwError();
+                        }
+                        case -61:
+                            break;
+                        case 62: {
+                            return onRead(() -> ops.integerUnit());
+                        }
                         case -62:
                             break;
                         case 63: {

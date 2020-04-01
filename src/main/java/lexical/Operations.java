@@ -13,7 +13,7 @@ public class Operations {
     }
 
     private LexicalUnit createUnit(int lexicalClass) {
-        return new LexicalUnit(analyser.row(), analyser.column(), lexicalClass, analyser.lexeme());
+        return createUnit(lexicalClass, analyser.lexeme());
     }
 
     private LexicalUnit createUnit(int lexicalClass, String lexeme) {

@@ -29,13 +29,12 @@ nonterminal ImportList;
 // Declarations
 nonterminal DeclarationList, Declaration;
 // Variables
-nonterminal BaseVarDeclaration, VarConstDeclaration, VarDeclaration, VarInitDeclaration,
-            ConstDeclaration, LocalConstDeclaration;
+nonterminal VarDeclaration, GlobalVarConstDeclaration, VarConstDeclaration, BaseVarDeclaration, VarInitDeclaration,
+            GlobalConstDeclaration, LocalConstDeclaration;
 // Functions
 nonterminal FunctionDeclaration, FunctionParameters, ParameterList;
 // Classes
-nonterminal ClassDeclaration, ClassBlock, AttributeDeclarationList, AttributeDeclaration, ConstructorDeclarationList,
-            ConstructorDeclaration, MethodDeclarationList, MethodDeclaration;
+nonterminal ClassDeclaration, ClassBlock, ConstructorDeclaration, ClassElementList, ClassElement;
 // Blocks
 nonterminal Block;
 // Statements
@@ -43,8 +42,10 @@ nonterminal StatementList, Statement;
 nonterminal VarDeclarationStatement, IfElseStatement, IfStatement, ElseStatement;
 // Expressions
 nonterminal Expression;
+// Other (to check case)
+nonterminal Type, VarId, GlobalConstId;
 
-// TODO Statement, Expression + shift/reduce error
+// TODO Statement, Expression
 
 // Program
 Program ::= ImportList DeclarationList;
@@ -56,17 +57,21 @@ ImportList ::= IMPORT END ImportList
 // Declarations
 DeclarationList ::= DeclarationList Declaration
                   | ;
-Declaration     ::= VarConstDeclaration
+Declaration     ::= GlobalVarConstDeclaration
                   | FunctionDeclaration
                   | ClassDeclaration;
 
 // Variables
-VarConstDeclaration ::= BaseVarDeclaration END
-                      | VarInitDeclaration END
-                      | ConstDeclaration END;
-BaseVarDeclaration  ::= IDENTIFIER IDENTIFIER;
-VarInitDeclaration  ::= BaseVarDeclaration ASSIGNMENT Expression;
-ConstDeclaration    ::= CONST VarInitDeclaration;
+VarDeclaration            ::= BaseVarDeclaration END
+                            | VarInitDeclaration END;
+GlobalVarConstDeclaration ::= VarDeclaration
+                            | GlobalConstDeclaration END;
+VarConstDeclaration       ::= VarDeclaration
+                            | LocalConstDeclaration END;
+BaseVarDeclaration        ::= Type VarId;
+VarInitDeclaration        ::= BaseVarDeclaration ASSIGNMENT Expression;
+GlobalConstDeclaration    ::= CONST GlobalConstId ASSIGNMENT Expression;
+LocalConstDeclaration     ::= CONST VarInitDeclaration;
 
 // Functions
 FunctionDeclaration ::= BaseVarDeclaration FunctionParameters Block;
@@ -76,17 +81,14 @@ ParameterList       ::= BaseVarDeclaration
                       | ParameterList COMMA BaseVarDeclaration;
 
 // Classes
-ClassDeclaration           ::= CLASS IDENTIFIER ClassBlock;
-ClassBlock                 ::= CURLY_L
-                               AttributeDeclarationList ConstructorDeclarationList MethodDeclarationList
-                               CURLY_R;
-AttributeDeclarationList   ::= VarConstDeclaration AttributeDeclarationList
-                             | ;
-ConstructorDeclarationList ::= ConstructorDeclaration ConstructorDeclarationList
-                             | ;
-ConstructorDeclaration     ::= CONSTRUCTOR FunctionParameters Block;
-MethodDeclarationList      ::= FunctionDeclaration MethodDeclarationList
-                             | ;
+ClassDeclaration       ::= CLASS Type ClassBlock;
+ClassBlock             ::= CURLY_L ClassElementList CURLY_R;
+ClassElementList       ::= ClassElement ClassElementList
+                         | ;
+ClassElement           ::= VarConstDeclaration
+                         | ConstructorDeclaration
+                         | FunctionDeclaration;
+ConstructorDeclaration ::= CONSTRUCTOR FunctionParameters Block;
 
 // Blocks
 Block ::= CURLY_L StatementList CURLY_R;
@@ -96,9 +98,13 @@ StatementList           ::= Statement StatementList
                           | ;
 Statement               ::= VarDeclarationStatement
                           | IfElseStatement;
-VarDeclarationStatement ::= VarConstDeclaration
-                          | LocalConstDeclaration;
+VarDeclarationStatement ::= VarConstDeclaration;
 IfElseStatement         ::= IfStatement ElseStatement;
 IfStatement             ::= IF Expression Block;
 ElseStatement           ::= ELSE Block
                           | ELSE IfElseStatement;
+
+// Other
+Type          ::= IDENTIFIER;
+VarId         ::= IDENTIFIER;
+GlobalConstId ::= IDENTIFIER;
