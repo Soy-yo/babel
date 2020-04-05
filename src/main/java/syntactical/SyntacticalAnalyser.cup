@@ -55,7 +55,7 @@ ImportList ::= IMPORT END ImportList
              | ;
 
 // Declarations
-DeclarationList ::= DeclarationList Declaration
+DeclarationList ::= Declaration DeclarationList
                   | ;
 Declaration     ::= GlobalVarConstDeclaration
                   | FunctionDeclaration
