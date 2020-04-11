@@ -1,5 +1,4 @@
 package lexical;
-
 import java.util.function.Supplier;
 
 
@@ -28,17 +27,14 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
     public int column() {
         return column;
     }
-
     private java_cup.runtime.Symbol onRead(Supplier<java_cup.runtime.Symbol> f) {
         updateColumn();
         return f.get();
     }
-
     private void throwError() {
         updateColumn();
         ops.error();
     }
-
     private void updateColumn() {
         String[] lines = lexeme().split("\n");
         if (lines.length > 1) {
@@ -56,7 +52,7 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
     private int yy_buffer_read;
     private int yy_buffer_start;
     private int yy_buffer_end;
-    private char[] yy_buffer;
+    private char yy_buffer[];
     private int yyline;
     private boolean yy_at_bol;
     private int yy_lexical_state;
@@ -92,7 +88,7 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
 
     private boolean yy_eof_done = false;
     private final int YYINITIAL = 0;
-    private final int[] yy_state_dtrans = {
+    private final int yy_state_dtrans[] = {
             0
     };
 
@@ -194,9 +190,9 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
         return yy_buffer_end - yy_buffer_start;
     }
 
-    private char[] yy_double(char[] buf) {
+    private char[] yy_double(char buf[]) {
         int i;
-        char[] newbuf;
+        char newbuf[];
         newbuf = new char[2 * buf.length];
         for (i = 0; i < buf.length; ++i) {
             newbuf[i] = buf[i];
@@ -206,7 +202,7 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
 
     private final int YY_E_INTERNAL = 0;
     private final int YY_E_MATCH = 1;
-    private java.lang.String[] yy_error_string = {
+    private java.lang.String yy_error_string[] = {
             "Error: Internal error.\n",
             "Error: Unmatched input.\n"
     };
@@ -228,7 +224,7 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
         int commaIndex;
         String workString;
 
-        int[][] res = new int[size1][size2];
+        int res[][] = new int[size1][size2];
         for (int i = 0; i < size1; i++) {
             for (int j = 0; j < size2; j++) {
                 if (sequenceLength != 0) {
@@ -257,7 +253,7 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
         return res;
     }
 
-    private int[] yy_acpt = {
+    private int yy_acpt[] = {
             /* 0 */ YY_NOT_ACCEPT,
             /* 1 */ YY_NO_ANCHOR,
             /* 2 */ YY_NO_ANCHOR,
@@ -394,20 +390,20 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
             /* 133 */ YY_NO_ANCHOR,
             /* 134 */ YY_NO_ANCHOR
     };
-    private int[] yy_cmap = unpackFromString(1, 65538,
+    private int yy_cmap[] = unpackFromString(1, 65538,
             "6:8,4:2,1,6:2,4,6:18,37,54,40,38:2,52,55,36,42,3,5,50,49,47,15,2,9,11,14:6," +
                     "7:2,38,41,53,51,48,38:2,13:6,33:20,43,39,44,38,35,38,29,10,23,8,18,17,30,24" +
                     ",16,33:2,19,31,27,25,32,33,26,20,22,28,34,21,12,33:2,45,56,46,38:130,6:6528" +
                     "0,0:2")[0];
 
-    private int[] yy_rmap = unpackFromString(1, 135,
+    private int yy_rmap[] = unpackFromString(1, 135,
             "0,1:2,2,1,3,1,4,5,6,5,1:6,7,8,1,9,10,11,12,13,14,1:2,15,5:2,1:5,16,1:6,5,1:" +
                     "2,5:7,17,5:2,18,5:2,19,5,20,21,22,1,23,24,25,26,27,28,29,24,30,15,31,28,32," +
                     "33,34,35,36,37,38,25,39,40,41,42,43,44,45,46,47,44,48,49,50,51,52,53,54,55," +
                     "56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80," +
                     "81,82,83,84,85,86,87")[0];
 
-    private int[][] yy_nxt = unpackFromString(88, 57,
+    private int yy_nxt[][] = unpackFromString(88, 57,
             "1,2,3,4,2,5,6,7,8,62,8,7,8:2,7,9,63,97,111,8,130,123,112,124,8:2,131,113,8:" +
                     "6,60,10,61,2,6:2,67,11,12,13,14,15,16,17,18,19,20,21,22,23,24,71,75,-1:59,2" +
                     "5,-1:2,59,-1:45,26,-1:56,27,-1:13,7,-1:55,8:8,-1,8:20,-1:29,28,-1:6,78,-1:8" +

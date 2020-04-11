@@ -10,7 +10,7 @@ public class VarDeclarationNode extends DeclarationNode {
     private boolean isConst;
     private boolean isGlobal;
 
-    private VarDeclarationNode(
+    public VarDeclarationNode(
             Name name,
             ExpressionNode initialValue,
             boolean isConst,
@@ -22,11 +22,11 @@ public class VarDeclarationNode extends DeclarationNode {
         this.isGlobal = isGlobal;
     }
 
-    private VarDeclarationNode(Name name, boolean isGlobal) {
+    public VarDeclarationNode(Name name, boolean isGlobal) {
         this(name, null, false, isGlobal);
     }
 
-    private VarDeclarationNode(Name name, ExpressionNode initialValue) {
+    public VarDeclarationNode(Name name, ExpressionNode initialValue) {
         this(name, initialValue, false, false);
     }
 
@@ -44,6 +44,10 @@ public class VarDeclarationNode extends DeclarationNode {
 
     public boolean isGlobal() {
         return isGlobal;
+    }
+
+    public VarDeclarationNode constant() {
+        return new VarDeclarationNode(name, initialValue, true, isGlobal);
     }
 
     @Override

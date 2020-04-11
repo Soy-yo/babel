@@ -8,7 +8,7 @@ public class ConstructorDeclarationNode extends FunctionDeclarationNode {
 
     private static final String NAME = "constructor";
 
-    public ConstructorDeclarationNode(Collection<Name> parameterNames, BlockNode code) {
+    public ConstructorDeclarationNode(Collection<Name> parameterNames, BlockStatementNode code) {
         super(new Name(NAME, "?"), parameterNames, code);
     }
 

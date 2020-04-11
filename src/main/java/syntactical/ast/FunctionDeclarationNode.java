@@ -11,12 +11,12 @@ import java.util.stream.Collectors;
 public class FunctionDeclarationNode extends DeclarationNode {
 
     private List<VarDeclarationNode> parameters;
-    private BlockNode code;
+    private BlockStatementNode code;
 
     public FunctionDeclarationNode(
             Name name,
             Collection<Name> parameterNames,
-            BlockNode code
+            BlockStatementNode code
     ) {
         super(name);
         this.parameters = parameterNames.stream()
@@ -29,7 +29,7 @@ public class FunctionDeclarationNode extends DeclarationNode {
         return parameters;
     }
 
-    public BlockNode getCode() {
+    public BlockStatementNode getCode() {
         return code;
     }
 

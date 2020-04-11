@@ -15,6 +15,6 @@ public interface Visitor {
 
     void visit(ClassDeclarationNode node);
 
-    void visit(BlockNode node);
+    void visit(BlockStatementNode node);
 
 }

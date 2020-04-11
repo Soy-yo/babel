@@ -3,108 +3,143 @@ package syntactical;
 import java_cup.runtime.*;
 import lexical.LexicalAnalyser;
 import lexical.LexicalUnit;
+import syntactical.ast.*;
+import error.SyntacticalException;
 
 import java.util.*;
 
-scan with {:  return getScanner().next_token(); :}
-action code {: /* TODO tree root declaration */ :}
-parser code {: /* TODO ?? */ :}
 init with {:
-    LexicalAnalyser analyser = (LexicalAnalyser) getScanner();
+    //LexicalAnalyser analyser = (LexicalAnalyser) getScanner(); ???
 :}
+scan with {:  return getScanner().next_token(); :}
+action code {: private ProgramNode program; :}
+parser code {: /* TODO ?? */ :}
 
 // TODO types etc
 
 terminal INT, REAL, CHAR, STRING, IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN,
-         TRUE, FALSE, NOTHING, NULL, CONST, IMPORT, CLASS, CONSTRUCTOR,
-         THIS, UNDERSCORE, IDENTIFIER, PARENTH_L, PARENTH_R, SQUARE_L, SQUARE_R,
+         TRUE, FALSE, NOTHING, NULL, CONST, CLASS, CONSTRUCTOR,
+         THIS, UNDERSCORE, PARENTH_L, PARENTH_R, SQUARE_L, SQUARE_R,
          CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT, COMMA, PLUS_ASSIGN, PLUS,
          MINUS_ASSIGN, MINUS, MULT_ASSIGN, MULT, DIV_ASSIGN, DIV, MOD_ASSIGN, MOD,
          LE, LT, GE, GT, IDENTITY, EQUALS, NEQ, ASSIGNMENT, NOT, AND, OR, END;
+terminal String IDENTIFIER, IMPORT;
 
 // Program
-nonterminal Program;
+nonterminal ProgramNode Program;
 // Imports
-nonterminal ImportList;
+nonterminal List<String> ImportList;
 // Declarations
-nonterminal DeclarationList, Declaration;
+nonterminal DeclarationNode DeclarationList, Declaration;
 // Variables
-nonterminal VarDeclaration, GlobalVarConstDeclaration, VarConstDeclaration, BaseVarDeclaration, VarInitDeclaration,
+nonterminal VarDeclarationNode VarDeclaration, GlobalVarConstDeclaration, VarConstDeclaration, VarInitDeclaration,
             GlobalConstDeclaration, LocalConstDeclaration;
+nonterminal Name BaseVarDeclaration;
 // Functions
-nonterminal FunctionDeclaration, FunctionParameters, ParameterList;
+nonterminal FunctionDeclarationNode FunctionDeclaration;
+nonterminal List<Name> FunctionParameters, ParameterList;
 // Classes
-nonterminal ClassDeclaration, ClassBlock, ConstructorDeclaration, ClassElementList, ClassElement;
-// Blocks
-nonterminal Block;
+nonterminal ClassDeclarationNode ClassDeclaration;
+nonterminal DeclarationNode ClassBlock, ClassElementList, ClassElement;
+nonterminal ConstructorDeclarationNode ConstructorDeclaration;
 // Statements
-nonterminal StatementList, Statement;
+nonterminal StatementNode StatementList, Statement;
+nonterminal BlockStatementNode BlockStatement;
 nonterminal VarDeclarationStatement, IfElseStatement, IfStatement, ElseStatement;
 // Expressions
-nonterminal Expression;
+nonterminal ExpressionNode Expression;
 // Other (to check case)
-nonterminal Type, VarId, GlobalConstId;
+nonterminal String Type, VarId, GlobalConstId;
 
 // TODO Statement, Expression
 
 // Program
-Program ::= ImportList DeclarationList;
+Program ::= ImportList: imports DeclarationList: declarations
+            {: RESULT = new ProgramNode(declarations, imports); :};
 
 // Imports
-ImportList ::= IMPORT END ImportList
-             | ;
+ImportList ::= ImportList: imports IMPORT: file END
+               {: imports.add(file); RESULT = imports; :}
+             |
+               {: RESULT = new ArrayList<>(); :};
 
 // Declarations
-DeclarationList ::= Declaration DeclarationList
-                  | ;
-Declaration     ::= GlobalVarConstDeclaration
-                  | FunctionDeclaration
-                  | ClassDeclaration;
+DeclarationList ::= Declaration: declaration DeclarationList: declarations
+                    {: RESULT = declaration.linkedTo(declarations); :}
+                  |
+                    {: RESULT = null; :};
+Declaration     ::= GlobalVarConstDeclaration: declaration
+                    {: RESULT = declaration; :}
+                  | FunctionDeclaration: declaration
+                    {: RESULT = declaration; :}
+                  | ClassDeclaration: declaration
+                    {: RESULT = declaration; :};
 
 // Variables
-VarDeclaration            ::= BaseVarDeclaration END
-                            | VarInitDeclaration END;
-GlobalVarConstDeclaration ::= VarDeclaration
-                            | GlobalConstDeclaration END;
-VarConstDeclaration       ::= VarDeclaration
-                            | LocalConstDeclaration END;
-BaseVarDeclaration        ::= Type VarId;
-VarInitDeclaration        ::= BaseVarDeclaration ASSIGNMENT Expression;
-GlobalConstDeclaration    ::= CONST GlobalConstId ASSIGNMENT Expression;
-LocalConstDeclaration     ::= CONST VarInitDeclaration;
+GlobalVarConstDeclaration ::= VarDeclaration: declaration
+                              {: RESULT = declaration; :}
+                            | GlobalConstDeclaration: declaration END
+                              {: RESULT = declaration; :};
+VarConstDeclaration       ::= VarDeclaration: declaration
+                              {: RESULT = declaration; :}
+                            | LocalConstDeclaration: declaration END
+                              {: RESULT = declaration; :};
+VarDeclaration            ::= BaseVarDeclaration: declaration END
+                              {: RESULT = new VarDeclarationNode(declaration); :}
+                            | VarInitDeclaration: declaration END
+                              {: RESULT = declaration; :};
+BaseVarDeclaration        ::= Type: type VarId: id
+                              {: RESULT = new Name(id, type); :};
+VarInitDeclaration        ::= BaseVarDeclaration: name ASSIGNMENT Expression: initialValue
+                              {: RESULT = new VarDeclarationNode(name, initialValue); :};
+GlobalConstDeclaration    ::= CONST Type: type GlobalConstId: id ASSIGNMENT Expression: initialValue
+                              {: RESULT = new VarDeclarationNode(new Name(id, type), initialValue, true, true); :};
+LocalConstDeclaration     ::= CONST VarInitDeclaration: declaration
+                              {: RESULT = declaration.constant(); :};
 
 // Functions
-FunctionDeclaration ::= BaseVarDeclaration FunctionParameters Block;
+FunctionDeclaration ::= BaseVarDeclaration: name FunctionParameters: parameters BlockStatement: block
+                        {: RESULT = new FunctionDeclarationNode(name, parameters, block); :};
 FunctionParameters  ::= PARENTH_L PARENTH_R
-                      | PARENTH_L ParameterList PARENTH_R;
-ParameterList       ::= BaseVarDeclaration
-                      | ParameterList COMMA BaseVarDeclaration;
+                        {: RESULT = new ArrayList<>(); :}
+                      | PARENTH_L ParameterList: parameters PARENTH_R
+                        {: RESULT = parameters; :};
+ParameterList       ::= BaseVarDeclaration: parameter
+                        {: RESULT = new ArrayList<Name>() {{ add(parameter); }}; :}
+                      | ParameterList: parameters COMMA BaseVarDeclaration: parameter
+                        {: parameters.add(parameter); RESULT = parameters; :};
 
 // Classes
-ClassDeclaration       ::= CLASS Type ClassBlock;
-ClassBlock             ::= CURLY_L ClassElementList CURLY_R;
-ClassElementList       ::= ClassElement ClassElementList
-                         | ;
-ClassElement           ::= VarConstDeclaration
-                         | ConstructorDeclaration
-                         | FunctionDeclaration;
-ConstructorDeclaration ::= CONSTRUCTOR FunctionParameters Block;
-
-// Blocks
-Block ::= CURLY_L StatementList CURLY_R;
+ClassDeclaration       ::= CLASS Type: name ClassBlock: block
+                           {: RESULT = new ClassDeclarationNode(name, block); :};
+ClassBlock             ::= CURLY_L ClassElementList: contents CURLY_R
+                           {: RESULT = contents; :};
+ClassElementList       ::= ClassElement: element ClassElementList: elements
+                           {: RESULT = element.linkedTo(elements); :}
+                         |
+                           {: RESULT = null; :};
+ClassElement           ::= VarConstDeclaration: declaration
+                           {: RESULT = declaration; :}
+                         | ConstructorDeclaration: declaration
+                           {: RESULT = declaration; :}
+                         | FunctionDeclaration: declaration
+                           {: RESULT = declaration; :};
+ConstructorDeclaration ::= CONSTRUCTOR FunctionParameters: parameters BlockStatement: block
+                           {: RESULT = new ConstructorDeclarationNode(parameters, block); :};
 
 // Statements
 StatementList           ::= Statement StatementList
                           | ;
 Statement               ::= VarDeclarationStatement
                           | IfElseStatement;
+BlockStatement          ::= CURLY_L StatementList CURLY_R;
 VarDeclarationStatement ::= VarConstDeclaration;
 IfElseStatement         ::= IfStatement ElseStatement;
-IfStatement             ::= IF Expression Block;
-ElseStatement           ::= ELSE Block
+IfStatement             ::= IF Expression BlockStatement;
+ElseStatement           ::= ELSE BlockStatement
                           | ELSE IfElseStatement;
 
 // Other
-Type          ::= IDENTIFIER;
-VarId         ::= IDENTIFIER;
-GlobalConstId ::= IDENTIFIER;
+Type          ::= IDENTIFIER: id {: RESULT = id; :};
+VarId         ::= IDENTIFIER: id {: RESULT = id; :};
+GlobalConstId ::= IDENTIFIER: id {: RESULT = id; :};

@@ -2,7 +2,7 @@ package syntactical.ast;
 
 import syntactical.ast.visitors.Visitor;
 
-public class BlockNode extends StatementNode {
+public class BlockStatementNode extends StatementNode {
 
     @Override
     public void accept(Visitor visitor) {

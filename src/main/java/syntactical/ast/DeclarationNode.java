@@ -35,7 +35,7 @@ public abstract class DeclarationNode implements ASTNode, Visitable {
         return previous;
     }
 
-    public DeclarationNode linkTo(DeclarationNode next) {
+    public DeclarationNode linkedTo(DeclarationNode next) {
         checkNext(this);
         checkPrevious(next);
         this.next = next;
@@ -43,7 +43,7 @@ public abstract class DeclarationNode implements ASTNode, Visitable {
         return this;
     }
 
-    public DeclarationNode linkBefore(DeclarationNode node) {
+    public DeclarationNode linkedBefore(DeclarationNode node) {
         checkNext(this);
         checkPrevious(this);
         DeclarationNode p = node.previous;
@@ -54,7 +54,7 @@ public abstract class DeclarationNode implements ASTNode, Visitable {
         return this;
     }
 
-    public DeclarationNode linkAfter(DeclarationNode node) {
+    public DeclarationNode linkedAfter(DeclarationNode node) {
         checkNext(this);
         checkPrevious(this);
         DeclarationNode n = node.next;
