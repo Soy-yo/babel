@@ -2,6 +2,7 @@ import java_cup.runtime.Symbol;
 import lexical.LexicalAnalyser;
 import syntactical.SyntacticalAnalyser;
 import syntactical.ast.ProgramNode;
+import syntactical.ast.visitors.ASTPrinter;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,7 +35,7 @@ public class Main {
         Symbol result = sa.parse();
         if (result != null) {
             ProgramNode program = (ProgramNode) result.value;
-            System.out.println(program);
+            new ASTPrinter(program).print();
         }
         System.out.println("Syntactical parsing finished successfully");
     }

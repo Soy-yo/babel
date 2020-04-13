@@ -1,6 +1,6 @@
 import es/ucm/fdi/babel;
 
-Void print() {
+Void print(String text) {
     /*
         dummy function that does nothing
         representing a print function
