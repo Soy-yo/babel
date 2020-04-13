@@ -8,12 +8,14 @@ import error.SyntacticalException;
 
 import java.util.*;
 
-init with {:
-    //LexicalAnalyser analyser = (LexicalAnalyser) getScanner(); ???
+init with {::}
+scan with {:
+    return analyser.next_token();
 :}
-scan with {:  return getScanner().next_token(); :}
-action code {: private ProgramNode program; :}
-parser code {: /* TODO ?? */ :}
+action code {::}
+parser code {:
+    private LexicalAnalyser analyser = (LexicalAnalyser) getScanner();
+:}
 
 // TODO types etc
 

@@ -37,9 +37,26 @@ public abstract class DeclarationNode implements ASTNode, Visitable {
 
     public DeclarationNode linkedTo(DeclarationNode next) {
         checkNext(this);
+        if (next == null) {
+            this.next = null;
+            return this;
+        }
         checkPrevious(next);
         this.next = next;
         next.previous = this;
+        return this;
+    }
+
+    public DeclarationNode unlinked() {
+        DeclarationNode temp = next;
+        if (next != null) {
+            next.previous = previous;
+            next = null;
+        }
+        if (previous != null) {
+            previous.next = temp;
+            previous = null;
+        }
         return this;
     }
 
@@ -47,10 +64,12 @@ public abstract class DeclarationNode implements ASTNode, Visitable {
         checkNext(this);
         checkPrevious(this);
         DeclarationNode p = node.previous;
-        this.next = node;
+        next = node;
         node.previous = this;
-        this.previous = p;
-        p.next = this;
+        previous = p;
+        if (p != null) {
+            p.next = this;
+        }
         return this;
     }
 
@@ -58,10 +77,12 @@ public abstract class DeclarationNode implements ASTNode, Visitable {
         checkNext(this);
         checkPrevious(this);
         DeclarationNode n = node.next;
-        this.next = n;
+        next = n;
         node.next = this;
-        this.previous = node;
-        n.previous = this;
+        previous = node;
+        if (n != null) {
+            n.previous = this;
+        }
         return this;
     }
 

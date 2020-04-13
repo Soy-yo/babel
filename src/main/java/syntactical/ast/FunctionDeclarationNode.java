@@ -50,7 +50,9 @@ public class FunctionDeclarationNode extends DeclarationNode {
     @Override
     public String toString() {
         return super.toString()
-                + "[parameters=" + String.join(",", parameterTypes()) + "]";
+                + " [parameters=" + Arrays.stream(parameterTypes())
+                .collect(Collectors.joining(",", "[", "]"))
+                + "]";
     }
 
     @Override
