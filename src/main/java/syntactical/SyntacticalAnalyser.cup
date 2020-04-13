@@ -29,6 +29,7 @@ terminal String IDENTIFIER, IMPORT;
 nonterminal ProgramNode Program;
 // Imports
 nonterminal List<String> ImportList;
+nonterminal String Import, FilePath;
 // Declarations
 nonterminal DeclarationNode DeclarationList, Declaration;
 // Variables
@@ -58,10 +59,16 @@ Program ::= ImportList: imports DeclarationList: declarations
             {: RESULT = new ProgramNode(declarations, imports); :};
 
 // Imports
-ImportList ::= ImportList: imports IMPORT: file END
+ImportList ::= ImportList: imports Import: file
                {: imports.add(file); RESULT = imports; :}
              |
                {: RESULT = new ArrayList<>(); :};
+Import     ::= IMPORT FilePath: path END
+               {: RESULT = path; :};
+FilePath   ::= FilePath: path DIV IDENTIFIER: filename
+               {: RESULT = path + "/" + filename; :}
+             | IDENTIFIER: filename
+               {: RESULT = filename; :};
 
 // Declarations
 DeclarationList ::= Declaration: declaration DeclarationList: declarations

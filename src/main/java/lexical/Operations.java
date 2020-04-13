@@ -77,7 +77,7 @@ public class Operations {
     }
 
     public LexicalUnit importUnit() {
-        return createUnit(IMPORT, analyser.lexeme().split(" ")[1]);
+        return createUnit(IMPORT);
     }
 
     public LexicalUnit classUnit() {

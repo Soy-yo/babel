@@ -79,11 +79,11 @@ false = false
 nothing = nothing
 null = null
 const = const
+import = import
 class = class
 constructor = constructor
 this = this
 underscore = _
-import = import{ignore}*([a-zA-Z0-9_]+)(/([a-zA-Z0-9_]+))*
 identifier = [a-zA-Z_][0-9a-zA-Z_]*
 
 escapeChar = \\[tbnrf0\\]
