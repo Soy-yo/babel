@@ -33,13 +33,8 @@ public class FunctionDeclarationNode extends DeclarationNode {
         return code;
     }
 
-    private String[] parameterTypes() {
-        return parameters.stream().map(VarDeclarationNode::getType).toArray(String[]::new);
-    }
-
-    @Override
-    protected String typeName() {
-        return "function";
+    private Type[] parameterTypes() {
+        return parameters.stream().map(VarDeclarationNode::getType).toArray(Type[]::new);
     }
 
     @Override
@@ -50,9 +45,9 @@ public class FunctionDeclarationNode extends DeclarationNode {
     @Override
     public String toString() {
         return super.toString()
-                + " [parameters=" + Arrays.stream(parameterTypes())
+                + " {parameters:" + Arrays.stream(parameterTypes()).map(Type::toString)
                 .collect(Collectors.joining(",", "[", "]"))
-                + "]";
+                + "}";
     }
 
     @Override

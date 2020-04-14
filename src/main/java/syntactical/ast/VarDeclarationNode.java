@@ -56,17 +56,12 @@ public class VarDeclarationNode extends DeclarationNode {
     }
 
     @Override
-    protected String typeName() {
-        return "var";
-    }
-
-    @Override
     public String toString() {
         return super.toString()
-                + " [initialValue=" + initialValue
-                + "; const=" + isConst
-                + "; global=" + isGlobal
-                + "]";
+                + " {initialValue:" + initialValue
+                + ", const:" + isConst
+                + ", global:" + isGlobal
+                + "}";
     }
 
     @Override

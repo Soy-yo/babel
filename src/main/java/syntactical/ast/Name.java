@@ -5,9 +5,9 @@ import java.util.Objects;
 public class Name {
 
     private final String identifier;
-    private final String type;
+    private final Type type;
 
-    public Name(String identifier, String type) {
+    public Name(String identifier, Type type) {
         this.identifier = identifier;
         this.type = type;
     }
@@ -16,7 +16,7 @@ public class Name {
         return identifier;
     }
 
-    public String getType() {
+    public Type getType() {
         return type;
     }
 

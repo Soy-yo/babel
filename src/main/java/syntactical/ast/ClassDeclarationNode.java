@@ -9,17 +9,12 @@ public class ClassDeclarationNode extends DeclarationNode {
     private DeclarationNode contentRoot;
 
     public ClassDeclarationNode(String name, DeclarationNode contentRoot) {
-        super(new Name(name, name));
+        super(new Name(name, new Type(name)));
         this.contentRoot = contentRoot;
     }
 
     public DeclarationNode getContentRoot() {
         return contentRoot;
-    }
-
-    @Override
-    protected String typeName() {
-        return "class";
     }
 
     @Override

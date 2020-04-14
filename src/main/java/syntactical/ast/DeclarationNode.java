@@ -23,7 +23,7 @@ public abstract class DeclarationNode implements ASTNode, Visitable {
         return name.getIdentifier();
     }
 
-    public String getType() {
+    public Type getType() {
         return name.getType();
     }
 
@@ -98,11 +98,9 @@ public abstract class DeclarationNode implements ASTNode, Visitable {
         }
     }
 
-    protected abstract String typeName();
-
     @Override
     public String toString() {
-        return "DeclarationNode " + name + " (" + typeName() + ")";
+        return getClass().getSimpleName() + " " + name;
     }
 
     @Override
