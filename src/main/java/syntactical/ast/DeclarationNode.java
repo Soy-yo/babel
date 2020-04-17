@@ -1,11 +1,9 @@
 package syntactical.ast;
 
-import syntactical.ast.visitors.Visitable;
-
 import java.util.Objects;
 
 // TODO check name case here?
-public abstract class DeclarationNode implements ASTNode, Visitable {
+public abstract class DeclarationNode extends ASTNode {
 
     protected Name name;
     private DeclarationNode previous;

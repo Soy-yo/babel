@@ -6,15 +6,15 @@ import java.util.Collections;
 
 public class ASTPrinter implements Visitor {
 
-    private ProgramNode program;
+    private final ASTNode root;
     private int depth = 0;
 
-    public ASTPrinter(ProgramNode program) {
-        this.program = program;
+    public ASTPrinter(ASTNode root) {
+        this.root = root;
     }
 
     public void print() {
-        program.accept(this);
+        root.accept(this);
     }
 
     private <T> void printLine(T value) {
@@ -34,6 +34,7 @@ public class ASTPrinter implements Visitor {
         if (node.root() != null) {
             node.root().accept(this);
         }
+        depth--;
     }
 
     @Override

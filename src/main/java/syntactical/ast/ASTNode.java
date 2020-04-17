@@ -1,4 +1,6 @@
 package syntactical.ast;
 
-public interface ASTNode {
+import syntactical.ast.visitors.Visitable;
+
+public abstract class ASTNode implements Visitable {
 }
