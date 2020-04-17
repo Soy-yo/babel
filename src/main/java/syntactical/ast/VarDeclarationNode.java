@@ -2,8 +2,6 @@ package syntactical.ast;
 
 import syntactical.ast.visitors.Visitor;
 
-import java.util.Objects;
-
 public class VarDeclarationNode extends DeclarationNode {
 
     private ExpressionNode initialValue;
@@ -62,18 +60,6 @@ public class VarDeclarationNode extends DeclarationNode {
                 + ", const:" + isConst
                 + ", global:" + isGlobal
                 + "}";
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (other == null || getClass() != other.getClass()) {
-            return false;
-        }
-        VarDeclarationNode node = (VarDeclarationNode) other;
-        return Objects.equals(name, node.name);
     }
 
 }

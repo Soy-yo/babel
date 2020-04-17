@@ -5,7 +5,6 @@ import syntactical.ast.visitors.Visitor;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class FunctionDeclarationNode extends DeclarationNode {
@@ -48,24 +47,6 @@ public class FunctionDeclarationNode extends DeclarationNode {
                 + " {parameters:" + Arrays.stream(parameterTypes()).map(Type::toString)
                 .collect(Collectors.joining(",", "[", "]"))
                 + "}";
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (other == null || getClass() != other.getClass()) {
-            return false;
-        }
-        FunctionDeclarationNode node = (FunctionDeclarationNode) other;
-        return Objects.equals(name, node.name) &&
-                Arrays.equals(parameterTypes(), node.parameterTypes());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, parameterTypes());
     }
 
 }
