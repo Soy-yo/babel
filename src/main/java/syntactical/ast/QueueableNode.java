@@ -73,7 +73,7 @@ abstract class QueueableNode<N extends QueueableNode<N>> extends ASTNode {
     }
 
     private static <N extends QueueableNode<N>> void checkPrevious(QueueableNode<N> node) {
-        if (node.next != null) {
+        if (node.previous != null) {
             throw new IllegalArgumentException(node + " already has a previous node");
         }
     }
