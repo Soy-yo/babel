@@ -47,8 +47,9 @@ nonterminal DeclarationNode ClassBlock, ClassElementList, ClassElement;
 nonterminal ConstructorDeclarationNode ConstructorDeclaration;
 // Statements
 nonterminal StatementNode StatementList, Statement;
-nonterminal BlockStatementNode BlockStatement;
-nonterminal VarDeclarationStatement, IfElseStatement, IfStatement, ElseStatement;
+nonterminal BlockStatementNode BlockStatement, ElseBlockStatement;
+nonterminal VarDeclarationStatementNode VarDeclarationStatement;
+nonterminal IfElseStatementNode IfElseStatement;
 // Expressions
 nonterminal ExpressionNode Expression;
 // Other (to check case)
@@ -138,16 +139,26 @@ ConstructorDeclaration ::= CONSTRUCTOR FunctionParameters: parameters BlockState
                            {: RESULT = new ConstructorDeclarationNode(parameters, block); :};
 
 // Statements
-StatementList           ::= Statement StatementList
-                          | ;
-Statement               ::= VarDeclarationStatement
-                          | IfElseStatement;
-BlockStatement          ::= CURLY_L StatementList CURLY_R;
-VarDeclarationStatement ::= VarConstDeclaration;
-IfElseStatement         ::= IfStatement ElseStatement;
-IfStatement             ::= IF Expression BlockStatement;
-ElseStatement           ::= ELSE BlockStatement
-                          | ELSE IfElseStatement;
+StatementList           ::= Statement: statement StatementList: statements
+                            {: RESULT = statement.linkedTo(statements); :}
+                          |
+                            {: RESULT = null; :};
+Statement               ::= VarDeclarationStatement: statement
+                            {: RESULT = statement; :}
+                          | IfElseStatement: statement
+                            {: RESULT = statement; :};
+BlockStatement          ::= CURLY_L StatementList: root CURLY_R
+                            {: RESULT = new BlockStatementNode(root); :};
+VarDeclarationStatement ::= VarConstDeclaration: declaration
+                            {: RESULT = declaration.asStatement(); :};
+IfElseStatement         ::= IF Expression: condition BlockStatement: ifBlock ElseBlockStatement: elseBlock
+                            {: RESULT = new IfElseStatementNode(condition, ifBlock, elseBlock); :};
+ElseBlockStatement      ::= ELSE BlockStatement: elseBlock
+                            {: RESULT = elseBlock; :}
+                          | ELSE IfElseStatement: ifElse
+                            {: RESULT = new BlockStatementNode(ifElse); :}
+                          |
+                            {: RESULT = null; :};
 
 // Other
 Type          ::= TypeName: name

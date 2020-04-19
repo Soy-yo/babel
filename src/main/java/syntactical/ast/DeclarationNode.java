@@ -22,7 +22,7 @@ public abstract class DeclarationNode extends QueueableNode<DeclarationNode> {
     }
 
     @Override
-    protected DeclarationNode self() {
+    protected final DeclarationNode self() {
         return this;
     }
 

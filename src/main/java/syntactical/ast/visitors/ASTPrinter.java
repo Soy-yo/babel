@@ -42,25 +42,19 @@ public class ASTPrinter implements Visitor {
         printLine(node);
         if (node.getNext() != null) {
             node.getNext().accept(this);
-        } else {
-            depth--;
         }
     }
 
     @Override
     public void visit(FunctionDeclarationNode node) {
         printLine(node);
-        depth++;
         if (node.getCode() != null) {
             node.getCode().accept(this);
         } else {
-            printLine("NO CODE");
+            printLine("<no code>");
         }
-        depth--;
         if (node.getNext() != null) {
             node.getNext().accept(this);
-        } else {
-            depth--;
         }
     }
 
@@ -76,19 +70,45 @@ public class ASTPrinter implements Visitor {
         if (node.getContentRoot() != null) {
             node.getContentRoot().accept(this);
         } else {
-            printLine("NO CODE");
+            printLine("<no code>");
         }
         depth--;
         if (node.getNext() != null) {
             node.getNext().accept(this);
-        } else {
-            depth--;
         }
     }
 
     @Override
     public void visit(BlockStatementNode node) {
-        printLine("block");
+        depth++;
+        if (node.root() == null) {
+            printLine("<empty block>");
+        } else {
+            node.root().accept(this);
+        }
+        depth--;
+    }
+
+    @Override
+    public void visit(VarDeclarationStatementNode node) {
+        printLine(node);
+        if (node.getNext() != null) {
+            node.getNext().accept(this);
+        }
+    }
+
+    @Override
+    public void visit(IfElseStatementNode node) {
+        printLine(node);
+        // TODO ???
+        //node.getCondition().accept(this);
+        node.getIfBlock().accept(this);
+        if (node.getElseBlock() != null) {
+            node.getElseBlock().accept(this);
+        }
+        if (node.getNext() != null) {
+            node.getNext().accept(this);
+        }
     }
 
 }

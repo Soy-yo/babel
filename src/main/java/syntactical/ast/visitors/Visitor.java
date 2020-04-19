@@ -17,4 +17,8 @@ public interface Visitor {
 
     void visit(BlockStatementNode node);
 
+    void visit(VarDeclarationStatementNode node);
+
+    void visit(IfElseStatementNode node);
+
 }

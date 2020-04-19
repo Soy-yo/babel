@@ -48,6 +48,10 @@ public class VarDeclarationNode extends DeclarationNode {
         return new VarDeclarationNode(name, initialValue, true, isGlobal);
     }
 
+    public VarDeclarationStatementNode asStatement() {
+        return new VarDeclarationStatementNode(this);
+    }
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
