@@ -159,7 +159,12 @@ ElseBlockStatement      ::= ELSE BlockStatement: elseBlock
                             {: RESULT = new BlockStatementNode(ifElse); :}
                           |
                             {: RESULT = null; :};
-
+// TODO: fix it to return actual blocks
+SwitchStatement         ::= SWITCH VarId: variable CURLY_L SwitchCasesStatement : cases CURLY_R
+SwitchCasesStatement    ::= Expression: case ARROW BlockStatement: block
+                            {: RESULT = new ArrayList<>() {{ add(case); }}; :}
+                          | SwitchCasesStatement : cases Expression: case ARROW BlockStatement: block
+                            {: cases.add(case); RESULT = cases; :}
 // Other
 Type          ::= TypeName: name
                   {: RESULT = new Type(name); :}
