@@ -6,12 +6,16 @@ public class IfElseStatementNode extends StatementNode {
 
     private ExpressionNode condition;
     private BlockStatementNode ifBlock;
-    private BlockStatementNode elseBlock;
+    private StatementNode elsePart;
 
-    public IfElseStatementNode(ExpressionNode condition, BlockStatementNode ifBlock, BlockStatementNode elseBlock) {
+    public IfElseStatementNode(ExpressionNode condition, BlockStatementNode ifBlock, StatementNode elsePart) {
+        if (elsePart != null && !(elsePart instanceof BlockStatementNode)
+                && !(elsePart instanceof IfElseStatementNode)) {
+            throw new IllegalArgumentException("The else part of an if statement must be either a block or another if");
+        }
         this.condition = condition;
         this.ifBlock = ifBlock;
-        this.elseBlock = elseBlock;
+        this.elsePart = elsePart;
     }
 
     @Override
@@ -27,15 +31,15 @@ public class IfElseStatementNode extends StatementNode {
         return ifBlock;
     }
 
-    public BlockStatementNode getElseBlock() {
-        return elseBlock;
+    public StatementNode getElsePart() {
+        return elsePart;
     }
 
     @Override
     public String toString() {
         return super.toString()
                 + " {condition:" + condition
-                + ", hasElse:" + (elseBlock != null)
+                + ", hasElse:" + (elsePart != null)
                 + "}";
     }
 

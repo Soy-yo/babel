@@ -103,8 +103,8 @@ public class ASTPrinter implements Visitor {
         // TODO ???
         //node.getCondition().accept(this);
         node.getIfBlock().accept(this);
-        if (node.getElseBlock() != null) {
-            node.getElseBlock().accept(this);
+        if (node.getElsePart() != null) {
+            node.getElsePart().accept(this);
         }
         if (node.getNext() != null) {
             node.getNext().accept(this);

@@ -47,7 +47,8 @@ nonterminal DeclarationNode ClassBlock, ClassElementList, ClassElement;
 nonterminal ConstructorDeclarationNode ConstructorDeclaration;
 // Statements
 nonterminal StatementNode StatementList, Statement;
-nonterminal BlockStatementNode BlockStatement, ElseBlockStatement;
+nonterminal BlockStatementNode BlockStatement;
+nonterminal StatementNode ElsePartStatement;
 nonterminal VarDeclarationStatementNode VarDeclarationStatement;
 nonterminal IfElseStatementNode IfElseStatement;
 // Expressions
@@ -151,12 +152,12 @@ BlockStatement          ::= CURLY_L StatementList: root CURLY_R
                             {: RESULT = new BlockStatementNode(root); :};
 VarDeclarationStatement ::= VarConstDeclaration: declaration
                             {: RESULT = declaration.asStatement(); :};
-IfElseStatement         ::= IF Expression: condition BlockStatement: ifBlock ElseBlockStatement: elseBlock
-                            {: RESULT = new IfElseStatementNode(condition, ifBlock, elseBlock); :};
-ElseBlockStatement      ::= ELSE BlockStatement: elseBlock
+IfElseStatement         ::= IF Expression: condition BlockStatement: ifBlock ElsePartStatement: elsePart
+                            {: RESULT = new IfElseStatementNode(condition, ifBlock, elsePart); :};
+ElsePartStatement       ::= ELSE BlockStatement: elseBlock
                             {: RESULT = elseBlock; :}
                           | ELSE IfElseStatement: ifElse
-                            {: RESULT = new BlockStatementNode(ifElse); :}
+                            {: RESULT = ifElse; :}
                           |
                             {: RESULT = null; :};
 // TODO: fix it to return actual blocks
