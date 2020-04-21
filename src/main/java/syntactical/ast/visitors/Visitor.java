@@ -19,6 +19,10 @@ public interface Visitor {
 
     void visit(VarDeclarationStatementNode node);
 
+    void visit(AssignmentStatementNode node);
+
+    void visit(FunctionCallStatementNode node);
+
     void visit(IfElseStatementNode node);
 
 }

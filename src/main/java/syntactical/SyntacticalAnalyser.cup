@@ -47,15 +47,25 @@ nonterminal DeclarationNode ClassBlock, ClassElementList, ClassElement;
 nonterminal ConstructorDeclarationNode ConstructorDeclaration;
 // Statements
 nonterminal StatementNode StatementList, Statement;
+// Block
 nonterminal BlockStatementNode BlockStatement;
-nonterminal StatementNode ElsePartStatement;
+// Declaration statements
 nonterminal VarDeclarationStatementNode VarDeclarationStatement;
+// Assignment
+nonterminal AssignmentStatementNode AssignmentStatement;
+// Function call
+nonterminal FunctionCallStatementNode FunctionCallStatement;
+nonterminal List<ExpressionNode> FunctionArguments, ArgumentList;
+// Conditionals
 nonterminal IfElseStatementNode IfElseStatement;
+nonterminal StatementNode ElsePartStatement;
 // Expressions
 nonterminal ExpressionNode Expression;
-// Other (to check case)
+// Other
 nonterminal String TypeName, VarId, GlobalConstId;
 nonterminal Type Type;
+nonterminal Designator Designator;
+nonterminal ExpressionNode ArrayAccess, FieldAccess, DesignableExpression;
 
 // TODO Statement, Expression
 
@@ -140,32 +150,62 @@ ConstructorDeclaration ::= CONSTRUCTOR FunctionParameters: parameters BlockState
                            {: RESULT = new ConstructorDeclarationNode(parameters, block); :};
 
 // Statements
-StatementList           ::= Statement: statement StatementList: statements
-                            {: RESULT = statement.linkedTo(statements); :}
-                          |
-                            {: RESULT = null; :};
-Statement               ::= VarDeclarationStatement: statement
-                            {: RESULT = statement; :}
-                          | IfElseStatement: statement
-                            {: RESULT = statement; :};
-BlockStatement          ::= CURLY_L StatementList: root CURLY_R
-                            {: RESULT = new BlockStatementNode(root); :};
+StatementList ::= Statement: statement StatementList: statements
+                  {: RESULT = statement.linkedTo(statements); :}
+                |
+                  {: RESULT = null; :};
+Statement     ::= VarDeclarationStatement: statement
+                  {: RESULT = statement; :}
+                | AssignmentStatement: statement
+                  {: RESULT = statement; :}
+                | FunctionCallStatement: statement
+                  {: RESULT = statement; :}
+                | IfElseStatement: statement
+                  {: RESULT = statement; :};
+
+// Block
+BlockStatement ::= CURLY_L StatementList: root CURLY_R
+                   {: RESULT = new BlockStatementNode(root); :};
+
+// Declaration statements
 VarDeclarationStatement ::= VarConstDeclaration: declaration
                             {: RESULT = declaration.asStatement(); :};
-IfElseStatement         ::= IF Expression: condition BlockStatement: ifBlock ElsePartStatement: elsePart
-                            {: RESULT = new IfElseStatementNode(condition, ifBlock, elsePart); :};
-ElsePartStatement       ::= ELSE BlockStatement: elseBlock
-                            {: RESULT = elseBlock; :}
-                          | ELSE IfElseStatement: ifElse
-                            {: RESULT = ifElse; :}
-                          |
-                            {: RESULT = null; :};
+
+// Assignment
+AssignmentStatement ::= Designator: designator ASSIGNMENT Expression: expression END
+                        {: RESULT = new AssignmentStatementNode(designator, expression); :};
+
+// Function call
+FunctionCallStatement ::= Expression: function FunctionArguments: arguments END
+                          {: RESULT = new FunctionCallStatementNode(function, arguments); :};
+FunctionArguments     ::= PARENTH_L PARENTH_R
+                          {: RESULT = new ArrayList<>(); :}
+                        | PARENTH_L ArgumentList: arguments PARENTH_R
+                          {: RESULT = arguments; :};
+ArgumentList          ::= Expression: argument
+                          {: RESULT = new ArrayList<ExpressionNode>() {{ add(argument); }}; :}
+                        | ArgumentList: arguments COMMA Expression: argument
+                          {: arguments.add(argument); RESULT = arguments; :};
+
+// Conditionals
+IfElseStatement   ::= IF Expression: condition BlockStatement: ifBlock ElsePartStatement: elsePart
+                      {: RESULT = new IfElseStatementNode(condition, ifBlock, elsePart); :};
+ElsePartStatement ::= ELSE BlockStatement: elseBlock
+                      {: RESULT = elseBlock; :}
+                    | ELSE IfElseStatement: ifElse
+                      {: RESULT = ifElse; :}
+                    |
+                      {: RESULT = null; :};
 // TODO: fix it to return actual blocks
-SwitchStatement         ::= SWITCH VarId: variable CURLY_L SwitchCasesStatement : cases CURLY_R
-SwitchCasesStatement    ::= Expression: case ARROW BlockStatement: block
-                            {: RESULT = new ArrayList<>() {{ add(case); }}; :}
-                          | SwitchCasesStatement : cases Expression: case ARROW BlockStatement: block
-                            {: cases.add(case); RESULT = cases; :}
+//SwitchStatement      ::= SWITCH VarId: variable CURLY_L SwitchCasesStatement : cases CURLY_R
+//SwitchCasesStatement ::= Expression: case ARROW BlockStatement: block
+//                         {: RESULT = new ArrayList<>() {{ add(case); }}; :}
+//                       | SwitchCasesStatement : cases Expression: case ARROW BlockStatement: block
+//                         {: cases.add(case); RESULT = cases; :}
+
+// Expressions TODO
+Expression ::= VarId | STRING;
+
 // Other
 Type          ::= TypeName: name
                   {: RESULT = new Type(name); :}
@@ -174,3 +214,11 @@ Type          ::= TypeName: name
 TypeName      ::= IDENTIFIER: id {: RESULT = id; :};
 VarId         ::= IDENTIFIER: id {: RESULT = id; :};
 GlobalConstId ::= IDENTIFIER: id {: RESULT = id; :};
+
+Designator           ::= VarId
+                       | ArrayAccess
+                       | FieldAccess;
+ArrayAccess          ::= DesignableExpression SQUARE_L Expression SQUARE_R;
+FieldAccess          ::= DesignableExpression POINT VarId;
+// TODO only certain expressions (variable (or constant), array, point, function call, etc)
+DesignableExpression ::= VarId;

@@ -1,14 +1,22 @@
 package syntactical.ast;
 
-abstract class QueueableNode<N extends QueueableNode<N>> extends ASTNode {
+public abstract class QueueableNode<N extends QueueableNode<N>> extends ASTNode {
 
     protected N previous;
     protected N next;
 
     protected abstract N self();
 
+    public boolean hasNext() {
+        return next != null;
+    }
+
     public N getNext() {
         return next;
+    }
+
+    public boolean hasPrevious() {
+        return previous != null;
     }
 
     public N getPrevious() {

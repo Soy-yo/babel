@@ -18,11 +18,6 @@ public class IfElseStatementNode extends StatementNode {
         this.elsePart = elsePart;
     }
 
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
-
     public ExpressionNode getCondition() {
         return condition;
     }
@@ -33,6 +28,11 @@ public class IfElseStatementNode extends StatementNode {
 
     public StatementNode getElsePart() {
         return elsePart;
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

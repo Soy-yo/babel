@@ -40,9 +40,7 @@ public class ASTPrinter implements Visitor {
     @Override
     public void visit(VarDeclarationNode node) {
         printLine(node);
-        if (node.getNext() != null) {
-            node.getNext().accept(this);
-        }
+        next(node);
     }
 
     @Override
@@ -53,9 +51,7 @@ public class ASTPrinter implements Visitor {
         } else {
             printLine("<no code>");
         }
-        if (node.getNext() != null) {
-            node.getNext().accept(this);
-        }
+        next(node);
     }
 
     @Override
@@ -73,9 +69,7 @@ public class ASTPrinter implements Visitor {
             printLine("<no code>");
         }
         depth--;
-        if (node.getNext() != null) {
-            node.getNext().accept(this);
-        }
+        next(node);
     }
 
     @Override
@@ -87,14 +81,24 @@ public class ASTPrinter implements Visitor {
             node.root().accept(this);
         }
         depth--;
+        next(node);
     }
 
     @Override
     public void visit(VarDeclarationStatementNode node) {
         printLine(node);
-        if (node.getNext() != null) {
-            node.getNext().accept(this);
-        }
+        next(node);
+    }
+
+    @Override
+    public void visit(AssignmentStatementNode node) {
+        // TODO
+    }
+
+    @Override
+    public void visit(FunctionCallStatementNode node) {
+        printLine(node);
+        next(node);
     }
 
     @Override
@@ -104,9 +108,16 @@ public class ASTPrinter implements Visitor {
         //node.getCondition().accept(this);
         node.getIfBlock().accept(this);
         if (node.getElsePart() != null) {
+            printLine("<else>");
+            depth++;
             node.getElsePart().accept(this);
+            depth--;
         }
-        if (node.getNext() != null) {
+        next(node);
+    }
+
+    private void next(QueueableNode<?> node) {
+        if (node.hasNext()) {
             node.getNext().accept(this);
         }
     }
