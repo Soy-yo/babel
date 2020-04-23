@@ -196,12 +196,13 @@ ElsePartStatement ::= ELSE BlockStatement: elseBlock
                       {: RESULT = ifElse; :}
                     |
                       {: RESULT = null; :};
-// TODO: fix it to return actual blocks
-//SwitchStatement      ::= SWITCH VarId: variable CURLY_L SwitchCasesStatement : cases CURLY_R
-//SwitchCasesStatement ::= Expression: case ARROW BlockStatement: block
-//                         {: RESULT = new ArrayList<>() {{ add(case); }}; :}
-//                       | SwitchCasesStatement : cases Expression: case ARROW BlockStatement: block
-//                         {: cases.add(case); RESULT = cases; :}
+
+SwitchStatement      ::= SWITCH VarId: variable CURLY_L SwitchCasesStatement : cases CURLY_R
+                         {: RESULT = new SwitchStatementNode(variable, cases); :};
+SwitchCasesStatement ::= Expression: exp ARROW BlockStatement: block
+                         {: RESULT = new HashMap<>() {{ add({exp,block}); }}; :}
+                       | SwitchCasesStatement : cases Expression: exp ARROW BlockStatement: block
+                         {: cases.add({exp,block}); RESULT = cases; :};
 
 // Expressions TODO
 Expression ::= VarId | STRING;
