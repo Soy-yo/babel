@@ -25,4 +25,6 @@ public interface Visitor {
 
     void visit(IfElseStatementNode node);
 
+    void visit(SwitchStatementNode node);
+
 }
