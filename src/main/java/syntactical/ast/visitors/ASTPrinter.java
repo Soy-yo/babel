@@ -4,6 +4,7 @@ import syntactical.ast.*;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.stream.Collectors;
 
 public class ASTPrinter implements Visitor {
@@ -179,6 +180,35 @@ public class ASTPrinter implements Visitor {
             println("else part");
             indent(true);
             node.getElsePart().accept(this);
+            outdent();
+        }
+        outdent();
+        next(node);
+    }
+
+    @Override
+    public void visit(SwitchStatementNode node) {
+        int numCases = node.getNumCases();
+        if (!node.hasNext()) {
+            lastChild();
+        }
+        println("switch statement");
+        indent(!node.hasNext());
+        println("switching");
+        indent();
+        node.getVariable().accept(this);
+        outdent();
+        if (numCases == 0) {
+            lastChild();
+        }
+        Iterator iter = node.getCases().iterator();
+        Iterator iter2 = node.getBlocks().iterator();
+        for(int i = 0; i < numCases; i++) {
+            println("case " + i);
+            indent();
+            iter.next(); //TODO: no sé qué hacer aquí
+            println("block " + i);
+            iter2.next();
             outdent();
         }
         outdent();

@@ -59,6 +59,8 @@ nonterminal List<ExpressionNode> FunctionArguments, ArgumentList;
 // Conditionals
 nonterminal IfElseStatementNode IfElseStatement;
 nonterminal StatementNode ElsePartStatement;
+nonterminal SwitchStatementNode SwitchStatement;
+nonterminal StatementNode SwitchCasesStatement;
 // Expressions
 nonterminal ExpressionNode Expression;
 // Other
