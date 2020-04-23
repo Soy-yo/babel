@@ -3,54 +3,84 @@ package syntactical.ast.visitors;
 import syntactical.ast.*;
 
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.stream.Collectors;
 
 public class ASTPrinter implements Visitor {
 
+    private static final String CHILD_POINTER = "├";
+    private static final String LAST_CHILD_POINTER = "└";
+    private static final int SPACES = 2;
+
     private final ASTNode root;
-    private int depth = 0;
+    private final StringBuilder prefix;
+
+    // TODO display Types as trees too (Array -> parameter: String) ???
 
     public ASTPrinter(ASTNode root) {
         this.root = root;
+        this.prefix = new StringBuilder();
     }
 
     public void print() {
         root.accept(this);
     }
 
-    private <T> void printLine(T value) {
-        // System.out.println("--".repeat(depth) + value); // Java 11
-        System.out.println(String.join("", Collections.nCopies(depth, "--")) + value);
-    }
-
     @Override
     public void visit(ProgramNode node) {
-        printLine("IMPORTED FILES");
-        depth++;
-        node.importedFiles().forEach(this::printLine);
-        depth--;
-        System.out.println();
-        printLine("GLOBAL SCOPE");
-        depth++;
+        println("program");
+        indent();
+        println("imports");
+        indent();
+        printAll(node.importedFiles());
+        outdent();
+        lastChild();
+        println("global scope");
+        indent(true);
         if (node.root() != null) {
             node.root().accept(this);
         }
-        depth--;
+        outdent();
     }
 
     @Override
     public void visit(VarDeclarationNode node) {
-        printLine(node);
+        if (!node.hasNext()) {
+            lastChild();
+        }
+        println("var declaration");
+        indent(!node.hasNext());
+        println("identifier: " + node.getIdentifier());
+        println("type: " + node.getType());
+        lastChild();
+        if (node.getInitialValue() != null) {
+            println("initial value");
+            indent(true);
+            node.getInitialValue().accept(this);
+            outdent();
+        } else {
+            println("initial value: none");
+        }
+        outdent();
         next(node);
     }
 
     @Override
     public void visit(FunctionDeclarationNode node) {
-        printLine(node);
-        if (node.getCode() != null) {
-            node.getCode().accept(this);
-        } else {
-            printLine("<no code>");
+        if (!node.hasNext()) {
+            lastChild();
         }
+        println("function declaration");
+        indent(!node.hasNext());
+        println("function name: " + node.getIdentifier());
+        println("return type: " + node.getType());
+        println("parameters");
+        indent();
+        printAll(node.getParameters().stream().map(VarDeclarationNode::getType).collect(Collectors.toList()));
+        outdent();
+        lastChild();
+        node.getCode().accept(this);
+        outdent();
         next(node);
     }
 
@@ -61,59 +91,135 @@ public class ASTPrinter implements Visitor {
 
     @Override
     public void visit(ClassDeclarationNode node) {
-        printLine(node);
-        depth++;
-        if (node.getContentRoot() != null) {
-            node.getContentRoot().accept(this);
-        } else {
-            printLine("<no code>");
+        if (!node.hasNext()) {
+            lastChild();
         }
-        depth--;
+        println("class declaration");
+        indent(!node.hasNext());
+        println("class name: " + node.getIdentifier());
+        println("contents");
+        indent(true);
+        node.getContentRoot().accept(this);
+        outdent();
+        outdent();
         next(node);
     }
 
     @Override
     public void visit(BlockStatementNode node) {
-        depth++;
-        if (node.root() == null) {
-            printLine("<empty block>");
-        } else {
+        if (!node.hasNext()) {
+            lastChild();
+        }
+        println("block statement");
+        indent(!node.hasNext());
+        if (node.root() != null) {
             node.root().accept(this);
         }
-        depth--;
+        outdent();
         next(node);
     }
 
     @Override
     public void visit(VarDeclarationStatementNode node) {
-        printLine(node);
+        if (!node.hasNext()) {
+            lastChild();
+        }
+        println("var declaration statement");
+        indent(!node.hasNext());
+        node.asDeclaration().accept(this);
+        outdent();
         next(node);
     }
 
     @Override
     public void visit(AssignmentStatementNode node) {
+        if (!node.hasNext()) {
+            lastChild();
+        }
+        println("assignment statement");
+        indent(!node.hasNext());
         // TODO
+        outdent();
+        next(node);
     }
 
     @Override
     public void visit(FunctionCallStatementNode node) {
-        printLine(node);
+        if (!node.hasNext()) {
+            lastChild();
+        }
+        println("function call statement");
+        indent(!node.hasNext());
+        // TODO
+        outdent();
         next(node);
     }
 
     @Override
     public void visit(IfElseStatementNode node) {
-        printLine(node);
-        // TODO ???
-        //node.getCondition().accept(this);
-        node.getIfBlock().accept(this);
-        if (node.getElsePart() != null) {
-            printLine("<else>");
-            depth++;
-            node.getElsePart().accept(this);
-            depth--;
+        boolean hasElse = node.getElsePart() != null;
+        if (!node.hasNext()) {
+            lastChild();
         }
+        println("if-else statement");
+        indent(!node.hasNext());
+        println("condition");
+        indent();
+        //node.getCondition().accept(this);
+        outdent();
+        if (!hasElse) {
+            lastChild();
+        }
+        println("then part");
+        indent(!hasElse);
+        node.getIfBlock().accept(this);
+        outdent();
+        if (hasElse) {
+            lastChild();
+            println("else part");
+            indent(true);
+            node.getElsePart().accept(this);
+            outdent();
+        }
+        outdent();
         next(node);
+    }
+
+    private void println(String value) {
+        System.out.println(prefix + value);
+    }
+
+    private <E> void printAll(Iterable<E> elements) {
+        Iterator<E> it = elements.iterator();
+        while (it.hasNext()) {
+            E e = it.next();
+            if (!it.hasNext()) {
+                lastChild();
+            }
+            println(e.toString());
+        }
+    }
+
+    private void indent() {
+        indent(false);
+    }
+
+    private void indent(boolean isLast) {
+        if (prefix.length() > 2) {
+            prefix.replace(prefix.length() - 2, prefix.length() - 1, isLast ? " " : "|");
+        }
+        prefix.append(String.join("", Collections.nCopies(SPACES, " ")))
+                .append(CHILD_POINTER)
+                .append(" ");
+    }
+
+    private void outdent() {
+        prefix.delete(prefix.length() - (SPACES + 2), prefix.length())
+                .replace(prefix.length() - 2, prefix.length() - 1, CHILD_POINTER);
+    }
+
+    private void lastChild() {
+        prefix.replace(prefix.length() - 2, prefix.length() - 1, LAST_CHILD_POINTER);
     }
 
     private void next(QueueableNode<?> node) {
