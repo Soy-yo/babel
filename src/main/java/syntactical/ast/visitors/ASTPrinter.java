@@ -2,6 +2,10 @@ package syntactical.ast.visitors;
 
 import syntactical.ast.*;
 
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.Collectors;
@@ -16,6 +20,7 @@ public class ASTPrinter implements Visitor {
 
     private final ASTNode root;
     private final StringBuilder prefix;
+    private PrintWriter stdOut;
 
     // TODO display Types as trees too (Array -> parameter: String) ???
 
@@ -25,7 +30,14 @@ public class ASTPrinter implements Visitor {
     }
 
     public void print() {
-        root.accept(this);
+        try {
+            stdOut = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8.name()));
+            root.accept(this);
+            stdOut.close();
+        } catch (UnsupportedEncodingException e) {
+            System.err.println("AST print failed (unsupported charset)");
+            System.err.println(e.getMessage());
+        }
     }
 
     @Override
@@ -228,13 +240,13 @@ public class ASTPrinter implements Visitor {
     }
 
     private void println(String value) {
-        System.out.println(prefix + value);
+        stdOut.println(prefix + value);
     }
 
-    private <E> void printAll(Iterable<E> elements) {
-        Iterator<E> it = elements.iterator();
+    private void printAll(Iterable<?> elements) {
+        Iterator<?> it = elements.iterator();
         while (it.hasNext()) {
-            E e = it.next();
+            Object e = it.next();
             if (!it.hasNext()) {
                 lastChild();
             }
@@ -242,7 +254,7 @@ public class ASTPrinter implements Visitor {
         }
     }
 
-    private <E> void printAll(E... elements) {
+    private void printAll(Object... elements) {
         for (int i = 0; i < elements.length; i++) {
             if (i == elements.length - 1) {
                 lastChild();
@@ -258,7 +270,7 @@ public class ASTPrinter implements Visitor {
     private void indent(boolean isLast) {
         if (prefix.length() > 2) {
             prefix.replace(prefix.length() - (CHILD_POINTER.length() + 1),
-                    prefix.length() - 1, isLast ? "  " : "| ");
+                    prefix.length() - 1, isLast ? "  " : "│ ");
         }
         prefix.append(String.join("", Collections.nCopies(SPACES, " ")))
                 .append(CHILD_POINTER)
