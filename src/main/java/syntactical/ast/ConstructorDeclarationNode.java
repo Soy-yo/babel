@@ -1,7 +1,5 @@
 package syntactical.ast;
 
-import syntactical.ast.visitors.Visitor;
-
 import java.util.Collection;
 
 public class ConstructorDeclarationNode extends FunctionDeclarationNode {
@@ -15,11 +13,6 @@ public class ConstructorDeclarationNode extends FunctionDeclarationNode {
 
     public void setType(ClassDeclarationNode classNode) {
         name = new Name(NAME, classNode.getType());
-    }
-
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
     }
 
 }

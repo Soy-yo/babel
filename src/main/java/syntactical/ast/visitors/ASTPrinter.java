@@ -4,14 +4,15 @@ import syntactical.ast.*;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.ListIterator;
 import java.util.stream.Collectors;
 
 public class ASTPrinter implements Visitor {
 
-    private static final String CHILD_POINTER = "├";
-    private static final String LAST_CHILD_POINTER = "└";
-    private static final int SPACES = 2;
+    private static final String CHILD_POINTER = "├─";
+    //private static final String CHILD_POINTER = "├";
+    private static final String LAST_CHILD_POINTER = "└─";
+    //private static final String LAST_CHILD_POINTER = "└";
+    private static final int SPACES = 1;
 
     private final ASTNode root;
     private final StringBuilder prefix;
@@ -53,6 +54,9 @@ public class ASTPrinter implements Visitor {
         indent(!node.hasNext());
         println("identifier: " + node.getIdentifier());
         println("type: " + node.getType());
+        if (node.isConst()) {
+            println("constant");
+        }
         lastChild();
         if (node.getInitialValue() != null) {
             println("initial value");
@@ -83,11 +87,6 @@ public class ASTPrinter implements Visitor {
         node.getCode().accept(this);
         outdent();
         next(node);
-    }
-
-    @Override
-    public void visit(ConstructorDeclarationNode node) {
-        visit((FunctionDeclarationNode) node);
     }
 
     @Override
@@ -201,6 +200,7 @@ public class ASTPrinter implements Visitor {
         if (numCases == 0) {
             lastChild();
         }
+        // TODO los iterables se pueden iterar en un for, no hace falta que saques iteradores
         Iterator iter = node.getCases().iterator();
         Iterator iter2 = node.getBlocks().iterator();
         for(int i = 0; i < numCases; i++) {
@@ -213,6 +213,18 @@ public class ASTPrinter implements Visitor {
         }
         outdent();
         next(node);
+    }
+
+    @Override
+    public void visit(ConstantExpressionNode node) {
+        lastChild();
+        println("constant expression");
+        indent(true);
+        printAll("type: " + node.getType(),
+                "value: " + node.getRepresentation(),
+                "hex: 0x" + String.format("%1$8s", node.getHex()).replace(' ', '0')
+        );
+        outdent();
     }
 
     private void println(String value) {
@@ -230,13 +242,23 @@ public class ASTPrinter implements Visitor {
         }
     }
 
+    private <E> void printAll(E... elements) {
+        for (int i = 0; i < elements.length; i++) {
+            if (i == elements.length - 1) {
+                lastChild();
+            }
+            println(elements[i].toString());
+        }
+    }
+
     private void indent() {
         indent(false);
     }
 
     private void indent(boolean isLast) {
         if (prefix.length() > 2) {
-            prefix.replace(prefix.length() - 2, prefix.length() - 1, isLast ? " " : "|");
+            prefix.replace(prefix.length() - (CHILD_POINTER.length() + 1),
+                    prefix.length() - 1, isLast ? "  " : "| ");
         }
         prefix.append(String.join("", Collections.nCopies(SPACES, " ")))
                 .append(CHILD_POINTER)
@@ -244,12 +266,13 @@ public class ASTPrinter implements Visitor {
     }
 
     private void outdent() {
-        prefix.delete(prefix.length() - (SPACES + 2), prefix.length())
-                .replace(prefix.length() - 2, prefix.length() - 1, CHILD_POINTER);
+        prefix.delete(prefix.length() - (SPACES + CHILD_POINTER.length() + 1), prefix.length())
+                .replace(prefix.length() - (CHILD_POINTER.length() + 1), prefix.length() - 1, CHILD_POINTER);
     }
 
     private void lastChild() {
-        prefix.replace(prefix.length() - 2, prefix.length() - 1, LAST_CHILD_POINTER);
+        prefix.replace(prefix.length() - (CHILD_POINTER.length() + 1),
+                prefix.length() - 1, LAST_CHILD_POINTER);
     }
 
     private void next(QueueableNode<?> node) {

@@ -19,13 +19,12 @@ parser code {:
 
 // TODO types etc
 
-terminal INT, REAL, CHAR, STRING, IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN,
-         TRUE, FALSE, NOTHING, NULL, CONST, CLASS, CONSTRUCTOR,
-         THIS, UNDERSCORE, PARENTH_L, PARENTH_R, SQUARE_L, SQUARE_R,
-         CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT, COMMA, PLUS_ASSIGN, PLUS,
-         MINUS_ASSIGN, MINUS, MULT_ASSIGN, MULT, DIV_ASSIGN, DIV, MOD_ASSIGN, MOD,
-         LE, LT, GE, GT, IDENTITY, EQUALS, NEQ, ASSIGNMENT, NOT, AND, OR, END;
+terminal STRING, IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, THIS, UNDERSCORE, PARENTH_L,
+         PARENTH_R, SQUARE_L, SQUARE_R, CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT, COMMA, PLUS_ASSIGN, PLUS,
+         MINUS_ASSIGN, MINUS, MULT_ASSIGN, MULT, DIV_ASSIGN, DIV, MOD_ASSIGN, MOD, LE, LT, GE, GT, IDENTITY, EQUALS,
+         NEQ, ASSIGNMENT, NOT, AND, OR, END;
 terminal String IDENTIFIER, IMPORT;
+terminal String INT, REAL, CHAR, TRUE, FALSE, NOTHING, NULL;
 
 // Program
 nonterminal ProgramNode Program;
@@ -63,13 +62,16 @@ nonterminal SwitchStatementNode SwitchStatement;
 nonterminal StatementNode SwitchCasesStatement;
 // Expressions
 nonterminal ExpressionNode Expression;
+// Constants
+nonterminal ConstantExpressionNode ConstantExpression;
+nonterminal ListConstantExpression;
 // Other
 nonterminal String TypeName, VarId, GlobalConstId;
 nonterminal Type Type;
 nonterminal Designator Designator;
 nonterminal ExpressionNode ArrayAccess, FieldAccess, DesignableExpression;
 
-// TODO Statement, Expression
+// TODO Statement (loops, return and operational assignments +=, *=... (maybe more)), Expression
 
 // Program
 Program ::= ImportList: imports DeclarationList: declarations
@@ -199,15 +201,36 @@ ElsePartStatement ::= ELSE BlockStatement: elseBlock
                     |
                       {: RESULT = null; :};
 
-SwitchStatement      ::= SWITCH VarId: variable CURLY_L SwitchCasesStatement : cases CURLY_R
-                         {: RESULT = new SwitchStatementNode(variable, cases); :};
-SwitchCasesStatement ::= Expression: exp ARROW BlockStatement: block
-                         {: RESULT = new HashMap<>() {{ add({exp,block}); }}; :}
-                       | SwitchCasesStatement : cases Expression: exp ARROW BlockStatement: block
-                         {: cases.add({exp,block}); RESULT = cases; :};
+//SwitchStatement      ::= SWITCH VarId: variable CURLY_L SwitchCasesStatement: cases CURLY_R
+//                         {: RESULT = new SwitchStatementNode(variable, cases); :};
+//SwitchCasesStatement ::= ConstantExpression: exp ARROW BlockStatement: block
+//                         {: RESULT = new HashMap<>() {{ add({exp, block}); }}; :}
+//                       | SwitchCasesStatement: cases Expression: exp ARROW BlockStatement: block
+//                         {: cases.add({exp, block}); RESULT = cases; :};
 
 // Expressions TODO
-Expression ::= VarId | STRING;
+Expression ::= IDENTIFIER
+             | ConstantExpression: expression
+               {: RESULT = expression; :}
+             | ListConstantExpression;
+
+// Constants
+ConstantExpression     ::= INT: n
+                           {: RESULT = ConstantExpressionNode.fromInt(n); :}
+                         | REAL: x
+                           {: RESULT = ConstantExpressionNode.fromFloat(x); :}
+                         | TRUE: t
+                           {: RESULT = ConstantExpressionNode.fromBoolean(t); :}
+                         | FALSE: f
+                           {: RESULT = ConstantExpressionNode.fromBoolean(f); :}
+                         | CHAR: c
+                           {: RESULT = ConstantExpressionNode.fromChar(c); :}
+                         | NOTHING
+                           {: RESULT = ConstantExpressionNode.ofNothing(); :}
+                         | NULL
+                           {: RESULT = ConstantExpressionNode.ofNull(); :};
+// TODO
+ListConstantExpression ::= STRING;
 
 // Other
 Type          ::= TypeName: name

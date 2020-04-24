@@ -57,15 +57,15 @@ import java.util.function.Supplier;
     ops = new Operations(this);
 %init}
 
-ignore = [ \t\v\r\b\n]
+ignore = [ \t\r\b\n]
 comment = (//[^\n]*)|(/\*[^(\*/)]*\*/)
 
-decimalNumber = ([1-9]\d*)|0
+decimalNumber = ([1-9][0-9]*)|0
 binaryNumber = 0b[01]+
 hexNumber = 0x[0-9a-fA-F]+
 octalNumber = 0[0-7]+
 integer = {decimalNumber}|{binaryNumber}|{hexNumber}|{octalNumber}
-real = {decimalNumber}?\.\d+
+real = (([1-9][0-9]*)|0)?[.][0-9]+
 
 if = if
 else = else
