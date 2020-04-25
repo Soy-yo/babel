@@ -3,12 +3,15 @@ package syntactical.ast;
 import syntactical.ast.visitors.Visitor;
 
 public class ForStatementNode extends StatementNode {
-  private ExpressionNode condition;
+
+  private Name variable;
+  private ExpressionNode iterable;
   private BlockStatementNode block;
 
-  public WhileStatementNode(ExpressionNode condition,
+  public ForStatementNode(Name variable, ExpressionNode iterable,
                             BlockStatementNode block) {
-    this.condition = condition;
+    this.variable = variable;
+    this.iterable = iterable;
     this.block = block;
   }
 
@@ -17,8 +20,10 @@ public class ForStatementNode extends StatementNode {
     visitor.visit(this);
   }
 
-  public ExpressionNode getCondition() {
-    return condition;
+  public Name getVariable() { return variable; }
+
+  public ExpressionNode getIterable() {
+    return iterable;
   }
 
   public BlockStatementNode getBlock() {return block;}
@@ -26,7 +31,8 @@ public class ForStatementNode extends StatementNode {
   @Override
   public String toString() {
     return super.toString()
-        + " {condition:" + condition
+        + " {variable:" + variable
+        + " iterable: " + iterable
         + "}";
   }
 }

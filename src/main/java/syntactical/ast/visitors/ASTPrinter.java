@@ -263,7 +263,7 @@ public class ASTPrinter implements Visitor {
         if (!node.hasNext()) {
             lastChild();
         }
-        println("while " + node.getCondition());
+        println("for " + node.getVariable() + " in " + node.getIterable());
         if (!node.hasNext()) {
             indent(true);
         }

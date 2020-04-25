@@ -1,0 +1,9 @@
+import es/ucm/fdi/babel;
+
+Void main() {
+for Int x in list {
+    /*
+        body
+    */
+}
+}
