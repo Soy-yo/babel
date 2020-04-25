@@ -27,6 +27,10 @@ public interface Visitor {
 
     void visit(SwitchStatementNode node);
 
+    void visit(WhileStatementNode node);
+
+    void visit(ForStatementNode node);
+
     void visit(ConstantExpressionNode node);
 
 }

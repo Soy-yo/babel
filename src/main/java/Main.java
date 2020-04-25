@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        String input = "src/main/resources/examples/helloWorld/helloWorld.bbl";
+        String input = "src/main/resources/examples/instructions/while.bbl";
         lexicalTest(input);
         syntacticalTest(input);
     }

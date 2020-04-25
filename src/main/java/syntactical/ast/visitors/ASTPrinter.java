@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ASTPrinter implements Visitor {
@@ -218,24 +219,57 @@ public class ASTPrinter implements Visitor {
         }
         println("switch statement");
         indent(!node.hasNext());
-        println("switching");
+        println("switching " + node.getVariable());
         indent();
-        node.getVariable().accept(this);
         outdent();
         if (numCases == 0) {
             lastChild();
         }
-        // TODO los iterables se pueden iterar en un for, no hace falta que saques iteradores
-        Iterator iter = node.getCases().iterator();
-        Iterator iter2 = node.getBlocks().iterator();
-        for(int i = 0; i < numCases; i++) {
-            println("case " + i);
-            indent();
-            iter.next(); //TODO: no sé qué hacer aquí
-            println("block " + i);
-            iter2.next();
+
+        Map<ExpressionNode, StatementNode> cases = node.getAll();
+        int i = 0;
+        for(Map.Entry<ExpressionNode, StatementNode> entry : cases.entrySet()) {
+            if(i == cases.size() - 1) lastChild();
+            println("case " + entry.getKey());
+            if(i == cases.size() - 1) indent(true);
+            else indent();
+            lastChild();
+            println("block " + entry.getValue());
             outdent();
+            i++;
         }
+        outdent();
+        next(node);
+    }
+
+    @Override
+    public void visit(WhileStatementNode node) {
+        if (!node.hasNext()) {
+            lastChild();
+        }
+        println("while " + node.getCondition());
+        if (!node.hasNext()) {
+            indent(true);
+        }
+        else indent();
+        lastChild();
+        println("block " + node.getBlock());
+        outdent();
+        next(node);
+    }
+
+    @Override
+    public void visit(ForStatementNode node) {
+        if (!node.hasNext()) {
+            lastChild();
+        }
+        println("while " + node.getCondition());
+        if (!node.hasNext()) {
+            indent(true);
+        }
+        else indent();
+        lastChild();
+        println("block " + node.getBlock());
         outdent();
         next(node);
     }

@@ -61,7 +61,10 @@ nonterminal ReturnStatementNode ReturnStatement;
 nonterminal IfElseStatementNode IfElseStatement;
 nonterminal StatementNode ElsePartStatement;
 nonterminal SwitchStatementNode SwitchStatement;
-nonterminal StatementNode SwitchCasesStatement;
+nonterminal Map<ExpressionNode,StatementNode> SwitchCasesStatement;
+// Loops
+nonterminal WhileStatementNode WhileStatement;
+nonterminal ForStatementNode ForStatement;
 // Expressions
 nonterminal ExpressionNode Expression;
 // Constants
@@ -69,6 +72,7 @@ nonterminal ConstantExpressionNode ConstantExpression;
 nonterminal ListConstantExpression;
 // Other
 nonterminal String TypeName, VarId, GlobalConstId;
+nonterminal ExpressionNode Anonymous;
 nonterminal Type Type;
 nonterminal Designator Designator;
 nonterminal ExpressionNode ArrayAccess, FieldAccess, DesignableExpression;
@@ -169,6 +173,14 @@ Statement     ::= VarDeclarationStatement: statement
                 | ReturnStatement: statement
                   {: RESULT = statement; :}
                 | IfElseStatement: statement
+                  {: RESULT = statement; :}
+                | SwitchStatement: statement
+                  {: RESULT = statement; :}
+                | WhileStatement: statement
+                  {: RESULT = statement; :}
+                | ForStatement: statement
+                  {: RESULT = statement; :}
+                | BlockStatement: statement
                   {: RESULT = statement; :};
 
 // Block
@@ -211,12 +223,22 @@ ElsePartStatement ::= ELSE BlockStatement: elseBlock
                     |
                       {: RESULT = null; :};
 
-//SwitchStatement      ::= SWITCH VarId: variable CURLY_L SwitchCasesStatement: cases CURLY_R
-//                         {: RESULT = new SwitchStatementNode(variable, cases); :};
-//SwitchCasesStatement ::= ConstantExpression: exp ARROW BlockStatement: block
-//                         {: RESULT = new HashMap<>() {{ add({exp, block}); }}; :}
-//                       | SwitchCasesStatement: cases Expression: exp ARROW BlockStatement: block
-//                         {: cases.add({exp, block}); RESULT = cases; :};
+SwitchStatement      ::= SWITCH Expression: exp CURLY_L SwitchCasesStatement: cases CURLY_R
+                         {: RESULT = new SwitchStatementNode(exp, cases); :};
+SwitchCasesStatement ::= Expression: exp ARROW Statement: block
+                         {: RESULT = new HashMap<ExpressionNode, StatementNode>() {{ put(exp,
+                          block);
+                         }}; :}
+                       | SwitchCasesStatement: cases Expression: exp ARROW Statement: block
+                         {: cases.put(exp, block); RESULT = cases; :};
+
+// Loops
+WhileStatement ::= WHILE Expression: condition BlockStatement: whileBlock
+                    {: RESULT = new WhileStatementNode(condition, whileBlock); :};
+
+ForStatement ::= FOR BaseVarDeclaration: variable IN Expression: iterable BlockStatement: forBlock
+                    {: RESULT = new ForStatementNode(variable, iterable, forBlock); :};
+
 
 // Expressions TODO
 Expression ::= IDENTIFIER
@@ -238,6 +260,8 @@ ConstantExpression     ::= INT: n
                          | NOTHING
                            {: RESULT = ConstantExpressionNode.ofNothing(); :}
                          | NULL
+                           {: RESULT = ConstantExpressionNode.ofNull(); :}
+                         | UNDERSCORE
                            {: RESULT = ConstantExpressionNode.ofNull(); :};
 // TODO
 ListConstantExpression ::= STRING;

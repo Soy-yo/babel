@@ -1,0 +1,16 @@
+import es/ucm/fdi/babel;
+
+Void main() {
+    while true {
+    /*
+        something that will repeat forever
+    */
+    }
+
+    while false {
+    /*
+        something that wont happen
+    */
+    }
+
+}

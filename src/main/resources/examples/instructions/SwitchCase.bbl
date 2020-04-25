@@ -1,0 +1,33 @@
+import es/ucm/fdi/babel;
+
+Void main() {
+    Char a = 'b';
+    switch a {
+        'a' -> {
+        /*
+            case 1
+        */
+        }
+        'b' -> {
+        /*
+            case 2
+        */
+        }
+        'c' -> {
+        /*
+            case 3
+        */
+        }
+        'd' -> {
+        /*
+            case 4
+        */
+        }
+        'e' -> a = 'a';
+        _ -> {
+        /*
+            default
+        */
+        }
+    }
+}

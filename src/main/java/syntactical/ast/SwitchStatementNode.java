@@ -7,11 +7,11 @@ import java.util.Map;
 
 public class SwitchStatementNode extends StatementNode {
 
-  private VarDeclarationNode variable;
-  private Map<ExpressionNode,BlockStatementNode> cases; //TODO change for actual Node
+  private ExpressionNode variable;
+  private Map<ExpressionNode, StatementNode> cases; //TODO change for actual Node
 
-  public SwitchStatementNode(VarDeclarationNode variable,
-                             Map<ExpressionNode,BlockStatementNode> cases) {
+  public SwitchStatementNode(ExpressionNode variable,
+                             Map<ExpressionNode,StatementNode> cases) {
     this.variable = variable;
     this.cases = new HashMap<>(cases);
   }
@@ -21,13 +21,13 @@ public class SwitchStatementNode extends StatementNode {
     visitor.visit(this);
   }
 
-  public VarDeclarationNode getVariable() {
+  public ExpressionNode getVariable() {
     return variable;
   }
 
-  public Map<ExpressionNode,BlockStatementNode> getAll() {return cases;}
+  public Map<ExpressionNode, StatementNode> getAll() {return cases;}
 
-  public Iterable<BlockStatementNode> getBlocks() {
+  public Iterable<StatementNode> getBlocks() {
     return cases.values();
   }
 
