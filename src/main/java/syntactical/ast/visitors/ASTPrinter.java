@@ -168,6 +168,19 @@ public class ASTPrinter implements Visitor {
     }
 
     @Override
+    public void visit(ReturnStatementNode node) {
+        if (!node.hasNext()) {
+            lastChild();
+        }
+        println("return statement");
+        indent(!node.hasNext());
+        lastChild();
+        node.getReturnExpression().accept(this);
+        outdent();
+        next(node);
+    }
+
+    @Override
     public void visit(IfElseStatementNode node) {
         boolean hasElse = node.getElsePart() != null;
         if (!node.hasNext()) {

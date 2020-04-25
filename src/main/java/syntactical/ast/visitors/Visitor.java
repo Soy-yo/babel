@@ -21,6 +21,8 @@ public interface Visitor {
 
     void visit(FunctionCallStatementNode node);
 
+    void visit(ReturnStatementNode node);
+
     void visit(IfElseStatementNode node);
 
     void visit(SwitchStatementNode node);

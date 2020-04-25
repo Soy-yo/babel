@@ -5,6 +5,7 @@ Void print(String text) {
         dummy function that does nothing
         representing a print function
     */
+    return;
 }
 
 Void main() {

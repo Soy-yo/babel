@@ -55,6 +55,8 @@ nonterminal AssignmentStatementNode AssignmentStatement;
 // Function call
 nonterminal FunctionCallStatementNode FunctionCallStatement;
 nonterminal List<ExpressionNode> FunctionArguments, ArgumentList;
+// Return
+nonterminal ReturnStatementNode ReturnStatement;
 // Conditionals
 nonterminal IfElseStatementNode IfElseStatement;
 nonterminal StatementNode ElsePartStatement;
@@ -71,7 +73,7 @@ nonterminal Type Type;
 nonterminal Designator Designator;
 nonterminal ExpressionNode ArrayAccess, FieldAccess, DesignableExpression;
 
-// TODO Statement (loops, return and operational assignments +=, *=... (maybe more)), Expression
+// TODO Statement (loops and operational assignments +=, *=... (and maybe more things)), Expression
 
 // Program
 Program ::= ImportList: imports DeclarationList: declarations
@@ -164,6 +166,8 @@ Statement     ::= VarDeclarationStatement: statement
                   {: RESULT = statement; :}
                 | FunctionCallStatement: statement
                   {: RESULT = statement; :}
+                | ReturnStatement: statement
+                  {: RESULT = statement; :}
                 | IfElseStatement: statement
                   {: RESULT = statement; :};
 
@@ -190,6 +194,12 @@ ArgumentList          ::= Expression: argument
                           {: RESULT = new ArrayList<ExpressionNode>() {{ add(argument); }}; :}
                         | ArgumentList: arguments COMMA Expression: argument
                           {: arguments.add(argument); RESULT = arguments; :};
+
+// Return
+ReturnStatement ::= RETURN END
+                    {: RESULT = new ReturnStatementNode(); :}
+                  | RETURN Expression: expression END
+                    {: RESULT = new ReturnStatementNode(expression); :};
 
 // Conditionals
 IfElseStatement   ::= IF Expression: condition BlockStatement: ifBlock ElsePartStatement: elsePart
