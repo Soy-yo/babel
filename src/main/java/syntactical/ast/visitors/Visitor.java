@@ -33,4 +33,6 @@ public interface Visitor {
 
     void visit(ConstantExpressionNode node);
 
+    void visit(ListConstructorExpressionNode node);
+
 }

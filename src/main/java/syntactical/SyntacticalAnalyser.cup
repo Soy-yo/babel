@@ -19,12 +19,12 @@ parser code {:
 
 // TODO types etc
 
-terminal STRING, IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, THIS, UNDERSCORE, PARENTH_L,
+terminal IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, THIS, UNDERSCORE, PARENTH_L,
          PARENTH_R, SQUARE_L, SQUARE_R, CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT, COMMA, PLUS_ASSIGN, PLUS,
          MINUS_ASSIGN, MINUS, MULT_ASSIGN, MULT, DIV_ASSIGN, DIV, MOD_ASSIGN, MOD, LE, LT, GE, GT, IDENTITY, EQUALS,
          NEQ, ASSIGNMENT, NOT, AND, OR, END;
 terminal String IDENTIFIER, IMPORT;
-terminal String INT, REAL, CHAR, TRUE, FALSE, NOTHING, NULL;
+terminal String INT, REAL, CHAR, STRING, TRUE, FALSE, NOTHING, NULL;
 
 // Program
 nonterminal ProgramNode Program;
@@ -69,7 +69,8 @@ nonterminal ForStatementNode ForStatement;
 nonterminal ExpressionNode Expression;
 // Constants
 nonterminal ConstantExpressionNode ConstantExpression;
-nonterminal ListConstantExpression;
+nonterminal ListConstructorExpressionNode ListConstructorExpression;
+nonterminal List<ExpressionNode> ListElements;
 // Other
 nonterminal String TypeName, VarId, GlobalConstId;
 nonterminal ExpressionNode Anonymous;
@@ -137,7 +138,7 @@ FunctionParameters  ::= PARENTH_L PARENTH_R
                       | PARENTH_L ParameterList: parameters PARENTH_R
                         {: RESULT = parameters; :};
 ParameterList       ::= BaseVarDeclaration: parameter
-                        {: RESULT = new ArrayList<Name>() {{ add(parameter); }}; :}
+                        {: RESULT = new ArrayList<>(Collections.singletonList(parameter)); :}
                       | ParameterList: parameters COMMA BaseVarDeclaration: parameter
                         {: parameters.add(parameter); RESULT = parameters; :};
 
@@ -203,7 +204,7 @@ FunctionArguments     ::= PARENTH_L PARENTH_R
                         | PARENTH_L ArgumentList: arguments PARENTH_R
                           {: RESULT = arguments; :};
 ArgumentList          ::= Expression: argument
-                          {: RESULT = new ArrayList<ExpressionNode>() {{ add(argument); }}; :}
+                          {: RESULT = new ArrayList<>(Collections.singletonList(argument)); :}
                         | ArgumentList: arguments COMMA Expression: argument
                           {: arguments.add(argument); RESULT = arguments; :};
 
@@ -223,14 +224,12 @@ ElsePartStatement ::= ELSE BlockStatement: elseBlock
                     |
                       {: RESULT = null; :};
 
-SwitchStatement      ::= SWITCH Expression: exp CURLY_L SwitchCasesStatement: cases CURLY_R
-                         {: RESULT = new SwitchStatementNode(exp, cases); :};
-SwitchCasesStatement ::= Expression: exp ARROW Statement: block
-                         {: RESULT = new HashMap<ExpressionNode, StatementNode>() {{ put(exp,
-                          block);
-                         }}; :}
-                       | SwitchCasesStatement: cases Expression: exp ARROW Statement: block
-                         {: cases.put(exp, block); RESULT = cases; :};
+SwitchStatement      ::= SWITCH Expression: expression CURLY_L SwitchCasesStatement: cases CURLY_R
+                         {: RESULT = new SwitchStatementNode(expression, cases); :};
+SwitchCasesStatement ::= ConstantExpression: expression ARROW Statement: statement
+                         {: RESULT = new HashMap<>(Collections.singletonMap(expression, statement)); :}
+                       | SwitchCasesStatement: cases Expression: expression ARROW Statement: statement
+                         {: cases.put(expression, statement); RESULT = cases; :};
 
 // Loops
 WhileStatement ::= WHILE Expression: condition BlockStatement: whileBlock
@@ -244,27 +243,36 @@ ForStatement ::= FOR BaseVarDeclaration: variable IN Expression: iterable BlockS
 Expression ::= IDENTIFIER
              | ConstantExpression: expression
                {: RESULT = expression; :}
-             | ListConstantExpression;
+             | ListConstructorExpression: expression
+               {: RESULT = expression; :};
 
 // Constants
-ConstantExpression     ::= INT: n
-                           {: RESULT = ConstantExpressionNode.fromInt(n); :}
-                         | REAL: x
-                           {: RESULT = ConstantExpressionNode.fromFloat(x); :}
-                         | TRUE: t
-                           {: RESULT = ConstantExpressionNode.fromBoolean(t); :}
-                         | FALSE: f
-                           {: RESULT = ConstantExpressionNode.fromBoolean(f); :}
-                         | CHAR: c
-                           {: RESULT = ConstantExpressionNode.fromChar(c); :}
-                         | NOTHING
-                           {: RESULT = ConstantExpressionNode.ofNothing(); :}
-                         | NULL
-                           {: RESULT = ConstantExpressionNode.ofNull(); :}
-                         | UNDERSCORE
-                           {: RESULT = ConstantExpressionNode.ofNull(); :};
-// TODO
-ListConstantExpression ::= STRING;
+ConstantExpression        ::= INT: n
+                              {: RESULT = ConstantExpressionNode.fromInt(n); :}
+                            | REAL: x
+                              {: RESULT = ConstantExpressionNode.fromFloat(x); :}
+                            | TRUE: t
+                              {: RESULT = ConstantExpressionNode.fromBoolean(t); :}
+                            | FALSE: f
+                              {: RESULT = ConstantExpressionNode.fromBoolean(f); :}
+                            | CHAR: c
+                              {: RESULT = ConstantExpressionNode.fromChar(c); :}
+                            | NOTHING
+                              {: RESULT = ConstantExpressionNode.ofNothing(); :}
+                            | NULL
+                              {: RESULT = ConstantExpressionNode.ofNull(); :}
+                            | UNDERSCORE
+                              {: RESULT = ConstantExpressionNode.ofNull(); :};
+ListConstructorExpression ::= STRING: str
+                              {: RESULT = ListConstructorExpressionNode.fromString(str); :}
+                            | SQUARE_L SQUARE_R
+                              {: RESULT = new ListConstructorExpressionNode(); :}
+                            | SQUARE_L ListElements: elements SQUARE_R
+                              {: RESULT = new ListConstructorExpressionNode(elements); :};
+ListElements              ::= Expression: element
+                              {: RESULT = new ArrayList<>(Collections.singletonList(element)); :}
+                            | ListElements: elements COMMA Expression: element
+                              {: elements.add(element); RESULT = elements; :};
 
 // Other
 Type          ::= TypeName: name

@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -283,6 +284,30 @@ public class ASTPrinter implements Visitor {
                 "value: " + node.getRepresentation(),
                 "hex: 0x" + String.format("%1$8s", node.getHex()).replace(' ', '0')
         );
+        outdent();
+    }
+
+    @Override
+    public void visit(ListConstructorExpressionNode node) {
+        lastChild();
+        println("list constructor expression");
+        indent(true);
+        println("type: " + node.getType());
+        List<ExpressionNode> elements = node.getElements();
+        if (elements.isEmpty()) {
+            lastChild();
+        }
+        println("size: " + elements.size());
+        for (int i = 0; i < elements.size(); i++) {
+            if (i == elements.size() - 1) {
+                lastChild();
+            }
+            println("element [" + i + "]");
+            indent(i == elements.size() - 1);
+            lastChild();
+            elements.get(i).accept(this);
+            outdent();
+        }
         outdent();
     }
 

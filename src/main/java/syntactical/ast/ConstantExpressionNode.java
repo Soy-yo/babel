@@ -13,22 +13,26 @@ public class ConstantExpressionNode extends ExpressionNode {
     private int value;
     private String representation;
 
-    private ConstantExpressionNode(int value, String representation, Type type) {
+    protected ConstantExpressionNode(int value, String representation, Type type) {
         this.value = value;
         this.representation = representation;
         this.type = type;
     }
 
-    private ConstantExpressionNode(int n) {
+    protected ConstantExpressionNode(int n) {
         this(n, "" + n, INT);
     }
 
-    private ConstantExpressionNode(float x) {
+    protected ConstantExpressionNode(float x) {
         this(Float.floatToIntBits(x), "" + x, REAL);
     }
 
-    private ConstantExpressionNode(boolean b) {
+    protected ConstantExpressionNode(boolean b) {
         this(b ? 0b1 : 0b0, "" + b, BOOL);
+    }
+
+    protected ConstantExpressionNode(char c) {
+        this(c, "" + c, CHAR);
     }
 
     public static ConstantExpressionNode fromInt(String n) {
@@ -86,6 +90,10 @@ public class ConstantExpressionNode extends ExpressionNode {
                 return '\f';
             case "'\\0'":
                 return '\0';
+            case "'\\\\'":
+                return '\\';
+            case "'\\''":
+                return '\'';
         }
         return c.charAt(1);
     }
