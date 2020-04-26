@@ -13,5 +13,5 @@ Void main() {
         main function
         the program will start here
     */
-    print("Hello world\n");
+    //print("Hello world\n");
 }

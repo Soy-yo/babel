@@ -71,14 +71,15 @@ nonterminal ExpressionNode Expression;
 nonterminal ConstantExpressionNode ConstantExpression;
 nonterminal ListConstructorExpressionNode ListConstructorExpression;
 nonterminal List<ExpressionNode> ListElements;
+nonterminal AnonymousObjectConstructorExpressionNode AnonymousObjectConstructorExpression;
+nonterminal DeclarationNode AnonymousObjectFields, AnonymousObjectField;
 // Other
 nonterminal String TypeName, VarId, GlobalConstId;
-nonterminal ExpressionNode Anonymous;
 nonterminal Type Type;
 nonterminal Designator Designator;
 nonterminal ExpressionNode ArrayAccess, FieldAccess, DesignableExpression;
 
-// TODO Statement (loops and operational assignments +=, *=... (and maybe more things)), Expression
+// TODO Statement (function call from expression and operational assignments +=, *=... (and maybe more things)), Expression
 
 // Program
 Program ::= ImportList: imports DeclarationList: declarations
@@ -196,17 +197,17 @@ VarDeclarationStatement ::= VarConstDeclaration: declaration
 AssignmentStatement ::= Designator: designator ASSIGNMENT Expression: expression END
                         {: RESULT = new AssignmentStatementNode(designator, expression); :};
 
-// Function call
-FunctionCallStatement ::= Expression: function FunctionArguments: arguments END
-                          {: RESULT = new FunctionCallStatementNode(function, arguments); :};
-FunctionArguments     ::= PARENTH_L PARENTH_R
-                          {: RESULT = new ArrayList<>(); :}
-                        | PARENTH_L ArgumentList: arguments PARENTH_R
-                          {: RESULT = arguments; :};
-ArgumentList          ::= Expression: argument
-                          {: RESULT = new ArrayList<>(Collections.singletonList(argument)); :}
-                        | ArgumentList: arguments COMMA Expression: argument
-                          {: arguments.add(argument); RESULT = arguments; :};
+// Function call TODO fix conflicts with anonymous objects
+//FunctionCallStatement ::= Expression: function FunctionArguments: arguments END
+//                          {: RESULT = new FunctionCallStatementNode(function, arguments); :};
+//FunctionArguments     ::= PARENTH_L PARENTH_R
+//                          {: RESULT = new ArrayList<>(); :}
+//                        | PARENTH_L ArgumentList: arguments PARENTH_R
+//                          {: RESULT = arguments; :};
+//ArgumentList          ::= Expression: argument
+//                          {: RESULT = new ArrayList<>(Collections.singletonList(argument)); :}
+//                        | ArgumentList: arguments COMMA Expression: argument
+//                          {: arguments.add(argument); RESULT = arguments; :};
 
 // Return
 ReturnStatement ::= RETURN END
@@ -240,29 +241,31 @@ ForStatement ::= FOR BaseVarDeclaration: variable IN Expression: iterable BlockS
 
 
 // Expressions TODO
-Expression ::= IDENTIFIER
-             | ConstantExpression: expression
+Expression ::= ConstantExpression: expression
                {: RESULT = expression; :}
              | ListConstructorExpression: expression
+               {: RESULT = expression; :}
+             | AnonymousObjectConstructorExpression: expression
                {: RESULT = expression; :};
 
 // Constants
-ConstantExpression        ::= INT: n
-                              {: RESULT = ConstantExpressionNode.fromInt(n); :}
-                            | REAL: x
-                              {: RESULT = ConstantExpressionNode.fromFloat(x); :}
-                            | TRUE: t
-                              {: RESULT = ConstantExpressionNode.fromBoolean(t); :}
-                            | FALSE: f
-                              {: RESULT = ConstantExpressionNode.fromBoolean(f); :}
-                            | CHAR: c
-                              {: RESULT = ConstantExpressionNode.fromChar(c); :}
-                            | NOTHING
-                              {: RESULT = ConstantExpressionNode.ofNothing(); :}
-                            | NULL
-                              {: RESULT = ConstantExpressionNode.ofNull(); :}
-                            | UNDERSCORE
-                              {: RESULT = ConstantExpressionNode.ofNull(); :};
+ConstantExpression ::= INT: n
+                       {: RESULT = ConstantExpressionNode.fromInt(n); :}
+                     | REAL: x
+                       {: RESULT = ConstantExpressionNode.fromFloat(x); :}
+                     | TRUE: t
+                       {: RESULT = ConstantExpressionNode.fromBoolean(t); :}
+                     | FALSE: f
+                       {: RESULT = ConstantExpressionNode.fromBoolean(f); :}
+                     | CHAR: c
+                       {: RESULT = ConstantExpressionNode.fromChar(c); :}
+                     | NOTHING
+                       {: RESULT = ConstantExpressionNode.ofNothing(); :}
+                     | NULL
+                       {: RESULT = ConstantExpressionNode.ofNull(); :}
+                     | UNDERSCORE
+                       {: RESULT = ConstantExpressionNode.ofNull(); :};
+
 ListConstructorExpression ::= STRING: str
                               {: RESULT = ListConstructorExpressionNode.fromString(str); :}
                             | SQUARE_L SQUARE_R
@@ -273,6 +276,19 @@ ListElements              ::= Expression: element
                               {: RESULT = new ArrayList<>(Collections.singletonList(element)); :}
                             | ListElements: elements COMMA Expression: element
                               {: elements.add(element); RESULT = elements; :};
+
+AnonymousObjectConstructorExpression ::= CURLY_L CURLY_R
+                                         {: RESULT = new AnonymousObjectConstructorExpressionNode(); :}
+                                       | CURLY_L AnonymousObjectFields: fields CURLY_R
+                                         {: RESULT = new AnonymousObjectConstructorExpressionNode(fields); :};
+AnonymousObjectFields                ::= AnonymousObjectField: field
+                                         {: RESULT = field; :}
+                                       | AnonymousObjectField: field COMMA AnonymousObjectFields: fields
+                                         {: RESULT = field.linkedTo(fields); :};
+AnonymousObjectField                 ::= VarInitDeclaration: field
+                                         {: RESULT = field; :}
+                                       | LocalConstDeclaration: field
+                                         {: RESULT = field; :};
 
 // Other
 Type          ::= TypeName: name

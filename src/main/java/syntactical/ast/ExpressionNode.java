@@ -4,6 +4,14 @@ public abstract class ExpressionNode extends ASTNode {
 
     protected Type type;
 
+    public ExpressionNode(Type type) {
+        this.type = type;
+    }
+
+    public ExpressionNode() {
+        this(null);
+    }
+
     public void setType(Type type) {
         this.type = type;
     }

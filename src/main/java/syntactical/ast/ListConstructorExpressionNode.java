@@ -15,13 +15,13 @@ public class ListConstructorExpressionNode extends ExpressionNode {
     private List<ExpressionNode> view;
 
     private ListConstructorExpressionNode(List<ExpressionNode> elements, boolean copy, Type type) {
+        super(type);
         if (copy) {
             this.elements = new ArrayList<>(elements);
         } else {
             this.elements = elements;
         }
         this.view = Collections.unmodifiableList(elements);
-        this.type = type;
     }
 
     public ListConstructorExpressionNode(List<ExpressionNode> elements) {

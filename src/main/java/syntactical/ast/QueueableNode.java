@@ -1,6 +1,8 @@
 package syntactical.ast;
 
-public abstract class QueueableNode<N extends QueueableNode<N>> extends ASTNode {
+import java.util.Iterator;
+
+public abstract class QueueableNode<N extends QueueableNode<N>> extends ASTNode implements Iterable<N> {
 
     protected N previous;
     protected N next;
@@ -72,6 +74,29 @@ public abstract class QueueableNode<N extends QueueableNode<N>> extends ASTNode 
             n.previous = self();
         }
         return self();
+    }
+
+    @Override
+    public Iterator<N> iterator() {
+        return new Iterator<N>() {
+            private N result;
+
+            {
+                result = self();
+            }
+
+            @Override
+            public boolean hasNext() {
+                return result != null;
+            }
+
+            @Override
+            public N next() {
+                N ret = result;
+                result = result.next;
+                return ret;
+            }
+        };
     }
 
     private static <N extends QueueableNode<N>> void checkNext(QueueableNode<N> node) {

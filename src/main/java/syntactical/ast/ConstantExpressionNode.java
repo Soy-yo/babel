@@ -14,9 +14,9 @@ public class ConstantExpressionNode extends ExpressionNode {
     private String representation;
 
     protected ConstantExpressionNode(int value, String representation, Type type) {
+        super(type);
         this.value = value;
         this.representation = representation;
-        this.type = type;
     }
 
     protected ConstantExpressionNode(int n) {

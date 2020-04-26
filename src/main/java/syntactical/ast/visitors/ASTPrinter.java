@@ -311,6 +311,26 @@ public class ASTPrinter implements Visitor {
         outdent();
     }
 
+    @Override
+    public void visit(AnonymousObjectConstructorExpressionNode node) {
+        lastChild();
+        println("anonymous object constructor expression");
+        indent(true);
+        if (node.isEmpty()) {
+            lastChild();
+        }
+        println("type: " + node.getType());
+        if (!node.isEmpty()) {
+            lastChild();
+            println("fields");
+            indent(true);
+            DeclarationNode root = node.getFields();
+            root.accept(this);
+            outdent();
+        }
+        outdent();
+    }
+
     private void println(String value) {
         stdOut.println(prefix + value);
     }
