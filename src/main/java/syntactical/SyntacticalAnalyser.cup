@@ -72,7 +72,7 @@ nonterminal ConstantExpressionNode ConstantExpression;
 nonterminal ListConstructorExpressionNode ListConstructorExpression;
 nonterminal List<ExpressionNode> ListElements;
 nonterminal AnonymousObjectConstructorExpressionNode AnonymousObjectConstructorExpression;
-nonterminal DeclarationNode AnonymousObjectFields, AnonymousObjectField;
+nonterminal VarDeclarationNode AnonymousObjectFields, AnonymousObjectField;
 // Other
 nonterminal String TypeName, VarId, GlobalConstId;
 nonterminal Type Type;
@@ -284,7 +284,7 @@ AnonymousObjectConstructorExpression ::= CURLY_L CURLY_R
 AnonymousObjectFields                ::= AnonymousObjectField: field
                                          {: RESULT = field; :}
                                        | AnonymousObjectField: field COMMA AnonymousObjectFields: fields
-                                         {: RESULT = field.linkedTo(fields); :};
+                                         {: field.linkedTo(fields); RESULT = field; :};
 AnonymousObjectField                 ::= VarInitDeclaration: field
                                          {: RESULT = field; :}
                                        | LocalConstDeclaration: field

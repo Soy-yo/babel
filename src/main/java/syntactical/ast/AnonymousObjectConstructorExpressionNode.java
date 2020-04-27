@@ -11,14 +11,11 @@ public class AnonymousObjectConstructorExpressionNode extends ExpressionNode {
 
     private static final Type TYPE = new Type("Form");
 
-    private DeclarationNode root;
+    private VarDeclarationNode root;
     private Set<Name> fieldNames;
 
-    public AnonymousObjectConstructorExpressionNode(DeclarationNode root) {
+    public AnonymousObjectConstructorExpressionNode(VarDeclarationNode root) {
         super(TYPE);
-        if (root != null && !(root instanceof VarDeclarationNode)) {
-            throw new IllegalArgumentException("Anonymous objects must only contain variable declarations");
-        }
         this.root = root;
         this.fieldNames = new HashSet<>();
         if (root != null) {
@@ -34,7 +31,7 @@ public class AnonymousObjectConstructorExpressionNode extends ExpressionNode {
         return root == null;
     }
 
-    public DeclarationNode getFields() {
+    public VarDeclarationNode getFields() {
         return root;
     }
 

@@ -324,7 +324,7 @@ public class ASTPrinter implements Visitor {
             lastChild();
             println("fields");
             indent(true);
-            DeclarationNode root = node.getFields();
+            VarDeclarationNode root = node.getFields();
             root.accept(this);
             outdent();
         }
