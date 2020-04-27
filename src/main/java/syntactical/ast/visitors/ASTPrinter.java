@@ -111,10 +111,15 @@ public class ASTPrinter implements Visitor {
         println("class declaration");
         indent(!node.hasNext());
         println("class name: " + node.getIdentifier());
-        println("contents");
-        indent(true);
-        node.getContentRoot().accept(this);
-        outdent();
+        lastChild();
+        if (node.getContentRoot() != null) {
+            println("contents");
+            indent(true);
+            node.getContentRoot().accept(this);
+            outdent();
+        } else {
+            println("contents: none");
+        }
         outdent();
         next(node);
     }

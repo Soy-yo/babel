@@ -65,7 +65,7 @@ binaryNumber = 0b[01]+
 hexNumber = 0x[0-9a-fA-F]+
 octalNumber = 0[0-7]+
 integer = {decimalNumber}|{binaryNumber}|{hexNumber}|{octalNumber}
-real = (([1-9][0-9]*)|0)?[.][0-9]+
+real = (([1-9][0-9]*)|0)?\.[0-9]+
 
 if = if
 else = else
@@ -84,7 +84,9 @@ class = class
 constructor = constructor
 this = this
 underscore = _
-identifier = [a-zA-Z_][0-9a-zA-Z_]*
+varIdentifier = [a-z_][0-9a-zA-Z_]*
+globalConst = [A-Z][0-9A-Z_]*
+typeName = [A-Z][0-9a-zA-Z_]*
 
 escapeChar = \\[tbnrf0\\]
 character = '([\x20-\x26\x28-\x5b\x5d-\xff]|{escapeChar}|\\')'
@@ -146,7 +148,9 @@ opOr = \|\|
 {constructor}             {return onRead(() -> ops.constructorUnit());}
 {this}                    {return onRead(() -> ops.thisUnit());}
 {underscore}              {return onRead(() -> ops.underscoreUnit());}
-{identifier}              {return onRead(() -> ops.identifierUnit());}
+{varIdentifier}           {return onRead(() -> ops.varIdentifierUnit());}
+{globalConst}             {return onRead(() -> ops.globalConstUnit());}
+{typeName}                {return onRead(() -> ops.typeNameUnit());}
 {character}               {return onRead(() -> ops.characterUnit());}
 {string}                  {return onRead(() -> ops.stringUnit());}
 {opSemicolon}             {return onRead(() -> ops.opSemicolonUnit());}

@@ -1,6 +1,5 @@
 package syntactical.ast;
 
-// TODO check name case here?
 public abstract class DeclarationNode extends QueueableNode<DeclarationNode> {
 
     protected Name name;

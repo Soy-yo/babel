@@ -96,8 +96,16 @@ public class Operations {
         return createUnit(UNDERSCORE);
     }
 
-    public LexicalUnit identifierUnit() {
+    public LexicalUnit varIdentifierUnit() {
         return createUnit(IDENTIFIER);
+    }
+
+    public LexicalUnit globalConstUnit() {
+        return createUnit(GLOBAL);
+    }
+
+    public LexicalUnit typeNameUnit() {
+        return createUnit(TYPE);
     }
 
     public LexicalUnit characterUnit() {

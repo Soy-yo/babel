@@ -23,14 +23,14 @@ terminal IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, TH
          PARENTH_R, SQUARE_L, SQUARE_R, CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT, COMMA, PLUS_ASSIGN, PLUS,
          MINUS_ASSIGN, MINUS, MULT_ASSIGN, MULT, DIV_ASSIGN, DIV, MOD_ASSIGN, MOD, LE, LT, GE, GT, IDENTITY, EQUALS,
          NEQ, ASSIGNMENT, NOT, AND, OR, END;
-terminal String IDENTIFIER, IMPORT;
+terminal String IDENTIFIER, GLOBAL, TYPE, IMPORT;
 terminal String INT, REAL, CHAR, STRING, TRUE, FALSE, NOTHING, NULL;
 
 // Program
 nonterminal ProgramNode Program;
 // Imports
 nonterminal List<String> ImportList;
-nonterminal String Import, FilePath;
+nonterminal String Import, FilePath, Filename;
 // Declarations
 nonterminal DeclarationNode DeclarationList, Declaration;
 // Variables
@@ -74,7 +74,7 @@ nonterminal List<ExpressionNode> ListElements;
 nonterminal AnonymousObjectConstructorExpressionNode AnonymousObjectConstructorExpression;
 nonterminal VarDeclarationNode AnonymousObjectFields, AnonymousObjectField;
 // Other
-nonterminal String TypeName, VarId, GlobalConstId;
+nonterminal String TypeName;
 nonterminal Type Type;
 nonterminal Designator Designator;
 nonterminal ExpressionNode ArrayAccess, FieldAccess, DesignableExpression;
@@ -92,10 +92,16 @@ ImportList ::= ImportList: imports Import: file
                {: RESULT = new ArrayList<>(); :};
 Import     ::= IMPORT FilePath: path END
                {: RESULT = path; :};
-FilePath   ::= FilePath: path DIV IDENTIFIER: filename
+FilePath   ::= FilePath: path DIV Filename: filename
                {: RESULT = path + "/" + filename; :}
-             | IDENTIFIER: filename
+             | Filename: filename
                {: RESULT = filename; :};
+Filename   ::= IDENTIFIER: name
+               {: RESULT = name; :}
+               | GLOBAL: name
+               {: RESULT = name; :}
+               | TYPE: name
+               {: RESULT = name; :};
 
 // Declarations
 DeclarationList ::= Declaration: declaration DeclarationList: declarations
@@ -122,11 +128,11 @@ VarDeclaration            ::= BaseVarDeclaration: declaration END
                               {: RESULT = new VarDeclarationNode(declaration); :}
                             | VarInitDeclaration: declaration END
                               {: RESULT = declaration; :};
-BaseVarDeclaration        ::= Type: type VarId: id
+BaseVarDeclaration        ::= Type: type IDENTIFIER: id
                               {: RESULT = new Name(id, type); :};
 VarInitDeclaration        ::= BaseVarDeclaration: name ASSIGNMENT Expression: initialValue
                               {: RESULT = new VarDeclarationNode(name, initialValue); :};
-GlobalConstDeclaration    ::= CONST Type: type GlobalConstId: id ASSIGNMENT Expression: initialValue
+GlobalConstDeclaration    ::= CONST Type: type GLOBAL: id ASSIGNMENT Expression: initialValue
                               {: RESULT = new VarDeclarationNode(new Name(id, type), initialValue, true, true); :};
 LocalConstDeclaration     ::= CONST VarInitDeclaration: declaration
                               {: RESULT = declaration.constant(); :};
@@ -291,18 +297,19 @@ AnonymousObjectField                 ::= VarInitDeclaration: field
                                          {: RESULT = field; :};
 
 // Other
-Type          ::= TypeName: name
-                  {: RESULT = new Type(name); :}
-                | TypeName: name LT Type: param GT
-                  {: RESULT = new Type(name, param); :};
-TypeName      ::= IDENTIFIER: id {: RESULT = id; :};
-VarId         ::= IDENTIFIER: id {: RESULT = id; :};
-GlobalConstId ::= IDENTIFIER: id {: RESULT = id; :};
+Type     ::= TypeName: name
+             {: RESULT = new Type(name); :}
+           | TypeName: name LT Type: param GT
+             {: RESULT = new Type(name, param); :};
+TypeName ::= TYPE: name
+             {: RESULT = name; :}
+           | GLOBAL: name
+             {: RESULT = name; :};
 
-Designator           ::= VarId
+Designator           ::= IDENTIFIER
                        | ArrayAccess
                        | FieldAccess;
 ArrayAccess          ::= DesignableExpression SQUARE_L Expression SQUARE_R;
-FieldAccess          ::= DesignableExpression POINT VarId;
+FieldAccess          ::= DesignableExpression POINT IDENTIFIER;
 // TODO only certain expressions (variable (or constant), array, point, function call, etc)
-DesignableExpression ::= VarId;
+DesignableExpression ::= IDENTIFIER;
