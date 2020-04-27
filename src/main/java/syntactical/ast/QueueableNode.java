@@ -79,11 +79,7 @@ public abstract class QueueableNode<N extends QueueableNode<N>> extends ASTNode 
     @Override
     public Iterator<N> iterator() {
         return new Iterator<N>() {
-            private N result;
-
-            {
-                result = self();
-            }
+            private N result = self();
 
             @Override
             public boolean hasNext() {
