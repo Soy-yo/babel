@@ -357,10 +357,14 @@ public class ASTPrinter implements Visitor {
         indent(true);
         println("type: " + node.getType());
         lastChild();
-        println("arguments");
-        indent(true);
-        visitAll(node.getArguments());
-        outdent();
+        if (!node.getArguments().isEmpty()) {
+            println("arguments");
+            indent(true);
+            visitAll(node.getArguments());
+            outdent();
+        } else {
+            println("arguments: none");
+        }
         outdent();
     }
 

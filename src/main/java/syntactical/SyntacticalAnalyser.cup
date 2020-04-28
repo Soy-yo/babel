@@ -133,9 +133,13 @@ VarDeclaration            ::= BaseVarDeclaration: declaration END
 BaseVarDeclaration        ::= Type: type IDENTIFIER: id
                               {: RESULT = new Name(id, type); :};
 VarInitDeclaration        ::= BaseVarDeclaration: name ASSIGNMENT Expression: initialValue
-                              {: RESULT = new VarDeclarationNode(name, initialValue); :};
+                              {: RESULT = new VarDeclarationNode(name, initialValue); :}
+                            | ConstructorCallExpression: constructor IDENTIFIER: id
+                              {: RESULT = VarDeclarationNode.fromConstructor(constructor, id); :};
 GlobalConstDeclaration    ::= CONST Type: type GLOBAL: id ASSIGNMENT Expression: initialValue
-                              {: RESULT = new VarDeclarationNode(new Name(id, type), initialValue, true, true); :};
+                              {: RESULT = new VarDeclarationNode(new Name(id, type), initialValue, true); :}
+                            | CONST ConstructorCallExpression: constructor GLOBAL: id
+                              {: RESULT = VarDeclarationNode.fromConstructor(constructor, id).constant(); :};
 LocalConstDeclaration     ::= CONST VarInitDeclaration: declaration
                               {: RESULT = declaration.constant(); :};
 

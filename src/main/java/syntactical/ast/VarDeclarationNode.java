@@ -6,30 +6,28 @@ public class VarDeclarationNode extends DeclarationNode {
 
     private ExpressionNode initialValue;
     private boolean isConst;
-    private boolean isGlobal;
 
     public VarDeclarationNode(
             Name name,
             ExpressionNode initialValue,
-            boolean isConst,
-            boolean isGlobal
+            boolean isConst
     ) {
         super(name);
         this.initialValue = initialValue;
         this.isConst = isConst;
-        this.isGlobal = isGlobal;
-    }
-
-    public VarDeclarationNode(Name name, boolean isGlobal) {
-        this(name, null, false, isGlobal);
     }
 
     public VarDeclarationNode(Name name, ExpressionNode initialValue) {
-        this(name, initialValue, false, false);
+        this(name, initialValue, false);
     }
 
     public VarDeclarationNode(Name name) {
         this(name, null);
+    }
+
+    public static VarDeclarationNode fromConstructor(ConstructorCallExpressionNode constructor, String id) {
+        Name name = new Name(id, constructor.getType());
+        return new VarDeclarationNode(name, constructor);
     }
 
     public ExpressionNode getInitialValue() {
@@ -40,12 +38,8 @@ public class VarDeclarationNode extends DeclarationNode {
         return isConst;
     }
 
-    public boolean isGlobal() {
-        return isGlobal;
-    }
-
     public VarDeclarationNode constant() {
-        return new VarDeclarationNode(name, initialValue, true, isGlobal);
+        return new VarDeclarationNode(name, initialValue, true);
     }
 
     public VarDeclarationStatementNode asStatement() {
@@ -62,7 +56,6 @@ public class VarDeclarationNode extends DeclarationNode {
         return super.toString()
                 + " {initialValue:" + initialValue
                 + ", const:" + isConst
-                + ", global:" + isGlobal
                 + "}";
     }
 
