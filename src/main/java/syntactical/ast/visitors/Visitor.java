@@ -39,4 +39,6 @@ public interface Visitor {
 
     void visit(AnonymousObjectConstructorExpressionNode node);
 
+    void visit(ConstructorCallExpressionNode node);
+
 }

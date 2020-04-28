@@ -226,8 +226,6 @@ public class ASTPrinter implements Visitor {
         println("switch statement");
         indent(!node.hasNext());
         node.getVariable().accept(this);
-        indent();
-        outdent();
         if (numCases == 0) {
             lastChild();
         }
@@ -352,8 +350,33 @@ public class ASTPrinter implements Visitor {
         outdent();
     }
 
+    @Override
+    public void visit(ConstructorCallExpressionNode node) {
+        lastChild();
+        println("constructor call expression");
+        indent(true);
+        println("type: " + node.getType());
+        lastChild();
+        println("arguments");
+        indent(true);
+        visitAll(node.getArguments());
+        outdent();
+        outdent();
+    }
+
     private void println(String value) {
         stdOut.println(prefix + value);
+    }
+
+    private void visitAll(Iterable<? extends ASTNode> nodes) {
+        Iterator<? extends ASTNode> it = nodes.iterator();
+        while (it.hasNext()) {
+            ASTNode child = it.next();
+            if (!it.hasNext()) {
+                lastChild();
+            }
+            child.accept(this);
+        }
     }
 
     private void printAll(Iterable<?> elements) {

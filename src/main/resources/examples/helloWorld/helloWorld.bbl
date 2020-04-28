@@ -9,6 +9,7 @@ Void print(String text) {
 }
 
 Void main() {
+    Array<String> array = Array<String>(20);
     /*
         main function
         the program will start here
