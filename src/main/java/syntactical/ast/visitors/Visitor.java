@@ -31,6 +31,8 @@ public interface Visitor {
 
     void visit(ForStatementNode node);
 
+    void visit(OperatorsExpressionNode node);
+
     void visit(ConstantExpressionNode node);
 
     void visit(ListConstructorExpressionNode node);

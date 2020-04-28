@@ -225,7 +225,7 @@ public class ASTPrinter implements Visitor {
         }
         println("switch statement");
         indent(!node.hasNext());
-        println("switching " + node.getVariable());
+        node.getVariable().accept(this);
         indent();
         outdent();
         if (numCases == 0) {
@@ -236,11 +236,11 @@ public class ASTPrinter implements Visitor {
         int i = 0;
         for(Map.Entry<ExpressionNode, StatementNode> entry : cases.entrySet()) {
             if(i == cases.size() - 1) lastChild();
-            println("case " + entry.getKey());
+            entry.getKey().accept(this);
             if(i == cases.size() - 1) indent(true);
             else indent();
             lastChild();
-            println("block " + entry.getValue());
+            entry.getValue().accept(this);
             outdent();
             i++;
         }
@@ -253,13 +253,14 @@ public class ASTPrinter implements Visitor {
         if (!node.hasNext()) {
             lastChild();
         }
-        println("while " + node.getCondition());
+        println("while ");
+        node.getCondition().accept(this);
         if (!node.hasNext()) {
             indent(true);
         }
         else indent();
         lastChild();
-        println("block " + node.getBlock());
+        node.getBlock().accept(this);
         outdent();
         next(node);
     }
@@ -269,15 +270,30 @@ public class ASTPrinter implements Visitor {
         if (!node.hasNext()) {
             lastChild();
         }
-        println("for " + node.getVariable() + " in " + node.getIterable());
+        println("for " + node.getVariable());
+        node.getIterable().accept(this);
         if (!node.hasNext()) {
             indent(true);
         }
         else indent();
         lastChild();
-        println("block " + node.getBlock());
+        node.getBlock().accept(this);
         outdent();
         next(node);
+    }
+
+    @Override
+    public void visit(OperatorsExpressionNode node) {
+        lastChild();
+        println("operators expression");
+
+        indent(true);
+        printAll("type: " + node.getType(),
+                "operator: " + node.getOperator());
+        node.getFirst().accept(this);
+        lastChild();
+        node.getLast().accept(this);
+        outdent();
     }
 
     @Override
