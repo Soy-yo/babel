@@ -2,6 +2,7 @@ package syntactical.ast.visitors;
 
 import syntactical.ast.*;
 
+import java.awt.*;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -225,7 +226,7 @@ public class ASTPrinter implements Visitor {
         }
         println("switch statement");
         indent(!node.hasNext());
-        node.getVariable().accept(this);
+        if(node.getVariable() != null) node.getVariable().accept(this);
         if (numCases == 0) {
             lastChild();
         }
@@ -269,7 +270,7 @@ public class ASTPrinter implements Visitor {
             lastChild();
         }
         println("for " + node.getVariable());
-        node.getIterable().accept(this);
+        if(node.getIterable() != null) node.getIterable().accept(this);
         if (!node.hasNext()) {
             indent(true);
         }
@@ -277,20 +278,28 @@ public class ASTPrinter implements Visitor {
         lastChild();
         node.getBlock().accept(this);
         outdent();
-        next(node);
+        if(node.hasNext()) next(node);
     }
 
     @Override
-    public void visit(OperatorsExpressionNode node) {
+    public void visit(PointExpressionNode node) {
         lastChild();
-        println("operators expression");
-
+        println("point expression");
         indent(true);
-        printAll("type: " + node.getType(),
-                "operator: " + node.getOperator());
-        node.getFirst().accept(this);
+        node.getHost().accept(this);
         lastChild();
-        node.getLast().accept(this);
+        println("Field: " + node.getField());
+        outdent();
+    }
+
+    @Override
+    public void visit(FunctionCallExpressionNode node) {
+        println("function call expression");
+        indent(true);
+        node.getFunction().accept(this);
+        for(ExpressionNode n : node.getArguments()) {
+            n.accept(this);
+        }
         outdent();
     }
 
