@@ -17,8 +17,6 @@ parser code {:
     private LexicalAnalyser analyser = (LexicalAnalyser) getScanner();
 :}
 
-// TODO types etc
-
 terminal String IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, UNDERSCORE, PARENTH_L,
          PARENTH_R, SQUARE_L, SQUARE_R, CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT, COMMA, PLUS_ASSIGN, PLUS,
          MINUS_ASSIGN, MINUS, MULT_ASSIGN, MULT, DIV_ASSIGN, DIV, MOD_ASSIGN, MOD, LE, LT, GE, GT, IDENTITY, EQUALS,
@@ -74,11 +72,11 @@ nonterminal ExpressionNode Expression4;
 nonterminal ExpressionNode Expression5;
 nonterminal ExpressionNode Expression6;
 nonterminal ExpressionNode Expression7;
-nonterminal ExpressionNode Expression8;
-nonterminal ExpressionNode Expression9;
+nonterminal ExpressionNode Expression8, Expr8;
+nonterminal ExpressionNode Expression9, Expr9;
 nonterminal PointExpressionNode FieldAccessExpression;
 nonterminal ArrayAccessExpressionNode ArrayAccessExpression;
-nonterminal FunctionCallExpressionNode FunctionCallExpression;
+nonterminal FunctionCallExpressionNode FunctionCallExpression, FunctionCallExpr;
 // Constants
 nonterminal VariableExpressionNode VariableExpression;
 nonterminal ConstantExpressionNode ConstantExpression;
@@ -94,7 +92,7 @@ nonterminal Designator Designator;
 nonterminal ExpressionNode ArrayAccess, FieldAccess, DesignableExpression;
 nonterminal List<ExpressionNode> Arguments, ArgumentList;
 
-// TODO Statement (function call from expression (and maybe more things)), Expression
+// TODO fix Assignments and constructor conflicts
 
 // Program
 Program ::= ImportList: imports DeclarationList: declarations
@@ -232,17 +230,9 @@ AssignmentStatement ::= Designator: designator ASSIGNMENT Expression: expression
                       | Designator: designator MOD_ASSIGN Expression: expression END
                         {: RESULT = AssignmentStatementNode.fromSyntacticSugar(designator, "_mod", expression); :};
 
-// Function call TODO fix conflicts with anonymous objects
-//FunctionCallStatement ::= Expression: function FunctionArguments: arguments END
-//                          {: RESULT = new FunctionCallStatementNode(function, arguments); :};
-//FunctionArguments     ::= PARENTH_L PARENTH_R
-//                          {: RESULT = new ArrayList<>(); :}
-//                        | PARENTH_L ArgumentList: arguments PARENTH_R
-//                          {: RESULT = arguments; :};
-//ArgumentList          ::= Expression: argument
-//                          {: RESULT = new ArrayList<>(Collections.singletonList(argument)); :}
-//                        | ArgumentList: arguments COMMA Expression: argument
-//                          {: arguments.add(argument); RESULT = arguments; :};
+// Function call
+FunctionCallStatement ::= FunctionCallExpr: function END
+                          {: RESULT = new FunctionCallStatementNode(function); :};
 
 // Return
 ReturnStatement ::= RETURN END
@@ -279,21 +269,13 @@ ForStatement ::= FOR BaseVarDeclaration: variable IN Expression: iterable BlockS
 Expression ::= Expression0: expression
                {: RESULT = expression; :};
 
-Expression9 ::= PARENTH_L Expression0: expression PARENTH_R
-                {: RESULT = expression; :}
-              | VariableExpression: expression
-                {: RESULT = expression; :}
-              | ConstantExpression: expression
-                {: RESULT = expression; :}
-              | ListConstructorExpression: expression
+Expression9 ::= Expr9: expression
                 {: RESULT = expression; :}
               | AnonymousObjectConstructorExpression: expression
-                {: RESULT = expression; :}
-              | ConstructorCallExpression: expression
                 {: RESULT = expression; :};
 Expression8 ::= FieldAccessExpression: expression
                 {: RESULT = expression; :}
-              |  ArrayAccessExpression: expression
+              | ArrayAccessExpression: expression
                 {: RESULT = expression; :}
               | FunctionCallExpression: expression
                 {: RESULT = expression; :}
@@ -359,6 +341,26 @@ FieldAccessExpression  ::= Expression8: expression POINT IDENTIFIER: identifier
 FunctionCallExpression ::= Expression8: function Arguments: arguments
                            {: RESULT = new FunctionCallExpressionNode(function, arguments); :};
 
+// Fix shift-reduce conflict between FunctionCallStatement and AnonymousObjectConstructorExpression
+FunctionCallExpr ::= Expr8: function Arguments: arguments
+                     {: RESULT = new FunctionCallExpressionNode(function, arguments); :};
+Expr8             ::= Expr8: array SQUARE_L Expression: index SQUARE_R
+                      {: RESULT = new ArrayAccessExpressionNode(array, index); :}
+                    | Expr8: expression POINT IDENTIFIER: identifier
+                      {: RESULT = new PointExpressionNode(expression, identifier); :}
+                    | Expr9: expression
+                      {: RESULT = expression; :};
+Expr9             ::= PARENTH_L Expression0: expression PARENTH_R
+                      {: RESULT = expression; :}
+                    | VariableExpression: expression
+                      {: RESULT = expression; :}
+                    | ConstantExpression: expression
+                      {: RESULT = expression; :}
+                    | ListConstructorExpression: expression
+                      {: RESULT = expression; :}
+                    | ConstructorCallExpression: expression
+                      {: RESULT = expression; :};
+
 // Constants
 VariableExpression ::= IDENTIFIER: id
                        {: RESULT = new VariableExpressionNode(id); :}
@@ -421,11 +423,11 @@ TypeName ::= TYPE: name
            | GLOBAL: name
              {: RESULT = name; :};
 
-Designator           ::= IDENTIFIER
-                       | ArrayAccess
-                       | FieldAccess;
-ArrayAccess          ::= DesignableExpression SQUARE_L Expression SQUARE_R;
-FieldAccess          ::= DesignableExpression POINT IDENTIFIER;
+Designator           ::= IDENTIFIER;
+//                       | ArrayAccess
+//                       | FieldAccess;
+//ArrayAccess          ::= DesignableExpression SQUARE_L Expression SQUARE_R;
+//FieldAccess          ::= DesignableExpression POINT IDENTIFIER;
 // TODO only certain expressions (variable (or constant), array, point, function call, etc)
 DesignableExpression ::= IDENTIFIER;
 
