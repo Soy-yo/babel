@@ -54,16 +54,13 @@ public class ASTPrinter implements Visitor {
         println("global scope");
         indent(true);
         if (node.root() != null) {
-            node.root().accept(this);
+            visitAll(node.root());
         }
         outdent();
     }
 
     @Override
     public void visit(VarDeclarationNode node) {
-        if (!node.hasNext()) {
-            lastChild();
-        }
         println("var declaration");
         indent(!node.hasNext());
         println("identifier: " + node.getIdentifier());
@@ -82,14 +79,10 @@ public class ASTPrinter implements Visitor {
             println("initial value: none");
         }
         outdent();
-        next(node);
     }
 
     @Override
     public void visit(FunctionDeclarationNode node) {
-        if (!node.hasNext()) {
-            lastChild();
-        }
         println("function declaration");
         indent(!node.hasNext());
         println("function name: " + node.getIdentifier());
@@ -101,14 +94,10 @@ public class ASTPrinter implements Visitor {
         lastChild();
         node.getCode().accept(this);
         outdent();
-        next(node);
     }
 
     @Override
     public void visit(ClassDeclarationNode node) {
-        if (!node.hasNext()) {
-            lastChild();
-        }
         println("class declaration");
         indent(!node.hasNext());
         println("class name: " + node.getIdentifier());
@@ -116,84 +105,61 @@ public class ASTPrinter implements Visitor {
         if (node.getContentRoot() != null) {
             println("contents");
             indent(true);
-            node.getContentRoot().accept(this);
+            visitAll(node.getContentRoot());
             outdent();
         } else {
             println("contents: none");
         }
         outdent();
-        next(node);
     }
 
     @Override
     public void visit(BlockStatementNode node) {
-        if (!node.hasNext()) {
-            lastChild();
-        }
         println("block statement");
         indent(!node.hasNext());
         if (node.root() != null) {
-            node.root().accept(this);
+            visitAll(node.root());
         }
         outdent();
-        next(node);
     }
 
     @Override
     public void visit(VarDeclarationStatementNode node) {
-        if (!node.hasNext()) {
-            lastChild();
-        }
         println("var declaration statement");
         indent(!node.hasNext());
+        lastChild();
         node.asDeclaration().accept(this);
         outdent();
-        next(node);
     }
 
     @Override
     public void visit(AssignmentStatementNode node) {
-        if (!node.hasNext()) {
-            lastChild();
-        }
         println("assignment statement");
         indent(!node.hasNext());
         // TODO
         outdent();
-        next(node);
     }
 
     @Override
     public void visit(FunctionCallStatementNode node) {
-        if (!node.hasNext()) {
-            lastChild();
-        }
         println("function call statement");
         indent(!node.hasNext());
         // TODO
         outdent();
-        next(node);
     }
 
     @Override
     public void visit(ReturnStatementNode node) {
-        if (!node.hasNext()) {
-            lastChild();
-        }
         println("return statement");
         indent(!node.hasNext());
         lastChild();
         node.getReturnExpression().accept(this);
         outdent();
-        next(node);
     }
 
     @Override
     public void visit(IfElseStatementNode node) {
         boolean hasElse = node.getElsePart() != null;
-        if (!node.hasNext()) {
-            lastChild();
-        }
         println("if-else statement");
         indent(!node.hasNext());
         println("condition");
@@ -205,87 +171,87 @@ public class ASTPrinter implements Visitor {
         }
         println("then part");
         indent(!hasElse);
+        lastChild();
         node.getIfBlock().accept(this);
         outdent();
         if (hasElse) {
             lastChild();
             println("else part");
             indent(true);
+            lastChild();
             node.getElsePart().accept(this);
             outdent();
         }
         outdent();
-        next(node);
     }
 
     @Override
     public void visit(SwitchStatementNode node) {
         int numCases = node.getNumCases();
-        if (!node.hasNext()) {
-            lastChild();
-        }
         println("switch statement");
         indent(!node.hasNext());
-        if(node.getVariable() != null) node.getVariable().accept(this);
-        if (numCases == 0) {
-            lastChild();
-        }
-
-        Map<ExpressionNode, StatementNode> cases = node.getAll();
+        println("switch expression");
+        indent();
+        node.getSwitchExpression().accept(this);
+        outdent();
+        lastChild();
+        println("cases");
+        indent(true);
         int i = 0;
-        for(Map.Entry<ExpressionNode, StatementNode> entry : cases.entrySet()) {
-            if(i == cases.size() - 1) lastChild();
-            entry.getKey().accept(this);
-            if(i == cases.size() - 1){
-                indent(true);
+        for (Map.Entry<ExpressionNode, StatementNode> entry : node.getCases().entrySet()) {
+            if (i == numCases - 1) {
                 lastChild();
             }
-            else indent();
+            println("case [" + i + "]");
+            indent(i == numCases - 1);
+            println("key");
+            indent();
+            lastChild();
+            entry.getKey().accept(this);
+            outdent();
+            lastChild();
+            println("value");
+            indent(true);
+            lastChild();
             entry.getValue().accept(this);
+            outdent();
             outdent();
             i++;
         }
         outdent();
-        next(node);
     }
 
     @Override
     public void visit(WhileStatementNode node) {
-        if (!node.hasNext()) {
-            lastChild();
-        }
-        println("while ");
+        println("while");
+        indent(!node.hasNext());
+        println("condition");
+        indent();
+        lastChild();
         node.getCondition().accept(this);
-        if (!node.hasNext()) {
-            indent(true);
-        }
-        else indent();
+        outdent();
         lastChild();
         node.getBlock().accept(this);
         outdent();
-        next(node);
     }
 
     @Override
     public void visit(ForStatementNode node) {
-        if (!node.hasNext()) {
-            lastChild();
-        }
-        println("for " + node.getVariable());
-        if(node.getIterable() != null) node.getIterable().accept(this);
-        if (!node.hasNext()) {
-            indent(true);
-        }
-        else indent();
+        println("for");
+        indent(!node.hasNext());
+        println("variable " + node.getVariable());
+        println("iterable");
+        indent();
+        lastChild();
+        node.getIterable().accept(this);
+        outdent();
         lastChild();
         node.getBlock().accept(this);
         outdent();
-        if(node.hasNext()) next(node);
     }
 
     @Override
     public void visit(PointExpressionNode node) {
-        lastChild();
         println("point operator expression");
         indent(true);
         println("left hand side");

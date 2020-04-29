@@ -7,43 +7,48 @@ import java.util.Map;
 
 public class SwitchStatementNode extends StatementNode {
 
-  private ExpressionNode variable;
-  private Map<ExpressionNode, StatementNode> cases; //TODO change for actual Node
+    // TODO create case node ??
 
-  public SwitchStatementNode(ExpressionNode variable,
-                             Map<ExpressionNode,StatementNode> cases) {
-    this.variable = variable;
-    this.cases = new HashMap<>(cases);
+    private ExpressionNode switchExpression;
+    private Map<ExpressionNode, StatementNode> cases;
+
+    public SwitchStatementNode(ExpressionNode switchExpression,
+                               Map<ExpressionNode, StatementNode> cases) {
+        this.switchExpression = switchExpression;
+        this.cases = new HashMap<>(cases);
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
+    public ExpressionNode getSwitchExpression() {
+        return switchExpression;
+    }
+
+    public Map<ExpressionNode, StatementNode> getCases() {
+        return cases;
+    }
+
+    public Iterable<ExpressionNode> getConstants() {
+        return cases.keySet();
+    }
+
+    public Iterable<StatementNode> getStatements() {
+        return cases.values();
+    }
+
+    public int getNumCases() {
+        return cases.size();
+    }
+
+    @Override
+    public String toString() {
+        return super.toString()
+                + " {variable:" + switchExpression
+                + ", numCases:" + cases.size()
+                + "}";
   }
 
-  @Override
-  public void accept(Visitor visitor) {
-    visitor.visit(this);
-  }
-
-  public ExpressionNode getVariable() {
-    return variable;
-  }
-
-  public Map<ExpressionNode, StatementNode> getAll() {return cases;}
-
-  public Iterable<StatementNode> getBlocks() {
-    return cases.values();
-  }
-
-  public Iterable<ExpressionNode> getCases() {
-    return cases.keySet();
-  }
-
-  public int getNumCases() {
-    return cases.size();
-  }
-
-  @Override
-  public String toString() {
-    return super.toString()
-        + " {variable:" + variable
-        + ", numCases:" + (cases.size())
-        + "}";
-  }
 }
