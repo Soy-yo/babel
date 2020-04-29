@@ -75,9 +75,10 @@ nonterminal ExpressionNode Expression5;
 nonterminal ExpressionNode Expression6;
 nonterminal ExpressionNode Expression7;
 nonterminal ExpressionNode Expression8;
-// Constants
+nonterminal ExpressionNode Expression9;
 nonterminal PointExpressionNode FieldAccessExpression;
 nonterminal ArrayAccessExpressionNode ArrayAccessExpression;
+// Constants
 nonterminal VariableExpressionNode VariableExpression;
 nonterminal ConstantExpressionNode ConstantExpression;
 nonterminal ListConstructorExpressionNode ListConstructorExpression;
@@ -277,19 +278,23 @@ ForStatement ::= FOR BaseVarDeclaration: variable IN Expression: iterable BlockS
 Expression ::= Expression0: expression
                {: RESULT = expression; :};
 
-Expression8 ::= PARENTH_L Expression0: first PARENTH_R
-                {: RESULT = first; :}
-              | ConstantExpression: first
-                {: RESULT = first; :}
+Expression9 ::= PARENTH_L Expression0: expression PARENTH_R
+                {: RESULT = expression; :}
+              | VariableExpression: expression
+                {: RESULT = expression; :}
+              | ConstantExpression: expression
+                {: RESULT = expression; :}
               | ListConstructorExpression: expression
                 {: RESULT = expression; :}
               | AnonymousObjectConstructorExpression: expression
                 {: RESULT = expression; :}
               | ConstructorCallExpression: expression
+                {: RESULT = expression; :};
+Expression8 ::= FieldAccessExpression: expression
                 {: RESULT = expression; :}
-              | FieldAccessExpression: expression
+              |  ArrayAccessExpression: expression
                 {: RESULT = expression; :}
-              | ArrayAccessExpresion: expression
+              | Expression9: expression
                 {: RESULT = expression; :};
 Expression7 ::= PLUS: plus Expression7: first
                 {: RESULT = FunctionCallExpressionNode.operator("_plus", first); :}
@@ -344,15 +349,17 @@ Expression0 ::= Expression0: first ELLIPSIS: ellipsis Expression1: last
               | Expression1: first
                 {: RESULT = first; :};
 
-// Constants
-ArrayAccessExpression ::= Expression: array SQUARE_L Expression: index SQUARE_R
-                          {: RESULT = new ArrayAccessExpressionNode (array, index); :};
-FieldAccessExpression ::= Expression: expression POINT IDENTIFIER: identifier
+ArrayAccessExpression ::= Expression8: array SQUARE_L Expression: index SQUARE_R
+                          {: RESULT = new ArrayAccessExpressionNode(array, index); :};
+FieldAccessExpression ::= Expression8: expression POINT IDENTIFIER: identifier
                           {: RESULT = new PointExpressionNode(expression, identifier); :};
+
+// Constants
 VariableExpression ::= IDENTIFIER: id
                        {: RESULT = new VariableExpressionNode(id); :}
-                     | GLOBAL: id
-                       {: RESULT = new VariableExpressionNode(id); :}
+                     // TODO uncomment
+                     //| GLOBAL: id
+                     //  {: RESULT = new VariableExpressionNode(id); :}
                      | THIS: id
                        {: RESULT = new VariableExpressionNode(id); :};
 ConstantExpression ::= INT: n

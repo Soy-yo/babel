@@ -7,6 +7,7 @@ Void main() {
     } else {
         array = [];
     }
-    //Int c = array[1];
-    //Int d = x.y + y.x;
+    Int c = array[1];
+    Int d = x.y[0] + y.x[a.b][1];
+    //Int e = foo(array[2]);
 }

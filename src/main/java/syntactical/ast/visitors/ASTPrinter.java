@@ -283,7 +283,10 @@ public class ASTPrinter implements Visitor {
         outdent();
         lastChild();
         println("index");
+        indent(true);
+        lastChild();
         node.getIndex().accept(this);
+        outdent();
         outdent();
     }
 
