@@ -1,0 +1,27 @@
+Void main() {
+    //Form student = {
+    //    String name = "John",
+    //    Int age = 22,
+    //    Real height = 1.83
+    //};
+
+    print(student.name);
+    //student.age = 50;
+    print(student.age);
+
+    Form teacher = {
+        String name = "John",
+        Int age = 50,
+        Real height = 1.83
+    };
+
+    print(teacher == student);
+    Form origin = { Int x = 0, Int y = 0 };
+    print(student == point);
+
+    Form tree = {
+        Form left = { Form left = {}, Int value = 0, Form right = {} },
+        Int value = 3,
+        Form right = { Form left = {}, Int value = 5, Form right = {} }
+    };
+}
