@@ -2,18 +2,16 @@ package syntactical.ast;
 
 import syntactical.ast.visitors.Visitor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 public class FunctionCallStatementNode extends StatementNode {
 
-    private ExpressionNode function;
-    private List<ExpressionNode> arguments;
+    private FunctionCallExpressionNode function;
 
-    public FunctionCallStatementNode(ExpressionNode function, Collection<ExpressionNode> arguments) {
+    public FunctionCallStatementNode(FunctionCallExpressionNode function) {
         this.function = function;
-        this.arguments = new ArrayList<>(arguments);
+    }
+
+    public FunctionCallExpressionNode asExpression() {
+        return function;
     }
 
     @Override
@@ -23,9 +21,7 @@ public class FunctionCallStatementNode extends StatementNode {
 
     @Override
     public String toString() {
-        return super.toString()
-                + " {function:" + function
-                + ", arguments:" + arguments
-                + "}";
+        return super.toString() + " - " + function.toString();
     }
+
 }

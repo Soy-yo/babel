@@ -150,7 +150,8 @@ public class ASTPrinter implements Visitor {
     public void visit(FunctionCallStatementNode node) {
         println("function call statement");
         indent(!node.hasNext());
-        // TODO
+        lastChild();
+        node.asExpression().accept(this);
         outdent();
     }
 
