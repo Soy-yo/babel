@@ -9,5 +9,5 @@ Void main() {
     }
     Int c = array[1];
     Int d = x.y[0] + y.x[a.b][1];
-    //Int e = foo(array[2]);
+    Int e = x.foo(array[2])[3];
 }

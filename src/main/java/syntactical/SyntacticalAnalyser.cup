@@ -78,6 +78,7 @@ nonterminal ExpressionNode Expression8;
 nonterminal ExpressionNode Expression9;
 nonterminal PointExpressionNode FieldAccessExpression;
 nonterminal ArrayAccessExpressionNode ArrayAccessExpression;
+nonterminal FunctionCallExpressionNode FunctionCallExpression;
 // Constants
 nonterminal VariableExpressionNode VariableExpression;
 nonterminal ConstantExpressionNode ConstantExpression;
@@ -294,6 +295,8 @@ Expression8 ::= FieldAccessExpression: expression
                 {: RESULT = expression; :}
               |  ArrayAccessExpression: expression
                 {: RESULT = expression; :}
+              | FunctionCallExpression: expression
+                {: RESULT = expression; :}
               | Expression9: expression
                 {: RESULT = expression; :};
 Expression7 ::= PLUS: plus Expression7: first
@@ -349,10 +352,12 @@ Expression0 ::= Expression0: first ELLIPSIS: ellipsis Expression1: last
               | Expression1: first
                 {: RESULT = first; :};
 
-ArrayAccessExpression ::= Expression8: array SQUARE_L Expression: index SQUARE_R
-                          {: RESULT = new ArrayAccessExpressionNode(array, index); :};
-FieldAccessExpression ::= Expression8: expression POINT IDENTIFIER: identifier
-                          {: RESULT = new PointExpressionNode(expression, identifier); :};
+ArrayAccessExpression  ::= Expression8: array SQUARE_L Expression: index SQUARE_R
+                           {: RESULT = new ArrayAccessExpressionNode(array, index); :};
+FieldAccessExpression  ::= Expression8: expression POINT IDENTIFIER: identifier
+                           {: RESULT = new PointExpressionNode(expression, identifier); :};
+FunctionCallExpression ::= Expression8: function Arguments: arguments
+                           {: RESULT = new FunctionCallExpressionNode(function, arguments); :};
 
 // Constants
 VariableExpression ::= IDENTIFIER: id
