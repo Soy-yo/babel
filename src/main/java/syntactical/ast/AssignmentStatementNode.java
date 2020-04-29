@@ -12,6 +12,16 @@ public class AssignmentStatementNode extends StatementNode {
         this.value = value;
     }
 
+    public static AssignmentStatementNode fromSyntacticSugar(Designator target, String operator, ExpressionNode value) {
+        // TODO get designator expression (replace null)
+        ExpressionNode left = ConstantExpressionNode.ofNull();
+        return new AssignmentStatementNode(target, FunctionCallExpressionNode.operator(left, operator, value));
+    }
+
+    public ExpressionNode getValue() {
+        return value;
+    }
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

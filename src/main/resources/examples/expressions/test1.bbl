@@ -2,7 +2,7 @@ Void main() {
     Int a = (2+3) * (1+6);
     Bool b = 6 + 5 - 3 % 2 / 7 < 4;
     Array<Int>(3) array;
-    if a < 5 {
+    if true < 5 {
         array = [1, 2, 3];
     } else {
         array = [];

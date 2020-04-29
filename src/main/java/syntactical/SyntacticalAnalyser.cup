@@ -19,11 +19,11 @@ parser code {:
 
 // TODO types etc
 
-terminal String IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, THIS, UNDERSCORE, PARENTH_L,
+terminal String IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, UNDERSCORE, PARENTH_L,
          PARENTH_R, SQUARE_L, SQUARE_R, CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT, COMMA, PLUS_ASSIGN, PLUS,
          MINUS_ASSIGN, MINUS, MULT_ASSIGN, MULT, DIV_ASSIGN, DIV, MOD_ASSIGN, MOD, LE, LT, GE, GT, IDENTITY, EQUALS,
          NEQ, ASSIGNMENT, NOT, AND, OR, END;
-terminal String IDENTIFIER, GLOBAL, TYPE, IMPORT;
+terminal String IDENTIFIER, GLOBAL, THIS, TYPE, IMPORT;
 terminal String INT, REAL, CHAR, STRING, TRUE, FALSE, NOTHING, NULL;
 
 // Program
@@ -76,6 +76,7 @@ nonterminal ExpressionNode Expression6;
 nonterminal ExpressionNode Expression7;
 nonterminal ExpressionNode Expression8;
 // Constants
+nonterminal VariableExpressionNode VariableExpression;
 nonterminal ConstantExpressionNode ConstantExpression;
 nonterminal ListConstructorExpressionNode ListConstructorExpression;
 nonterminal List<ExpressionNode> ListElements;
@@ -89,7 +90,7 @@ nonterminal Designator Designator;
 nonterminal ExpressionNode ArrayAccess, FieldAccess, DesignableExpression;
 nonterminal List<ExpressionNode> Arguments, ArgumentList;
 
-// TODO Statement (function call from expression and operational assignments +=, *=... (and maybe more things)), Expression
+// TODO Statement (function call from expression (and maybe more things)), Expression
 
 // Program
 Program ::= ImportList: imports DeclarationList: declarations
@@ -215,7 +216,17 @@ VarDeclarationStatement ::= VarConstDeclaration: declaration
 
 // Assignment
 AssignmentStatement ::= Designator: designator ASSIGNMENT Expression: expression END
-                        {: RESULT = new AssignmentStatementNode(designator, expression); :};
+                        {: RESULT = new AssignmentStatementNode(designator, expression); :}
+                      | Designator: designator PLUS_ASSIGN Expression: expression END
+                        {: RESULT = AssignmentStatementNode.fromSyntacticSugar(designator, "_plus", expression); :}
+                      | Designator: designator MINUS_ASSIGN Expression: expression END
+                        {: RESULT = AssignmentStatementNode.fromSyntacticSugar(designator, "_minus", expression); :}
+                      | Designator: designator MULT_ASSIGN Expression: expression END
+                        {: RESULT = AssignmentStatementNode.fromSyntacticSugar(designator, "_mult", expression); :}
+                      | Designator: designator DIV_ASSIGN Expression: expression END
+                        {: RESULT = AssignmentStatementNode.fromSyntacticSugar(designator, "_div", expression); :}
+                      | Designator: designator MOD_ASSIGN Expression: expression END
+                        {: RESULT = AssignmentStatementNode.fromSyntacticSugar(designator, "_mod", expression); :};
 
 // Function call TODO fix conflicts with anonymous objects
 //FunctionCallStatement ::= Expression: function FunctionArguments: arguments END
@@ -261,24 +272,21 @@ ForStatement ::= FOR BaseVarDeclaration: variable IN Expression: iterable BlockS
 
 
 // Expressions
-// TODO constants at last level with (E)
-Expression ::= ListConstructorExpression: expression
-               {: RESULT = expression; :}
-             | AnonymousObjectConstructorExpression: expression
-               {: RESULT = expression; :}
-             | ConstructorCallExpression: expression
-               {: RESULT = expression; :}
-             | Expression0: expression
+Expression ::= Expression0: expression
                {: RESULT = expression; :};
 
-
-
-Expression8 ::= ConstantExpression: first
+Expression8 ::= PARENTH_L Expression0: first PARENTH_R
                 {: RESULT = first; :}
-              | DesignableExpression: first
+              //| VariableExpression: first
+              //  {: RESULT = first; :}
+              | ConstantExpression: first
                 {: RESULT = first; :}
-              | PARENTH_L Expression0: first PARENTH_R
-                {: RESULT = first; :};
+              | ListConstructorExpression: expression
+                {: RESULT = expression; :}
+              | AnonymousObjectConstructorExpression: expression
+                {: RESULT = expression; :}
+              | ConstructorCallExpression: expression
+                {: RESULT = expression; :};
 Expression7 ::= PLUS: plus Expression7: first
                 {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_plus")
                 , new ArrayList<>()); :}
@@ -351,6 +359,12 @@ Expression0 ::= Expression0: first ELLIPSIS: ellipsis Expression1: last
                 {: RESULT = first; :};
 
 // Constants
+VariableExpression ::= IDENTIFIER: id
+                       {: RESULT = new VariableExpressionNode(id); :}
+                     | GLOBAL: id
+                       {: RESULT = new VariableExpressionNode(id); :}
+                     | THIS: id
+                       {: RESULT = new VariableExpressionNode(id); :};
 ConstantExpression ::= INT: n
                        {: RESULT = ConstantExpressionNode.fromInt(n); :}
                      | REAL: x

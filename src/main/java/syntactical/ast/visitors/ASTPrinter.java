@@ -136,7 +136,13 @@ public class ASTPrinter implements Visitor {
     public void visit(AssignmentStatementNode node) {
         println("assignment statement");
         indent(!node.hasNext());
-        // TODO
+        // TODO designator
+        lastChild();
+        println("value");
+        indent(true);
+        lastChild();
+        node.getValue().accept(this);
+        outdent();
         outdent();
     }
 
@@ -164,7 +170,8 @@ public class ASTPrinter implements Visitor {
         indent(!node.hasNext());
         println("condition");
         indent();
-        //node.getCondition().accept(this);
+        lastChild();
+        node.getCondition().accept(this);
         outdent();
         if (!hasElse) {
             lastChild();
@@ -270,6 +277,7 @@ public class ASTPrinter implements Visitor {
         indent(true);
         println("function");
         indent();
+        lastChild();
         node.getFunction().accept(this);
         outdent();
         lastChild();
@@ -278,6 +286,11 @@ public class ASTPrinter implements Visitor {
         visitAll(node.getArguments());
         outdent();
         outdent();
+    }
+
+    @Override
+    public void visit(VariableExpressionNode node) {
+        println("variable expression: " + node.get());
     }
 
     @Override
