@@ -2,7 +2,6 @@ package syntactical.ast.visitors;
 
 import syntactical.ast.*;
 
-import java.awt.*;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -76,6 +75,7 @@ public class ASTPrinter implements Visitor {
         if (node.getInitialValue() != null) {
             println("initial value");
             indent(true);
+            lastChild();
             node.getInitialValue().accept(this);
             outdent();
         } else {
@@ -188,7 +188,6 @@ public class ASTPrinter implements Visitor {
         next(node);
     }
 
-    //TODO prints badly
     @Override
     public void visit(IfElseStatementNode node) {
         boolean hasElse = node.getElsePart() != null;
@@ -219,7 +218,6 @@ public class ASTPrinter implements Visitor {
         next(node);
     }
 
-    //TODO prints badly
     @Override
     public void visit(SwitchStatementNode node) {
         int numCases = node.getNumCases();
@@ -251,7 +249,6 @@ public class ASTPrinter implements Visitor {
         next(node);
     }
 
-    //TODO prints badly
     @Override
     public void visit(WhileStatementNode node) {
         if (!node.hasNext()) {
@@ -269,7 +266,6 @@ public class ASTPrinter implements Visitor {
         next(node);
     }
 
-    //TODO prints badly
     @Override
     public void visit(ForStatementNode node) {
         if (!node.hasNext()) {
@@ -287,34 +283,39 @@ public class ASTPrinter implements Visitor {
         if(node.hasNext()) next(node);
     }
 
-    //TODO prints badly
     @Override
     public void visit(PointExpressionNode node) {
         lastChild();
-        println("point expression");
+        println("point operator expression");
         indent(true);
-        node.getHost().accept(this);
+        println("left hand side");
+        indent();
         lastChild();
-        println("Field: " + node.getField());
+        node.getHost().accept(this);
+        outdent();
+        lastChild();
+        println("right hand side: " + node.getField());
         outdent();
     }
 
-    //TODO prints badly
     @Override
     public void visit(FunctionCallExpressionNode node) {
         println("function call expression");
+        indent(true);
+        println("function");
         indent();
         node.getFunction().accept(this);
+        outdent();
+        lastChild();
         println("arguments:");
-        indent();
+        indent(true);
         visitAll(node.getArguments());
+        outdent();
         outdent();
     }
 
-    //TODO prints badly
     @Override
     public void visit(ConstantExpressionNode node) {
-        lastChild();
         println("constant expression");
         indent(true);
         printAll("type: " + node.getType(),
@@ -326,7 +327,6 @@ public class ASTPrinter implements Visitor {
 
     @Override
     public void visit(ListConstructorExpressionNode node) {
-        lastChild();
         println("list constructor expression");
         indent(true);
         println("type: " + node.getType());
@@ -350,7 +350,6 @@ public class ASTPrinter implements Visitor {
 
     @Override
     public void visit(AnonymousObjectConstructorExpressionNode node) {
-        lastChild();
         println("anonymous object constructor expression");
         indent(true);
         if (node.isEmpty()) {
@@ -370,7 +369,6 @@ public class ASTPrinter implements Visitor {
 
     @Override
     public void visit(ConstructorCallExpressionNode node) {
-        lastChild();
         println("constructor call expression");
         indent(true);
         println("type: " + node.getType());
