@@ -76,6 +76,8 @@ nonterminal ExpressionNode Expression6;
 nonterminal ExpressionNode Expression7;
 nonterminal ExpressionNode Expression8;
 // Constants
+nonterminal PointExpressionNode FieldAccessExpression;
+nonterminal ArrayAccessExpressionNode ArrayAccessExpression;
 nonterminal VariableExpressionNode VariableExpression;
 nonterminal ConstantExpressionNode ConstantExpression;
 nonterminal ListConstructorExpressionNode ListConstructorExpression;
@@ -277,8 +279,6 @@ Expression ::= Expression0: expression
 
 Expression8 ::= PARENTH_L Expression0: first PARENTH_R
                 {: RESULT = first; :}
-              //| VariableExpression: first
-              //  {: RESULT = first; :}
               | ConstantExpression: first
                 {: RESULT = first; :}
               | ListConstructorExpression: expression
@@ -286,79 +286,69 @@ Expression8 ::= PARENTH_L Expression0: first PARENTH_R
               | AnonymousObjectConstructorExpression: expression
                 {: RESULT = expression; :}
               | ConstructorCallExpression: expression
+                {: RESULT = expression; :}
+              | FieldAccessExpression: expression
+                {: RESULT = expression; :}
+              | ArrayAccessExpresion: expression
                 {: RESULT = expression; :};
 Expression7 ::= PLUS: plus Expression7: first
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_plus")
-                , new ArrayList<>()); :}
+                {: RESULT = FunctionCallExpressionNode.operator("_plus", first); :}
               | MINUS: minus Expression7: first
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_minus")
-                , new ArrayList<>()); :}
+                {: RESULT = FunctionCallExpressionNode.operator("_minus", first); :}
               | NOT: not Expression7: first
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_not"),
-                new ArrayList<>()); :}
+                {: RESULT = FunctionCallExpressionNode.operator("_not", first); :}
               | Expression8: first
                 {: RESULT = first; :};
 Expression6 ::= Expression6: first MULT: mult Expression7: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_mult"),
-                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_mult", last); :}
               | Expression6: first DIV: div Expression7: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_div"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_div", last); :}
               | Expression6: first MOD: mod Expression7: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_mod"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_mod", last); :}
               | Expression7: first
                 {: RESULT = first; :};
 Expression5 ::= Expression5: first PLUS: plus Expression6: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_plus"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_plus", last); :}
               | Expression5: first MINUS: minus Expression6: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_minus"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_minus", last); :}
               | Expression6: first
                 {: RESULT = first; :};
 Expression4 ::= Expression4: first GT: gt Expression5: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_gt"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_gt", last); :}
               | Expression4: first GE: ge Expression5: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_ge"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_ge", last); :}
               | Expression4: first LT: lt Expression5: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_lt"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_lt", last); :}
               | Expression4: first LE: le Expression5: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_le"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_le", last); :}
               | Expression5: first
                 {: RESULT = first; :};
 Expression3 ::= Expression3: first EQUALS: equals Expression4: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_equals"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_equals", last); :}
               | Expression3: first NEQ: neq Expression4: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_neq"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_neq", last); :}
               | Expression3: first IDENTITY: identity Expression4: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_id"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_id", last); :}
               | Expression4: first
                 {: RESULT = first; :};
 Expression2 ::= Expression2: first AND: and Expression3: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_and"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_and", last); :}
               | Expression3: first
                 {: RESULT = first; :};
 Expression1 ::= Expression1: first OR: or Expression2: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_or"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_or", last); :}
               | Expression2: first
                 {: RESULT = first; :};
 Expression0 ::= Expression0: first ELLIPSIS: ellipsis Expression1: last
-                {: RESULT = new FunctionCallExpressionNode(new PointExpressionNode(first,"_to"),
-                                                new ArrayList<>(Collections.singletonList(last))); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, "_to", last); :}
               | Expression1: first
                 {: RESULT = first; :};
 
 // Constants
+ArrayAccessExpression ::= Expression: array SQUARE_L Expression: index SQUARE_R
+                          {: RESULT = new ArrayAccessExpressionNode (array, index); :};
+FieldAccessExpression ::= Expression: expression POINT IDENTIFIER: identifier
+                          {: RESULT = new PointExpressionNode(expression, identifier); :};
 VariableExpression ::= IDENTIFIER: id
                        {: RESULT = new VariableExpressionNode(id); :}
                      | GLOBAL: id

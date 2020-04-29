@@ -15,14 +15,6 @@ public class PointExpressionNode extends ExpressionNode {
     this.field = field;
   }
 
-  /* OperatorsExpressionNode(String operator, ExpressionNode first,
-                                    ExpressionNode last, Type type) {
-    super(type);
-    this.operator = operator;
-    this.first = first;
-    this.last = last;
-  }*/
-
   public ExpressionNode getHost() { return this.host; }
   public String getField() { return this.field; }
 

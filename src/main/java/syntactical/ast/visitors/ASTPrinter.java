@@ -273,6 +273,21 @@ public class ASTPrinter implements Visitor {
     }
 
     @Override
+    public void visit(ArrayAccessExpressionNode node) {
+        println("array access operator expression");
+        indent(true);
+        println("array");
+        indent();
+        lastChild();
+        node.getArray().accept(this);
+        outdent();
+        lastChild();
+        println("index");
+        node.getIndex().accept(this);
+        outdent();
+    }
+
+    @Override
     public void visit(FunctionCallExpressionNode node) {
         println("function call expression");
         indent(true);

@@ -2,6 +2,8 @@ package syntactical.ast.visitors;
 
 import syntactical.ast.*;
 
+import java.lang.reflect.Array;
+
 public interface Visitor {
 
     // TODO visit all types of nodes
@@ -32,6 +34,8 @@ public interface Visitor {
     void visit(ForStatementNode node);
 
     void visit(PointExpressionNode node);
+
+    void visit(ArrayAccessExpressionNode node);
 
     void visit(FunctionCallExpressionNode node);
 
