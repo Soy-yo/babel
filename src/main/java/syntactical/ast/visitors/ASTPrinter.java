@@ -188,6 +188,7 @@ public class ASTPrinter implements Visitor {
         next(node);
     }
 
+    //TODO prints badly
     @Override
     public void visit(IfElseStatementNode node) {
         boolean hasElse = node.getElsePart() != null;
@@ -218,6 +219,7 @@ public class ASTPrinter implements Visitor {
         next(node);
     }
 
+    //TODO prints badly
     @Override
     public void visit(SwitchStatementNode node) {
         int numCases = node.getNumCases();
@@ -236,9 +238,11 @@ public class ASTPrinter implements Visitor {
         for(Map.Entry<ExpressionNode, StatementNode> entry : cases.entrySet()) {
             if(i == cases.size() - 1) lastChild();
             entry.getKey().accept(this);
-            if(i == cases.size() - 1) indent(true);
+            if(i == cases.size() - 1){
+                indent(true);
+                lastChild();
+            }
             else indent();
-            lastChild();
             entry.getValue().accept(this);
             outdent();
             i++;
@@ -247,6 +251,7 @@ public class ASTPrinter implements Visitor {
         next(node);
     }
 
+    //TODO prints badly
     @Override
     public void visit(WhileStatementNode node) {
         if (!node.hasNext()) {
@@ -264,6 +269,7 @@ public class ASTPrinter implements Visitor {
         next(node);
     }
 
+    //TODO prints badly
     @Override
     public void visit(ForStatementNode node) {
         if (!node.hasNext()) {
@@ -281,6 +287,7 @@ public class ASTPrinter implements Visitor {
         if(node.hasNext()) next(node);
     }
 
+    //TODO prints badly
     @Override
     public void visit(PointExpressionNode node) {
         lastChild();
@@ -292,17 +299,19 @@ public class ASTPrinter implements Visitor {
         outdent();
     }
 
+    //TODO prints badly
     @Override
     public void visit(FunctionCallExpressionNode node) {
         println("function call expression");
-        indent(true);
+        indent();
         node.getFunction().accept(this);
-        for(ExpressionNode n : node.getArguments()) {
-            n.accept(this);
-        }
+        println("arguments:");
+        indent();
+        visitAll(node.getArguments());
         outdent();
     }
 
+    //TODO prints badly
     @Override
     public void visit(ConstantExpressionNode node) {
         lastChild();
