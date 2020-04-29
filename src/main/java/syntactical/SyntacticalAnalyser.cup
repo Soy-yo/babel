@@ -282,55 +282,55 @@ Expression8 ::= FieldAccessExpression: expression
               | Expression9: expression
                 {: RESULT = expression; :};
 Expression7 ::= PLUS: plus Expression7: first
-                {: RESULT = FunctionCallExpressionNode.operator("_plus", first); :}
+                {: RESULT = FunctionCallExpressionNode.operator(_PLUS, first); :}
               | MINUS: minus Expression7: first
-                {: RESULT = FunctionCallExpressionNode.operator("_minus", first); :}
+                {: RESULT = FunctionCallExpressionNode.operator(_MINUS, first); :}
               | NOT: not Expression7: first
-                {: RESULT = FunctionCallExpressionNode.operator("_not", first); :}
+                {: RESULT = FunctionCallExpressionNode.operator(_NOT, first); :}
               | Expression8: first
                 {: RESULT = first; :};
 Expression6 ::= Expression6: first MULT: mult Expression7: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_mult", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _MULT, last); :}
               | Expression6: first DIV: div Expression7: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_div", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _DIV, last); :}
               | Expression6: first MOD: mod Expression7: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_mod", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _MOD, last); :}
               | Expression7: first
                 {: RESULT = first; :};
 Expression5 ::= Expression5: first PLUS: plus Expression6: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_plus", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _PLUS, last); :}
               | Expression5: first MINUS: minus Expression6: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_minus", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _MINUS, last); :}
               | Expression6: first
                 {: RESULT = first; :};
 Expression4 ::= Expression4: first GT: gt Expression5: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_gt", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _GT, last); :}
               | Expression4: first GE: ge Expression5: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_ge", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _GE, last); :}
               | Expression4: first LT: lt Expression5: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_lt", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _LT, last); :}
               | Expression4: first LE: le Expression5: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_le", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _LE, last); :}
               | Expression5: first
                 {: RESULT = first; :};
 Expression3 ::= Expression3: first EQUALS: equals Expression4: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_equals", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _EQUALS, last); :}
               | Expression3: first NEQ: neq Expression4: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_neq", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _NEQ, last); :}
               | Expression3: first IDENTITY: identity Expression4: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_id", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _ID, last); :}
               | Expression4: first
                 {: RESULT = first; :};
 Expression2 ::= Expression2: first AND: and Expression3: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_and", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _AND, last); :}
               | Expression3: first
                 {: RESULT = first; :};
 Expression1 ::= Expression1: first OR: or Expression2: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_or", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _OR, last); :}
               | Expression2: first
                 {: RESULT = first; :};
 Expression0 ::= Expression0: first ELLIPSIS: ellipsis Expression1: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, "_to", last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(first, _TO, last); :}
               | Expression1: first
                 {: RESULT = first; :};
 

@@ -7,5 +7,7 @@ Void main() {
     } else {
         array = [];
     }
+    Int c = array[4-2*2];
+    Int d = x.y + y.x;
     system.out.print("Hello world\n");
 }
