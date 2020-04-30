@@ -5,18 +5,22 @@ import syntactical.ast.visitors.Visitor;
 public class PointExpressionNode extends ExpressionNode {
 
     private final ExpressionNode host;
-    private final String field;
+    private final VariableExpressionNode field;
 
-    public PointExpressionNode(ExpressionNode host, String field) {
+    public PointExpressionNode(ExpressionNode host, VariableExpressionNode field) {
         this.host = host;
         this.field = field;
+    }
+
+    public PointExpressionNode(ExpressionNode host, String field) {
+        this(host, new VariableExpressionNode(field));
     }
 
     public ExpressionNode getHost() {
         return this.host;
     }
 
-    public String getField() {
+    public VariableExpressionNode getField() {
         return this.field;
     }
 

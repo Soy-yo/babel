@@ -51,6 +51,7 @@ nonterminal BlockStatementNode BlockStatement;
 nonterminal VarDeclarationStatementNode VarDeclarationStatement;
 // Assignment
 nonterminal AssignmentStatementNode AssignmentStatement;
+nonterminal Designator Designator;
 // Function call
 nonterminal FunctionCallStatementNode FunctionCallStatement;
 // Return
@@ -90,11 +91,9 @@ nonterminal ConstructorCallExpressionNode ConstructorCallExpression;
 // Other
 nonterminal String TypeName;
 nonterminal Type Type;
-nonterminal Designator Designator;
-nonterminal ExpressionNode ArrayAccess, FieldAccess, DesignableExpression;
 nonterminal List<ExpressionNode> Arguments, ArgumentList;
 
-// TODO fix Assignments and constructor conflicts
+// TODO fix constructor conflicts
 
 // Program
 Program ::= ImportList: imports DeclarationList: declarations
@@ -240,6 +239,13 @@ AssignmentStatement ::= Designator: designator ASSIGNMENT Expression: expression
                       | Designator: designator MOD_ASSIGN Expression: expression END
                         {: RESULT = AssignmentStatementNode.fromSyntacticSugar(
                                             designator, OperatorOverloadConstants._MOD, expression); :};
+
+Designator   ::= VariableExpression: expression
+                 {: RESULT = Designator.ofVar(expression); :}
+               | FieldAccessExpression: expression
+                 {: RESULT = Designator.ofField(expression); :}
+               | ArrayAccessExpression: expression
+                 {: RESULT = Designator.ofArray(expression); :};
 
 // Function call
 FunctionCallStatement ::= FunctionCallExpression: function END
@@ -419,14 +425,6 @@ TypeName ::= TYPE: name
              {: RESULT = name; :}
            | GLOBAL: name
              {: RESULT = name; :};
-
-Designator           ::= IDENTIFIER;
-//                       | ArrayAccess
-//                       | FieldAccess;
-//ArrayAccess          ::= DesignableExpression SQUARE_L Expression SQUARE_R;
-//FieldAccess          ::= DesignableExpression POINT IDENTIFIER;
-// TODO only certain expressions (variable (or constant), array, point, function call, etc)
-DesignableExpression ::= IDENTIFIER;
 
 Arguments    ::= PARENTH_L PARENTH_R
                  {: RESULT = new ArrayList<>(); :}

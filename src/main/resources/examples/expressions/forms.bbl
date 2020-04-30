@@ -6,7 +6,7 @@ Void main() {
     };
 
     print(student.name);
-    //student.age = 50;
+    student.age = 50;
     print(student.age);
 
     Form teacher = {

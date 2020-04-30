@@ -136,7 +136,29 @@ public class ASTPrinter implements Visitor {
     public void visit(AssignmentStatementNode node) {
         println("assignment statement");
         indent(!node.hasNext());
-        // TODO designator
+        println("for object");
+        indent();
+        lastChild();
+        node.getTarget().accept(this);
+        outdent();
+        switch (node.getAccessMethod()) {
+            case FIELD: {
+                println("at field");
+                indent();
+                lastChild();
+                node.getAccessExpression().accept(this);
+                outdent();
+            }
+            break;
+            case ARRAY: {
+                println("at index");
+                indent();
+                lastChild();
+                node.getAccessExpression().accept(this);
+                outdent();
+            }
+            break;
+        }
         lastChild();
         println("value");
         indent(true);
@@ -268,7 +290,11 @@ public class ASTPrinter implements Visitor {
         node.getHost().accept(this);
         outdent();
         lastChild();
-        println("right hand side: " + node.getField());
+        println("right hand side");
+        indent(true);
+        lastChild();
+        node.getField().accept(this);
+        outdent();
         outdent();
     }
 

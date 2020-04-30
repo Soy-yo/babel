@@ -13,9 +13,20 @@ public class AssignmentStatementNode extends StatementNode {
     }
 
     public static AssignmentStatementNode fromSyntacticSugar(Designator target, String operator, ExpressionNode value) {
-        // TODO get designator expression (replace null)
-        ExpressionNode left = ConstantExpressionNode.ofNull();
+        ExpressionNode left = target.compose();
         return new AssignmentStatementNode(target, FunctionCallExpressionNode.operator(left, operator, value));
+    }
+
+    public ExpressionNode getTarget() {
+        return target.getTarget();
+    }
+
+    public ExpressionNode getAccessExpression() {
+        return target.getAccess();
+    }
+
+    public Designator.AccessMethod getAccessMethod() {
+        return target.getAccessMethod();
     }
 
     public ExpressionNode getValue() {
