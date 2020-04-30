@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        String input = "src/main/resources/examples/expressions/forms.bbl";
+        String input = "src/main/resources/examples/LCMandGCD.bbl";
         lexicalTest(input);
         syntacticalTest(input);
     }

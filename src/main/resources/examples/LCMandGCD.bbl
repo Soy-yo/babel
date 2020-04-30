@@ -1,0 +1,48 @@
+// LCM in babel
+class LCM {
+    constructor() {
+
+        Int n1 = 72;
+        Int n2 = 120;
+        Int lcm;
+        if n1 > n2 {
+            lcm = n1;
+        } else {
+            lcm = n2;
+        }
+
+        while true {
+            if  lcm % n1 == 0 && lcm % n2 == 0  {
+                print("The LCM is ");
+                print(lcm);
+            }
+            lcm += 1;
+        }
+    }
+}
+
+// GCD in babel
+class GCD {
+
+    constructor() {
+
+        Int num1 = 55;
+        Int num2 = 121;
+
+        while num1 != num2 {
+        	if num1 > num2 {
+                num1 = num1 - num2;
+            } else {
+                num2 = num2 - num1;
+            }
+        }
+
+        print("The GCD is ");
+        print(num1);
+    }
+}
+
+Void main() {
+    create LCM() lcm;
+    create GCD() gcd;
+}
