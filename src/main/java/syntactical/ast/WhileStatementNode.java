@@ -1,35 +1,36 @@
 package syntactical.ast;
 
-
 import syntactical.ast.visitors.Visitor;
 
+public class WhileStatementNode extends StatementNode {
 
-public class WhileStatementNode extends StatementNode{
+    private ExpressionNode condition;
+    private BlockStatementNode block;
 
-  private ExpressionNode condition;
-  private BlockStatementNode block;
+    public WhileStatementNode(ExpressionNode condition,
+                              BlockStatementNode block) {
+        this.condition = condition;
+        this.block = block;
+    }
 
-  public WhileStatementNode(ExpressionNode condition,
-                             BlockStatementNode block) {
-    this.condition = condition;
-    this.block = block;
-  }
+    public ExpressionNode getCondition() {
+        return condition;
+    }
 
-  @Override
-  public void accept(Visitor visitor) {
-    visitor.visit(this);
-  }
+    public BlockStatementNode getBlock() {
+        return block;
+    }
 
-  public ExpressionNode getCondition() {
-    return condition;
-  }
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 
-  public BlockStatementNode getBlock() {return block;}
+    @Override
+    public String toString() {
+        return super.toString()
+                + " {condition:" + condition
+                + "}";
+    }
 
-  @Override
-  public String toString() {
-    return super.toString()
-        + " {condition:" + condition
-        + "}";
-  }
 }

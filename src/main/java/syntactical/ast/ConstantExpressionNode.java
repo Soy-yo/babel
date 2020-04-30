@@ -60,22 +60,6 @@ public class ConstantExpressionNode extends ExpressionNode {
         return new ConstantExpressionNode(0b0, "null", null);
     }
 
-    public int getValue() {
-        return value;
-    }
-
-    public String getBits() {
-        return Integer.toString(value, 2);
-    }
-
-    public String getHex() {
-        return Integer.toString(value, 16);
-    }
-
-    public String getRepresentation() {
-        return representation;
-    }
-
     private static char charValue(String c) {
         switch (c) {
             case "'\\t'":
@@ -96,6 +80,22 @@ public class ConstantExpressionNode extends ExpressionNode {
                 return '\'';
         }
         return c.charAt(1);
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public String getBits() {
+        return Integer.toString(value, 2);
+    }
+
+    public String getHex() {
+        return Integer.toString(value, 16);
+    }
+
+    public String getRepresentation() {
+        return representation;
     }
 
     @Override

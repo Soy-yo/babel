@@ -2,10 +2,6 @@ package syntactical.ast;
 
 public class Designator {
 
-    public enum AccessMethod {
-        NONE, FIELD, ARRAY
-    }
-
     private ExpressionNode original;
     private ExpressionNode target;
     private ExpressionNode access;
@@ -49,6 +45,10 @@ public class Designator {
     @Override
     public String toString() {
         return target + (access == null ? "" : " @ " + access);
+    }
+
+    public enum AccessMethod {
+        NONE, FIELD, ARRAY
     }
 
 }

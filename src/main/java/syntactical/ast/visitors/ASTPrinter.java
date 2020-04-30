@@ -15,20 +15,18 @@ import java.util.stream.Collectors;
 public class ASTPrinter implements Visitor {
 
     private static final String CHILD_POINTER = "├─";
-    //private static final String CHILD_POINTER = "├";
     private static final String LAST_CHILD_POINTER = "└─";
-    //private static final String LAST_CHILD_POINTER = "└";
     private static final int SPACES = 1;
 
     private final ASTNode root;
     private final StringBuilder prefix;
+    private boolean listing;
     private PrintWriter stdOut;
-
-    // TODO display Types as trees too (Array -> parameter: String) ???
 
     public ASTPrinter(ASTNode root) {
         this.root = root;
         this.prefix = new StringBuilder();
+        this.listing = false;
     }
 
     public void print() {
@@ -283,7 +281,7 @@ public class ASTPrinter implements Visitor {
     @Override
     public void visit(PointExpressionNode node) {
         println("point operator expression");
-        indent(true);
+        indent(!listing);
         println("left hand side");
         indent();
         lastChild();
@@ -301,7 +299,7 @@ public class ASTPrinter implements Visitor {
     @Override
     public void visit(ArrayAccessExpressionNode node) {
         println("array access operator expression");
-        indent(true);
+        indent(!listing);
         println("array");
         indent();
         lastChild();
@@ -319,7 +317,7 @@ public class ASTPrinter implements Visitor {
     @Override
     public void visit(FunctionCallExpressionNode node) {
         println("function call expression");
-        indent(true);
+        indent(!listing);
         println("function");
         indent();
         lastChild();
@@ -345,7 +343,7 @@ public class ASTPrinter implements Visitor {
     @Override
     public void visit(ConstantExpressionNode node) {
         println("constant expression");
-        indent(true);
+        indent(!listing);
         printAll("type: " + node.getType(),
                 "value: " + node.getRepresentation(),
                 "hex: 0x" + String.format("%1$8s", node.getHex()).replace(' ', '0')
@@ -356,21 +354,18 @@ public class ASTPrinter implements Visitor {
     @Override
     public void visit(ListConstructorExpressionNode node) {
         println("list constructor expression");
-        indent(true);
+        indent(!listing);
         println("type: " + node.getType());
         List<ExpressionNode> elements = node.getElements();
         if (elements.isEmpty()) {
             lastChild();
-        }
-        println("size: " + elements.size());
-        for (int i = 0; i < elements.size(); i++) {
-            if (i == elements.size() - 1) {
-                lastChild();
-            }
-            println("element [" + i + "]");
-            indent(i == elements.size() - 1);
+            println("size: " + elements.size());
+        } else {
+            println("size: " + elements.size());
             lastChild();
-            elements.get(i).accept(this);
+            println("elements");
+            indent(true);
+            visitAll(elements);
             outdent();
         }
         outdent();
@@ -379,7 +374,7 @@ public class ASTPrinter implements Visitor {
     @Override
     public void visit(AnonymousObjectConstructorExpressionNode node) {
         println("anonymous object constructor expression");
-        indent(true);
+        indent(!listing);
         if (node.isEmpty()) {
             lastChild();
         }
@@ -388,9 +383,6 @@ public class ASTPrinter implements Visitor {
             lastChild();
             println("fields");
             indent(true);
-//            VarDeclarationNode root = node.getFields();
-//            root.accept(this);
-            //TODO si te parece bien borra lo comentado
             visitAll(node.getFields());
             outdent();
         }
@@ -400,7 +392,7 @@ public class ASTPrinter implements Visitor {
     @Override
     public void visit(ConstructorCallExpressionNode node) {
         println("constructor call expression");
-        indent(true);
+        indent(!listing);
         println("type: " + node.getType());
         lastChild();
         if (!node.getArguments().isEmpty()) {
@@ -421,8 +413,10 @@ public class ASTPrinter implements Visitor {
     private void visitAll(Iterable<? extends ASTNode> nodes) {
         Iterator<? extends ASTNode> it = nodes.iterator();
         while (it.hasNext()) {
+            listing = true;
             ASTNode child = it.next();
             if (!it.hasNext()) {
+                listing = false;
                 lastChild();
             }
             child.accept(this);
@@ -454,6 +448,11 @@ public class ASTPrinter implements Visitor {
     }
 
     private void indent(boolean isLast) {
+        // Force indent(false)
+        if (listing) {
+            isLast = false;
+            listing = false;
+        }
         if (prefix.length() > 2) {
             prefix.replace(prefix.length() - (CHILD_POINTER.length() + 1),
                     prefix.length() - 1, isLast ? "  " : "│ ");
@@ -471,12 +470,6 @@ public class ASTPrinter implements Visitor {
     private void lastChild() {
         prefix.replace(prefix.length() - (CHILD_POINTER.length() + 1),
                 prefix.length() - 1, LAST_CHILD_POINTER);
-    }
-
-    private void next(QueueableNode<?> node) {
-        if (node.hasNext()) {
-            node.getNext().accept(this);
-        }
     }
 
 }

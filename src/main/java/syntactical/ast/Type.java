@@ -16,16 +16,16 @@ public class Type {
         this(name, null);
     }
 
+    public Type() {
+        super();
+    }
+
     public String getName() {
         return name;
     }
 
     public Type getParameter() {
         return parameter;
-    }
-
-    public Type() {
-        super();
     }
 
     @Override

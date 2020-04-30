@@ -18,11 +18,6 @@ public class SwitchStatementNode extends StatementNode {
         this.cases = new HashMap<>(cases);
     }
 
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
-
     public ExpressionNode getSwitchExpression() {
         return switchExpression;
     }
@@ -44,11 +39,16 @@ public class SwitchStatementNode extends StatementNode {
     }
 
     @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
     public String toString() {
         return super.toString()
                 + " {variable:" + switchExpression
                 + ", numCases:" + cases.size()
                 + "}";
-  }
+    }
 
 }
