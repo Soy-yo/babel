@@ -286,45 +286,25 @@ ForStatement ::= FOR BaseVarDeclaration: variable IN Expression: iterable BlockS
 Expression ::= Expression0: expression
                {: RESULT = expression; :};
 
-Expression9 ::= PARENTH_L Expression0: expression PARENTH_R
-                {: RESULT = expression; :}
-              | VariableExpression: expression
-                {: RESULT = expression; :}
-              | ConstantExpression: expression
-                {: RESULT = expression; :}
-              | ListConstructorExpression: expression
-                {: RESULT = expression; :}
-              | ConstructorCallExpression: expression
-                {: RESULT = expression; :};
-Expression8 ::= FieldAccessExpression: expression
-                {: RESULT = expression; :}
-              | ArrayAccessExpression: expression
-                {: RESULT = expression; :}
-              | FunctionCallExpression: expression
-                {: RESULT = expression; :}
-              | Expression9: expression
-                {: RESULT = expression; :};
-Expression7 ::= PLUS Expression7: first
-                {: RESULT = FunctionCallExpressionNode.operator(OperatorOverloadConstants._PLUS, first); :}
-              | MINUS Expression7: first
-                {: RESULT = FunctionCallExpressionNode.operator(OperatorOverloadConstants._MINUS, first); :}
-              | NOT Expression7: first
-                {: RESULT = FunctionCallExpressionNode.operator(OperatorOverloadConstants._NOT, first); :}
-              | Expression8: first
+Expression0 ::= Expression0: first ELLIPSIS Expression1: last
+                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._TO, last); :}
+              | Expression1: first
                 {: RESULT = first; :};
-Expression6 ::= Expression6: first MULT Expression7: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._MULT, last); :}
-              | Expression6: first DIV Expression7: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._DIV, last); :}
-              | Expression6: first MOD Expression7: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._MOD, last); :}
-              | Expression7: first
+Expression1 ::= Expression1: first OR Expression2: last
+                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._OR, last); :}
+              | Expression2: first
                 {: RESULT = first; :};
-Expression5 ::= Expression5: first PLUS Expression6: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._PLUS, last); :}
-              | Expression5: first MINUS Expression6: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._MINUS, last); :}
-              | Expression6: first
+Expression2 ::= Expression2: first AND Expression3: last
+                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._AND, last); :}
+              | Expression3: first
+                {: RESULT = first; :};
+Expression3 ::= Expression3: first EQUALS Expression4: last
+                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._EQUALS, last); :}
+              | Expression3: first NEQ Expression4: last
+                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._NEQ, last); :}
+              | Expression3: first IDENTITY Expression4: last
+                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._ID, last); :}
+              | Expression4: first
                 {: RESULT = first; :};
 Expression4 ::= Expression4: first GT Expression5: last
                 {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._GT, last); :}
@@ -336,26 +316,46 @@ Expression4 ::= Expression4: first GT Expression5: last
                 {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._LE, last); :}
               | Expression5: first
                 {: RESULT = first; :};
-Expression3 ::= Expression3: first EQUALS Expression4: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._EQUALS, last); :}
-              | Expression3: first NEQ Expression4: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._NEQ, last); :}
-              | Expression3: first IDENTITY Expression4: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._ID, last); :}
-              | Expression4: first
+Expression5 ::= Expression5: first PLUS Expression6: last
+                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._PLUS, last); :}
+              | Expression5: first MINUS Expression6: last
+                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._MINUS, last); :}
+              | Expression6: first
                 {: RESULT = first; :};
-Expression2 ::= Expression2: first AND Expression3: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._AND, last); :}
-              | Expression3: first
+Expression6 ::= Expression6: first MULT Expression7: last
+                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._MULT, last); :}
+              | Expression6: first DIV Expression7: last
+                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._DIV, last); :}
+              | Expression6: first MOD Expression7: last
+                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._MOD, last); :}
+              | Expression7: first
                 {: RESULT = first; :};
-Expression1 ::= Expression1: first OR Expression2: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._OR, last); :}
-              | Expression2: first
+Expression7 ::= PLUS Expression7: first
+                {: RESULT = FunctionCallExpressionNode.operator(OperatorOverloadConstants._PLUS, first); :}
+              | MINUS Expression7: first
+                {: RESULT = FunctionCallExpressionNode.operator(OperatorOverloadConstants._MINUS, first); :}
+              | NOT Expression7: first
+                {: RESULT = FunctionCallExpressionNode.operator(OperatorOverloadConstants._NOT, first); :}
+              | Expression8: first
                 {: RESULT = first; :};
-Expression0 ::= Expression0: first ELLIPSIS Expression1: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._TO, last); :}
-              | Expression1: first
-                {: RESULT = first; :};
+Expression8 ::= FieldAccessExpression: expression
+                {: RESULT = expression; :}
+              | ArrayAccessExpression: expression
+                {: RESULT = expression; :}
+              | FunctionCallExpression: expression
+                {: RESULT = expression; :}
+              | Expression9: expression
+                {: RESULT = expression; :};
+Expression9 ::= PARENTH_L Expression0: expression PARENTH_R
+                {: RESULT = expression; :}
+              | VariableExpression: expression
+                {: RESULT = expression; :}
+              | ConstantExpression: expression
+                {: RESULT = expression; :}
+              | ListConstructorExpression: expression
+                {: RESULT = expression; :}
+              | ConstructorCallExpression: expression
+                {: RESULT = expression; :};
 
 ArrayAccessExpression  ::= Expression8: array SQUARE_L Expression: index SQUARE_R
                            {: RESULT = new ArrayAccessExpressionNode(array, index); :};
