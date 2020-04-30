@@ -1,9 +1,9 @@
 Void main() {
-    //Form student = {
-    //    String name = "John",
-    //    Int age = 22,
-    //    Real height = 1.83
-    //};
+    Form student = {
+        String name = "John",
+        Int age = 22,
+        Real height = 1.83
+    };
 
     print(student.name);
     //student.age = 50;

@@ -73,11 +73,12 @@ nonterminal ExpressionNode Expression4;
 nonterminal ExpressionNode Expression5;
 nonterminal ExpressionNode Expression6;
 nonterminal ExpressionNode Expression7;
-nonterminal ExpressionNode Expression8, Expr8;
-nonterminal ExpressionNode Expression9, Expr9;
+nonterminal ExpressionNode Expression8;
+nonterminal ExpressionNode Expression9;
+nonterminal ExpressionNode InitialValueExpression;
 nonterminal PointExpressionNode FieldAccessExpression;
 nonterminal ArrayAccessExpressionNode ArrayAccessExpression;
-nonterminal FunctionCallExpressionNode FunctionCallExpression, FunctionCallExpr;
+nonterminal FunctionCallExpressionNode FunctionCallExpression;
 // Constants
 nonterminal VariableExpressionNode VariableExpression;
 nonterminal ConstantExpressionNode ConstantExpression;
@@ -144,16 +145,20 @@ VarDeclaration            ::= BaseVarDeclaration: declaration END
                               {: RESULT = declaration; :};
 BaseVarDeclaration        ::= Type: type IDENTIFIER: id
                               {: RESULT = new Name(id, type); :};
-VarInitDeclaration        ::= BaseVarDeclaration: name ASSIGNMENT Expression: initialValue
+VarInitDeclaration        ::= BaseVarDeclaration: name ASSIGNMENT InitialValueExpression: initialValue
                               {: RESULT = new VarDeclarationNode(name, initialValue); :}
                             | ConstructorCallExpression: constructor IDENTIFIER: id
                               {: RESULT = VarDeclarationNode.fromConstructor(constructor, id); :};
-GlobalConstDeclaration    ::= CONST Type: type GLOBAL: id ASSIGNMENT Expression: initialValue
+GlobalConstDeclaration    ::= CONST Type: type GLOBAL: id ASSIGNMENT InitialValueExpression: initialValue
                               {: RESULT = new VarDeclarationNode(new Name(id, type), initialValue, true); :}
                             | CONST ConstructorCallExpression: constructor GLOBAL: id
                               {: RESULT = VarDeclarationNode.fromConstructor(constructor, id).constant(); :};
 LocalConstDeclaration     ::= CONST VarInitDeclaration: declaration
                               {: RESULT = declaration.constant(); :};
+InitialValueExpression    ::= Expression: expression
+                              {: RESULT = expression; :}
+                            | AnonymousObjectConstructorExpression: expression
+                              {: RESULT = expression; :};
 
 // Functions
 FunctionDeclaration ::= BaseVarDeclaration: name FunctionParameters: parameters BlockStatement: block
@@ -237,7 +242,7 @@ AssignmentStatement ::= Designator: designator ASSIGNMENT Expression: expression
                                             designator, OperatorOverloadConstants._MOD, expression); :};
 
 // Function call
-FunctionCallStatement ::= FunctionCallExpr: function END
+FunctionCallStatement ::= FunctionCallExpression: function END
                           {: RESULT = new FunctionCallStatementNode(function); :};
 
 // Return
@@ -275,9 +280,15 @@ ForStatement ::= FOR BaseVarDeclaration: variable IN Expression: iterable BlockS
 Expression ::= Expression0: expression
                {: RESULT = expression; :};
 
-Expression9 ::= Expr9: expression
+Expression9 ::= PARENTH_L Expression0: expression PARENTH_R
                 {: RESULT = expression; :}
-              | AnonymousObjectConstructorExpression: expression
+              | VariableExpression: expression
+                {: RESULT = expression; :}
+              | ConstantExpression: expression
+                {: RESULT = expression; :}
+              | ListConstructorExpression: expression
+                {: RESULT = expression; :}
+              | ConstructorCallExpression: expression
                 {: RESULT = expression; :};
 Expression8 ::= FieldAccessExpression: expression
                 {: RESULT = expression; :}
@@ -346,26 +357,6 @@ FieldAccessExpression  ::= Expression8: expression POINT IDENTIFIER: identifier
                            {: RESULT = new PointExpressionNode(expression, identifier); :};
 FunctionCallExpression ::= Expression8: function Arguments: arguments
                            {: RESULT = new FunctionCallExpressionNode(function, arguments); :};
-
-// Fix shift-reduce conflict between FunctionCallStatement and AnonymousObjectConstructorExpression
-FunctionCallExpr ::= Expr8: function Arguments: arguments
-                     {: RESULT = new FunctionCallExpressionNode(function, arguments); :};
-Expr8             ::= Expr8: array SQUARE_L Expression: index SQUARE_R
-                      {: RESULT = new ArrayAccessExpressionNode(array, index); :}
-                    | Expr8: expression POINT IDENTIFIER: identifier
-                      {: RESULT = new PointExpressionNode(expression, identifier); :}
-                    | Expr9: expression
-                      {: RESULT = expression; :};
-Expr9             ::= PARENTH_L Expression0: expression PARENTH_R
-                      {: RESULT = expression; :}
-                    | VariableExpression: expression
-                      {: RESULT = expression; :}
-                    | ConstantExpression: expression
-                      {: RESULT = expression; :}
-                    | ListConstructorExpression: expression
-                      {: RESULT = expression; :}
-                    | ConstructorCallExpression: expression
-                      {: RESULT = expression; :};
 
 // Constants
 VariableExpression ::= IDENTIFIER: id
