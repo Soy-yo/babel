@@ -82,6 +82,7 @@ const = const
 import = import
 class = class
 constructor = constructor
+create = create
 this = this
 underscore = _
 varIdentifier = [a-z_][0-9a-zA-Z_]*
@@ -146,6 +147,7 @@ opOr = \|\|
 {import}                  {return onRead(() -> ops.importUnit());}
 {class}                   {return onRead(() -> ops.classUnit());}
 {constructor}             {return onRead(() -> ops.constructorUnit());}
+{create}                  {return onRead(() -> ops.createUnit());}
 {this}                    {return onRead(() -> ops.thisUnit());}
 {underscore}              {return onRead(() -> ops.underscoreUnit());}
 {varIdentifier}           {return onRead(() -> ops.varIdentifierUnit());}

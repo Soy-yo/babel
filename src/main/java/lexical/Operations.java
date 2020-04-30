@@ -88,6 +88,10 @@ public class Operations {
         return createUnit(CONSTRUCTOR);
     }
 
+    public LexicalUnit createUnit() {
+        return createUnit(CREATE);
+    }
+
     public LexicalUnit thisUnit() {
         return createUnit(THIS);
     }

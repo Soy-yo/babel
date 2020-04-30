@@ -18,7 +18,7 @@ parser code {:
     private LexicalAnalyser analyser = (LexicalAnalyser) getScanner();
 :}
 
-terminal IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, UNDERSCORE, PARENTH_L, PARENTH_R,
+terminal IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, CREATE, UNDERSCORE, PARENTH_L, PARENTH_R,
          SQUARE_L, SQUARE_R, CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT, COMMA, PLUS_ASSIGN, PLUS, MINUS_ASSIGN, MINUS,
          MULT_ASSIGN, MULT, DIV_ASSIGN, DIV, MOD_ASSIGN, MOD, LE, LT, GE, GT, IDENTITY, EQUALS, NEQ, ASSIGNMENT, NOT,
          AND, OR, END;
@@ -92,8 +92,6 @@ nonterminal ConstructorCallExpressionNode ConstructorCallExpression;
 nonterminal String TypeName;
 nonterminal Type Type;
 nonterminal List<ExpressionNode> Arguments, ArgumentList;
-
-// TODO fix constructor conflicts
 
 // Program
 Program ::= ImportList: imports DeclarationList: declarations
@@ -367,9 +365,8 @@ FunctionCallExpression ::= Expression8: function Arguments: arguments
 // Constants
 VariableExpression ::= IDENTIFIER: id
                        {: RESULT = new VariableExpressionNode(id); :}
-                     // TODO uncomment
-                     //| GLOBAL: id
-                     //  {: RESULT = new VariableExpressionNode(id); :}
+                     | GLOBAL: id
+                       {: RESULT = new VariableExpressionNode(id); :}
                      | THIS: id
                        {: RESULT = new VariableExpressionNode(id); :};
 ConstantExpression ::= INT: n
@@ -413,7 +410,7 @@ AnonymousObjectField                 ::= VarInitDeclaration: field
                                        | LocalConstDeclaration: field
                                          {: RESULT = field; :};
 
-ConstructorCallExpression ::= Type: type Arguments: arguments
+ConstructorCallExpression ::= CREATE Type: type Arguments: arguments
                               {: RESULT = new ConstructorCallExpressionNode(type, arguments); :};
 
 // Other

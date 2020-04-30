@@ -7,8 +7,6 @@ import java.util.Map;
 
 public class SwitchStatementNode extends StatementNode {
 
-    // TODO create case node ??
-
     private ExpressionNode switchExpression;
     private Map<ExpressionNode, StatementNode> cases;
 
