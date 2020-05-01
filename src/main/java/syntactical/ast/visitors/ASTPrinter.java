@@ -228,7 +228,7 @@ public class ASTPrinter implements Visitor {
         println("cases");
         indent(true);
         int i = 0;
-        for (Map.Entry<ExpressionNode, StatementNode> entry : node.getCases().entrySet()) {
+        for (Map.Entry<ConstantExpressionNode, StatementNode> entry : node.getCases().entrySet()) {
             if (i == numCases - 1) {
                 lastChild();
             }
@@ -248,6 +248,7 @@ public class ASTPrinter implements Visitor {
             outdent();
             i++;
         }
+        outdent();
         outdent();
     }
 

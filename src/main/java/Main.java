@@ -29,7 +29,7 @@ public class Main {
         for (Path p : files) {
             lexicalTest(p.toString());
             syntacticalTest(p.toString());
-            System.out.print("Press enter to continue...");
+            System.out.println("Press enter to continue...");
             System.in.read();
         }
     }

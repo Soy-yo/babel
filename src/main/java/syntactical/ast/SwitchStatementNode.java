@@ -8,10 +8,9 @@ import java.util.Map;
 public class SwitchStatementNode extends StatementNode {
 
     private ExpressionNode switchExpression;
-    private Map<ExpressionNode, StatementNode> cases;
+    private Map<ConstantExpressionNode, StatementNode> cases;
 
-    public SwitchStatementNode(ExpressionNode switchExpression,
-                               Map<ExpressionNode, StatementNode> cases) {
+    public SwitchStatementNode(ExpressionNode switchExpression, Map<ConstantExpressionNode, StatementNode> cases) {
         this.switchExpression = switchExpression;
         this.cases = new HashMap<>(cases);
     }
@@ -20,11 +19,11 @@ public class SwitchStatementNode extends StatementNode {
         return switchExpression;
     }
 
-    public Map<ExpressionNode, StatementNode> getCases() {
+    public Map<ConstantExpressionNode, StatementNode> getCases() {
         return cases;
     }
 
-    public Iterable<ExpressionNode> getConstants() {
+    public Iterable<ConstantExpressionNode> getConstants() {
         return cases.keySet();
     }
 

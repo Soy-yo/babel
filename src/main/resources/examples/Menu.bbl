@@ -1,0 +1,22 @@
+Bool doAction(Char action) {
+    switch action {
+        'A' -> print("You chose A\n");
+        'B' -> print("You chose B\n");
+        'C' -> {
+            print("You chose C\n");
+            return false;
+        }
+        _ -> print("Unknown action\n");
+    }
+    return true;
+}
+
+Void main() {
+    Bool continue = true;
+    while continue {
+        print("Choose action: ");
+        Char action = readChar();
+        continue = doAction(action);
+    }
+    print("Program terminated");
+}

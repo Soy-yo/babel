@@ -60,7 +60,7 @@ nonterminal ReturnStatementNode ReturnStatement;
 nonterminal IfElseStatementNode IfElseStatement;
 nonterminal StatementNode ElsePartStatement;
 nonterminal SwitchStatementNode SwitchStatement;
-nonterminal Map<ExpressionNode,StatementNode> SwitchCasesStatement;
+nonterminal Map<ConstantExpressionNode,StatementNode> SwitchCasesStatement;
 // Loops
 nonterminal WhileStatementNode WhileStatement;
 nonterminal ForStatementNode ForStatement;
@@ -270,8 +270,14 @@ SwitchStatement      ::= SWITCH Expression: expression CURLY_L SwitchCasesStatem
                          {: RESULT = new SwitchStatementNode(expression, cases); :};
 SwitchCasesStatement ::= ConstantExpression: expression ARROW Statement: statement
                          {: RESULT = new HashMap<>(Collections.singletonMap(expression, statement)); :}
-                       | SwitchCasesStatement: cases Expression: expression ARROW Statement: statement
-                         {: cases.put(expression, statement); RESULT = cases; :};
+                       | UNDERSCORE ARROW Statement: statement
+                         {: RESULT = new HashMap<>(Collections.singletonMap(
+                                ConstantExpressionNode.special("<default>", new Type("~Default")), statement)); :}
+                       | SwitchCasesStatement: cases ConstantExpression: expression ARROW Statement: statement
+                         {: cases.put(expression, statement); RESULT = cases; :}
+                       | SwitchCasesStatement: cases UNDERSCORE ARROW Statement: statement
+                         {: cases.put(ConstantExpressionNode.special("<default>", new Type("~Default")), statement);
+                            RESULT = cases; :};
 
 // Loops
 WhileStatement ::= WHILE Expression: condition BlockStatement: whileBlock
@@ -404,8 +410,6 @@ ConstantExpression    ::= INT: n
                         | NOTHING
                           {: RESULT = ConstantExpressionNode.ofNothing(); :}
                         | NULL
-                          {: RESULT = ConstantExpressionNode.ofNull(); :}
-                        | UNDERSCORE
                           {: RESULT = ConstantExpressionNode.ofNull(); :};
 
 ListConstructorExpression ::= STRING: str
