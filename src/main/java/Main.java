@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 public class Main {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws IOException {
         List<Path> files = args.length == 0 ?
                 Files.walk(Paths.get("src/main/resources/examples"))
                         .filter(Files::isRegularFile)
@@ -27,8 +27,24 @@ public class Main {
                         .filter(Files::isRegularFile)
                         .collect(Collectors.toList());
         for (Path p : files) {
-            lexicalTest(p.toString());
-            syntacticalTest(p.toString());
+            try {
+                lexicalTest(p.toString());
+            } catch (IOException e) {
+                System.out.println("ERROR: failed reading file " + p);
+                System.out.println(e.getMessage());
+            } catch (Exception e) {
+                System.out.println("ERROR: fatal error occurred");
+                System.out.println(e.getMessage());
+            }
+            try {
+                syntacticalTest(p.toString());
+            } catch (IOException e) {
+                System.out.println("ERROR: failed reading file " + p);
+                System.out.println(e.getMessage());
+            } catch (Exception e) {
+                System.out.println("ERROR: fatal error occurred");
+                System.out.println(e.getMessage());
+            }
             System.out.println("Press enter to continue...");
             System.in.read();
         }
