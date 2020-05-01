@@ -1,35 +1,30 @@
-//Bubble sort in babel
-class BubbleSort {
-    Void bubbleSort(Array<Int> arr) {
-        Int n = arr.size;
-        Int i = 0;
-        while i < n-1 {
-            Int j = 0;
-            while j < n-i-1 {
-                if arr[j] > arr[j+1] {
-                    // swap arr[j+1] and arr[i]
-                    Int temp = arr[j];
-                    arr[j] = arr[j+1];
-                    arr[j+1] = temp;
-                }
+// Bubble sort in babel
+Void bubbleSort(Array<Int> arr) {
+    Int n = arr.size;
+    for Int i in 0 ... n - 2 {
+        for Int j in 0 ... n - i - 2 {
+            if arr[j] > arr[j + 1] {
+                // swap arr[j+1] and arr[i]
+                Int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j+1] = temp;
             }
         }
     }
-
-    /* Prints the array */
-    Void printArray(Array<Int> arr) {
-        for Int x in arr {
-            print(arr[i]);
-            print(' ');
-        }
-        print('\n');
-    }
-
 }
 
-Void main() {
-        BubbleSort() ob;
-        Array<Int> arr = [64, 34, 25, 12, 22, 11, 90];
-        ob.bubbleSort(arr);
-        ob.printArray(arr);
+/* Prints the array */
+Void printArray(Array<Int> arr) {
+    for Int x in arr {
+        print(x);
+        print(' ');
     }
+    print('\n');
+}
+
+
+Void main() {
+    Array<Int> arr = [64, 34, 25, 12, 22, 11, 90];
+    bubbleSort(arr);
+    printArray(arr);
+}

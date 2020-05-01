@@ -1,45 +1,29 @@
 // LCM in babel
-class LCM {
-    constructor() {
+Int lcm(Int n1, Int n2) {
+    Int lcm;
+    if n1 > n2 {
+        lcm = n1;
+    } else {
+        lcm = n2;
+    }
 
-        Int n1 = 72;
-        Int n2 = 120;
-        Int lcm;
-        if n1 > n2 {
-            lcm = n1;
-        } else {
-            lcm = n2;
+    while true {
+        if lcm % n1 == 0 && lcm % n2 == 0 {
+            return lcm;
         }
-
-        while true {
-            if  lcm % n1 == 0 && lcm % n2 == 0  {
-                print("The LCM is ");
-                print(lcm);
-            }
-            lcm += 1;
-        }
+        lcm += 1;
     }
 }
 
 // GCD in babel
-class GCD {
-
-    constructor(Int a, Int b) {
-
-
-        print("The GCD is ");
-        print(gcd(a,b));
+Int gcd(Int a, Int b) {
+    if a == 0 {
+        return b;
     }
-
-    Int gcd(Int a, Int b) {
-        if a == 0 {
-            return b;
-        }
-        return gcd(b%a, a);
-    }
+    return gcd(b % a, a);
 }
 
 Void main() {
-    LCM lcm = LCM();
-    GCD() gcd;
+    print(lcm(72, 54));
+    print(gcd(72, 54));
 }

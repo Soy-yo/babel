@@ -1,5 +1,3 @@
-import es/ucm/fdi/babel;
-
 Void print(String text) {
     /*
         dummy function that does nothing

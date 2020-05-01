@@ -60,6 +60,10 @@ public class ConstantExpressionNode extends ExpressionNode {
         return new ConstantExpressionNode(0b0, "null", null);
     }
 
+    public static ConstantExpressionNode special(String representation, Type type) {
+        return new ConstantExpressionNode(0b0, representation, type);
+    }
+
     private static char charValue(String c) {
         switch (c) {
             case "'\\t'":

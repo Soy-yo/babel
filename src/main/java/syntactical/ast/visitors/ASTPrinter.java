@@ -221,6 +221,7 @@ public class ASTPrinter implements Visitor {
         indent(!node.hasNext());
         println("switch expression");
         indent();
+        lastChild();
         node.getSwitchExpression().accept(this);
         outdent();
         lastChild();
@@ -252,7 +253,7 @@ public class ASTPrinter implements Visitor {
 
     @Override
     public void visit(WhileStatementNode node) {
-        println("while");
+        println("while statement");
         indent(!node.hasNext());
         println("condition");
         indent();
@@ -266,9 +267,13 @@ public class ASTPrinter implements Visitor {
 
     @Override
     public void visit(ForStatementNode node) {
-        println("for");
+        println("for statement");
         indent(!node.hasNext());
-        println("variable " + node.getVariable());
+        println("variable");
+        indent();
+        lastChild();
+        node.getVariable().accept(this);
+        outdent();
         println("iterable");
         indent();
         lastChild();

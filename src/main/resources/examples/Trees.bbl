@@ -5,22 +5,40 @@ class Node {
 
     constructor(Int value) {
         this.value = value;
-        right = null;
-        left = null;
+        this.right = null;
+        this.left = null;
     }
 
     Node merge(Node other) {
-         if this == null {
-             return other;
-         }
          if other == null {
              return this;
          }
          this.value += other.value;
-         this.left = merge(this.left, other.left);
-         this.right = merge(this.right, other.right);
+         this.left = this.merge(this.left, other.left);
+         this.right = this.merge(this.right, other.right);
          return this;
     }
+
+    Int value() {
+        return this.value;
+    }
+
+    Node left() {
+        return this.left;
+    }
+
+    Void setLeft(Node left) {
+        this.left = left;
+    }
+
+    Node right() {
+        return this.right;
+    }
+
+    Void setRight(Node right) {
+        this.right = right;
+    }
+
 }
 
 class BinaryTree {
@@ -32,7 +50,7 @@ class BinaryTree {
 
     constructor(Array<Int> arr) {
        for Int a in arr {
-            add(a);
+            this.add(a);
        }
     }
 
@@ -41,10 +59,10 @@ class BinaryTree {
             return Node(value);
         }
 
-        if value < current.value {
-            current.left = addRecursive(current.left, value);
-        } else if value > current.value {
-            current.right = addRecursive(current.right, value);
+        if value < current.value() {
+            current.setLeft(this.addRecursive(current.left(), value));
+        } else if value > current.value() {
+            current.setRight(this.addRecursive(current.right(), value));
         } else {
             // value already exists
             return current;
@@ -54,14 +72,14 @@ class BinaryTree {
     }
 
     Void add(Int value) {
-        root = addRecursive(root, value);
+        this.root = this.addRecursive(root, value);
     }
 
     Int findSmallestValue() {
-        if root.left == null {
-            return root.value;
+        if this.root.left() == null {
+            return root.value();
         } else {
-            return findSmallestValue(root.left);
+            return this.findSmallestValue(root.left());
         }
     }
 
