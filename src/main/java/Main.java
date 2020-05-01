@@ -27,7 +27,7 @@ public class Main {
                         .filter(Files::isRegularFile)
                         .collect(Collectors.toList());
         for (Path p : files) {
-            //lexicalTest(p.toString());
+            lexicalTest(p.toString());
             syntacticalTest(p.toString());
             System.out.print("Press enter to continue...");
             System.in.read();
