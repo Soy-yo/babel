@@ -7,13 +7,20 @@ import syntactical.ast.visitors.ASTPrinter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        String input = "src/main/resources/examples/LCMandGCD.bbl";
-        lexicalTest(input);
-        syntacticalTest(input);
+        List<Path> files = Files.walk(Paths.get("src/main/resources/examples"))
+            .filter(Files::isRegularFile)
+            .collect(Collectors.toList());
+        for(Path p : files) {
+            lexicalTest(p.toString());
+            syntacticalTest(p.toString());
+        }
     }
 
     private static void lexicalTest(String input) throws IOException {

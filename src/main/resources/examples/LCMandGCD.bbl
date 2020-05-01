@@ -24,21 +24,18 @@ class LCM {
 // GCD in babel
 class GCD {
 
-    constructor() {
+    constructor(Int a, Int b) {
 
-        Int num1 = 55;
-        Int num2 = 121;
-
-        while num1 != num2 {
-        	if num1 > num2 {
-                num1 = num1 - num2;
-            } else {
-                num2 = num2 - num1;
-            }
-        }
 
         print("The GCD is ");
-        print(num1);
+        print(gcd(a,b));
+    }
+
+    Int gcd(Int a, Int b) {
+        if a == 0 {
+            return b;
+        }
+        return gcd(b%a, a);
     }
 }
 

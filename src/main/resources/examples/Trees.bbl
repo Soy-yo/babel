@@ -1,0 +1,80 @@
+class Node {
+    Int value;
+    Node left;
+    Node right;
+
+    constructor(Int value) {
+        this.value = value;
+        right = null;
+        left = null;
+    }
+
+    Node merge(Node other) {
+         if this == null {
+             return other;
+         }
+         if other == null {
+             return this;
+         }
+         this.value += other.value;
+         this.left = merge(this.left, other.left);
+         this.right = merge(this.right, other.right);
+         return this;
+    }
+}
+
+class BinaryTree {
+    Node root;
+
+    constructor(Node root) {
+        this.root = root;
+    }
+
+    constructor(Array<Int> arr) {
+       for Int a in arr {
+            add(a);
+       }
+    }
+
+    Node addRecursive(Node current, Int value) {
+        if current == null {
+            return Node(value);
+        }
+
+        if value < current.value {
+            current.left = addRecursive(current.left, value);
+        } else if value > current.value {
+            current.right = addRecursive(current.right, value);
+        } else {
+            // value already exists
+            return current;
+        }
+
+        return current;
+    }
+
+    Void add(Int value) {
+        root = addRecursive(root, value);
+    }
+
+    Int findSmallestValue() {
+        if root.left == null {
+            return root.value;
+        } else {
+            return findSmallestValue(root.left);
+        }
+    }
+
+    BinaryTree _plus(BinaryTree other) {
+        return BinaryTree(this.root.merge(other.root));
+    }
+
+}
+
+
+Void main() {
+    BinaryTree([1,2,3,4,5]) bt;
+    print(bt.findSmallestValue());
+    BinaryTree([3,1,4,69,62,7]) bt2;
+    BinaryTree bt3 = bt + bt2;
+}

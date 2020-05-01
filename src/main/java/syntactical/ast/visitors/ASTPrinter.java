@@ -31,9 +31,10 @@ public class ASTPrinter implements Visitor {
 
     public void print() {
         try {
-            stdOut = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8.name()));
+            stdOut = new PrintWriter(new OutputStreamWriter(System.out,
+                StandardCharsets.UTF_8.name()));
             root.accept(this);
-            stdOut.close();
+            stdOut.flush();
         } catch (UnsupportedEncodingException e) {
             System.err.println("AST print failed (unsupported charset)");
             System.err.println(e.getMessage());

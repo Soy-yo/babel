@@ -1,8 +1,6 @@
 //Bubble sort in babel
-class BubbleSort
-{
-    Void bubbleSort(Array<Int> arr)
-    {
+class BubbleSort {
+    Void bubbleSort(Array<Int> arr) {
         Int n = arr.size;
         Int i = 0;
         while i < n-1 {
@@ -19,8 +17,7 @@ class BubbleSort
     }
 
     /* Prints the array */
-    Void printArray(Array<Int> arr)
-    {
+    Void printArray(Array<Int> arr) {
         for Int x in arr {
             print(arr[i]);
             print(' ');
@@ -28,12 +25,11 @@ class BubbleSort
         print('\n');
     }
 
+}
 
-    Void main()
-    {
-        create BubbleSort() ob;
+Void main() {
+        BubbleSort() ob;
         Array<Int> arr = [64, 34, 25, 12, 22, 11, 90];
         ob.bubbleSort(arr);
         ob.printArray(arr);
     }
-}
