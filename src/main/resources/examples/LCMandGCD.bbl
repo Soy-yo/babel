@@ -43,6 +43,6 @@ class GCD {
 }
 
 Void main() {
-    create LCM() lcm;
-    create GCD() gcd;
+    LCM lcm = LCM();
+    GCD() gcd;
 }

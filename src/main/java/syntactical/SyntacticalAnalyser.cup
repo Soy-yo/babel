@@ -18,7 +18,7 @@ parser code {:
     private LexicalAnalyser analyser = (LexicalAnalyser) getScanner();
 :}
 
-terminal IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, CREATE, UNDERSCORE, PARENTH_L, PARENTH_R,
+terminal IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, UNDERSCORE, PARENTH_L, PARENTH_R,
          SQUARE_L, SQUARE_R, CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT, COMMA, PLUS_ASSIGN, PLUS, MINUS_ASSIGN, MINUS,
          MULT_ASSIGN, MULT, DIV_ASSIGN, DIV, MOD_ASSIGN, MOD, LE, LT, GE, GT, IDENTITY, EQUALS, NEQ, ASSIGNMENT, NOT,
          AND, OR, END;
@@ -74,14 +74,14 @@ nonterminal ExpressionNode Expression4;
 nonterminal ExpressionNode Expression5;
 nonterminal ExpressionNode Expression6;
 nonterminal ExpressionNode Expression7;
-nonterminal ExpressionNode Expression8;
-nonterminal ExpressionNode Expression9;
+nonterminal ExpressionNode Expression8, Expr8;
+nonterminal ExpressionNode Expression9, Expr9;
 nonterminal ExpressionNode InitialValueExpression;
 nonterminal PointExpressionNode FieldAccessExpression;
 nonterminal ArrayAccessExpressionNode ArrayAccessExpression;
 nonterminal FunctionCallExpressionNode FunctionCallExpression;
 // Constants
-nonterminal VariableExpressionNode VariableExpression;
+nonterminal VariableExpressionNode VariableExpression, GlobalConstExpression;
 nonterminal ConstantExpressionNode ConstantExpression;
 nonterminal ListConstructorExpressionNode ListConstructorExpression;
 nonterminal List<ExpressionNode> ListElements;
@@ -89,7 +89,6 @@ nonterminal AnonymousObjectConstructorExpressionNode AnonymousObjectConstructorE
 nonterminal VarDeclarationNode AnonymousObjectFields, AnonymousObjectField;
 nonterminal ConstructorCallExpressionNode ConstructorCallExpression;
 // Other
-nonterminal String TypeName;
 nonterminal Type Type;
 nonterminal List<ExpressionNode> Arguments, ArgumentList;
 
@@ -170,7 +169,9 @@ ParameterList       ::= BaseVarDeclaration: parameter
                         {: parameters.add(parameter); RESULT = parameters; :};
 
 // Classes
-ClassDeclaration       ::= CLASS TypeName: name ClassBlock: block
+ClassDeclaration       ::= CLASS TYPE: name ClassBlock: block
+                           {: RESULT = new ClassDeclarationNode(name, block); :}
+                         | CLASS GLOBAL: name ClassBlock: block
                            {: RESULT = new ClassDeclarationNode(name, block); :};
 ClassBlock             ::= CURLY_L ClassElementList: contents CURLY_R
                            {: RESULT = contents; :};
@@ -344,7 +345,19 @@ Expression8 ::= FieldAccessExpression: expression
                 {: RESULT = expression; :}
               | Expression9: expression
                 {: RESULT = expression; :};
-Expression9 ::= PARENTH_L Expression0: expression PARENTH_R
+Expr8       ::= FieldAccessExpression: expression
+                {: RESULT = expression; :}
+               | ArrayAccessExpression: expression
+                {: RESULT = expression; :}
+               | FunctionCallExpression: expression
+                 {: RESULT = expression; :}
+               | Expr9: expression
+                 {: RESULT = expression; :};
+Expression9 ::= Expr9: expression
+                {: RESULT = expression; :}
+              | GlobalConstExpression: expression
+                {: RESULT = expression; :};
+Expr9       ::= PARENTH_L Expression0: expression PARENTH_R
                 {: RESULT = expression; :}
               | VariableExpression: expression
                 {: RESULT = expression; :}
@@ -359,32 +372,41 @@ ArrayAccessExpression  ::= Expression8: array SQUARE_L Expression: index SQUARE_
                            {: RESULT = new ArrayAccessExpressionNode(array, index); :};
 FieldAccessExpression  ::= Expression8: expression POINT IDENTIFIER: identifier
                            {: RESULT = new PointExpressionNode(expression, identifier); :};
-FunctionCallExpression ::= Expression8: function Arguments: arguments
+// Fix to avoid function calls on globals (as that's not possible) so they can be parsed as constructor calls
+FunctionCallExpression ::= Expr8: function Arguments: arguments
                            {: RESULT = new FunctionCallExpressionNode(function, arguments); :};
 
+// Still not valid qualified types with upper case names
+ConstructorCallExpression ::= TYPE: type Arguments: arguments
+                              {: RESULT = new ConstructorCallExpressionNode(new Type(type), arguments); :}
+                            | GLOBAL: type Arguments: arguments
+                              {: RESULT = new ConstructorCallExpressionNode(new Type(type), arguments); :}
+                            | TYPE: type LT Type: qualified GT Arguments: arguments
+                              {: RESULT = new ConstructorCallExpressionNode(new Type(type, qualified), arguments); :};
+
 // Constants
-VariableExpression ::= IDENTIFIER: id
-                       {: RESULT = new VariableExpressionNode(id); :}
-                     | GLOBAL: id
-                       {: RESULT = new VariableExpressionNode(id); :}
-                     | THIS: id
-                       {: RESULT = new VariableExpressionNode(id); :};
-ConstantExpression ::= INT: n
-                       {: RESULT = ConstantExpressionNode.fromInt(n); :}
-                     | REAL: x
-                       {: RESULT = ConstantExpressionNode.fromFloat(x); :}
-                     | TRUE: t
-                       {: RESULT = ConstantExpressionNode.fromBoolean(t); :}
-                     | FALSE: f
-                       {: RESULT = ConstantExpressionNode.fromBoolean(f); :}
-                     | CHAR: c
-                       {: RESULT = ConstantExpressionNode.fromChar(c); :}
-                     | NOTHING
-                       {: RESULT = ConstantExpressionNode.ofNothing(); :}
-                     | NULL
-                       {: RESULT = ConstantExpressionNode.ofNull(); :}
-                     | UNDERSCORE
-                       {: RESULT = ConstantExpressionNode.ofNull(); :};
+VariableExpression    ::= IDENTIFIER: id
+                          {: RESULT = new VariableExpressionNode(id); :}
+                        | THIS: id
+                          {: RESULT = new VariableExpressionNode(id); :};
+GlobalConstExpression ::= GLOBAL: id
+                          {: RESULT = new VariableExpressionNode(id); :};
+ConstantExpression    ::= INT: n
+                          {: RESULT = ConstantExpressionNode.fromInt(n); :}
+                        | REAL: x
+                          {: RESULT = ConstantExpressionNode.fromFloat(x); :}
+                        | TRUE: t
+                          {: RESULT = ConstantExpressionNode.fromBoolean(t); :}
+                        | FALSE: f
+                          {: RESULT = ConstantExpressionNode.fromBoolean(f); :}
+                        | CHAR: c
+                          {: RESULT = ConstantExpressionNode.fromChar(c); :}
+                        | NOTHING
+                          {: RESULT = ConstantExpressionNode.ofNothing(); :}
+                        | NULL
+                          {: RESULT = ConstantExpressionNode.ofNull(); :}
+                        | UNDERSCORE
+                          {: RESULT = ConstantExpressionNode.ofNull(); :};
 
 ListConstructorExpression ::= STRING: str
                               {: RESULT = ListConstructorExpressionNode.fromString(str); :}
@@ -410,18 +432,15 @@ AnonymousObjectField                 ::= VarInitDeclaration: field
                                        | LocalConstDeclaration: field
                                          {: RESULT = field; :};
 
-ConstructorCallExpression ::= CREATE Type: type Arguments: arguments
-                              {: RESULT = new ConstructorCallExpressionNode(type, arguments); :};
-
 // Other
-Type     ::= TypeName: name
+Type     ::= TYPE: name
              {: RESULT = new Type(name); :}
-           | TypeName: name LT Type: param GT
-             {: RESULT = new Type(name, param); :};
-TypeName ::= TYPE: name
-             {: RESULT = name; :}
+           | TYPE: name LT Type: param GT
+             {: RESULT = new Type(name, param); :}
            | GLOBAL: name
-             {: RESULT = name; :};
+             {: RESULT = new Type(name); :}
+           | GLOBAL: name LT Type: param GT
+             {: RESULT = new Type(name, param); :};
 
 Arguments    ::= PARENTH_L PARENTH_R
                  {: RESULT = new ArrayList<>(); :}
