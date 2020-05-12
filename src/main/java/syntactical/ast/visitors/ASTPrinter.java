@@ -413,6 +413,11 @@ public class ASTPrinter implements Visitor {
         outdent();
     }
 
+    @Override
+    public void visit(ErrorExpressionNode node) {
+        println("error");
+    }
+
     private void println(String value) {
         stdOut.println(prefix + value);
     }

@@ -16,6 +16,38 @@ scan with {:
 action code {::}
 parser code {:
     private LexicalAnalyser analyser = (LexicalAnalyser) getScanner();
+
+    @Override
+    public void syntax_error(Symbol token) {
+        SyntacticalException e = new SyntacticalException((LexicalUnit) token);
+        report_error(e.getMessage(), null);
+    }
+
+    @Override
+    public void report_error(String message, Object info) {
+        System.err.print(message);
+        if (info instanceof Throwable) {
+            System.err.print(" - " + ((Throwable) info).getMessage() + "\n");
+        }
+        System.err.flush();
+    }
+
+    @Override
+    public void unrecovered_syntax_error(Symbol token) {
+        SyntacticalException e = new SyntacticalException((LexicalUnit) token);
+        report_fatal_error("Couldn't repair and continue parse", e);
+    }
+
+    @Override
+    public void report_fatal_error(String message, Object info) {
+        this.done_parsing();
+        this.report_error(message, info);
+        if (info instanceof SyntacticalException) {
+            throw (SyntacticalException) info;
+        } else {
+            throw new IllegalStateException("Can't recover from previous error(s)");
+        }
+    }
 :}
 
 terminal IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, UNDERSCORE, PARENTH_L, PARENTH_R,
@@ -372,7 +404,9 @@ Expr9       ::= PARENTH_L Expression0: expression PARENTH_R
               | ListConstructorExpression: expression
                 {: RESULT = expression; :}
               | ConstructorCallExpression: expression
-                {: RESULT = expression; :};
+                {: RESULT = expression; :}
+              | error
+                {: parser.report_error(" - Expected an expression\n", null); RESULT = new ErrorExpressionNode(); :};
 
 ArrayAccessExpression  ::= Expression8: array SQUARE_L Expression: index SQUARE_R
                            {: RESULT = new ArrayAccessExpressionNode(array, index); :};

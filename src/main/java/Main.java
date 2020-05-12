@@ -1,3 +1,4 @@
+import error.SyntacticalException;
 import java_cup.runtime.Symbol;
 import lexical.LexicalAnalyser;
 import syntactical.SyntacticalAnalyser;
@@ -40,6 +41,9 @@ public class Main {
                 syntacticalTest(p.toString());
             } catch (IOException e) {
                 System.out.println("ERROR: failed reading file " + p);
+                System.out.println(e.getMessage());
+            } catch (SyntacticalException e) {
+                System.out.println("ERROR: fatal syntactical error occurred");
                 System.out.println(e.getMessage());
             } catch (Exception e) {
                 System.out.println("ERROR: fatal error occurred");
