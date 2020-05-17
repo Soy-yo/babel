@@ -20,6 +20,12 @@ public class ProgramNode extends ASTNode {
         return root;
     }
 
+    public DeclarationNode setRoot(DeclarationNode root) {
+        DeclarationNode old = this.root;
+        this.root = root;
+        return old;
+    }
+
     public Iterable<String> importedFiles() {
         return importedFiles;
     }

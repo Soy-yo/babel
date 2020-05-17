@@ -31,22 +31,22 @@ public class Main {
             try {
                 lexicalTest(p.toString());
             } catch (IOException e) {
-                System.out.println("ERROR: failed reading file " + p);
+                System.out.println("[ERROR] failed reading file " + p);
                 System.out.println(e.getMessage());
             } catch (Exception e) {
-                System.out.println("ERROR: fatal error occurred");
+                System.out.println("[ERROR] fatal error occurred");
                 System.out.println(e.getMessage());
             }
             try {
                 syntacticalTest(p.toString());
             } catch (IOException e) {
-                System.out.println("ERROR: failed reading file " + p);
+                System.out.println("[ERROR] failed reading file " + p);
                 System.out.println(e.getMessage());
             } catch (SyntacticalException e) {
-                System.out.println("ERROR: fatal syntactical error occurred");
+                System.out.println("[ERROR] fatal syntactical error occurred");
                 System.out.println(e.getMessage());
             } catch (Exception e) {
-                System.out.println("ERROR: fatal error occurred");
+                System.out.println("[ERROR] fatal error occurred");
                 System.out.println(e.getMessage());
             }
             System.out.println("Press enter to continue...");
