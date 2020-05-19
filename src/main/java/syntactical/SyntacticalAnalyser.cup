@@ -68,6 +68,7 @@ nonterminal DeclarationNode DeclarationList, Declaration;
 nonterminal VarDeclarationNode VarDeclaration, GlobalVarConstDeclaration, VarConstDeclaration, VarInitDeclaration,
             GlobalConstDeclaration, LocalConstDeclaration;
 nonterminal Name BaseVarDeclaration;
+nonterminal String Global;
 // Functions
 nonterminal FunctionDeclarationNode FunctionDeclaration;
 nonterminal List<Name> FunctionParameters, ParameterList;
@@ -124,6 +125,14 @@ nonterminal ConstructorCallExpressionNode ConstructorCallExpression;
 nonterminal Type Type;
 nonterminal List<ExpressionNode> Arguments, ArgumentList;
 
+// TODO contar cuántas veces se llama a syntax_error y si son muchas notificar error fatal
+// así podemos luego saber si ha habido errores o no para generar código sin tener que andar mirando si hay nulls o
+// nodos de error, etc
+// TODO quizá quitar el error de las declaracoiones para personalizar un poco más
+// porque casi cualquier cosa se la traga como error de declaración
+// p.e. Int X = 0; sí da error en el identificador pero Int foo(Int X) {} ya debe petar mucho y da error de declaración
+// TODO class Bar; por ejemplo, da errores muy raros - revisar la comprobación de errores "recursiva"
+
 // Program
 Program ::= ImportList: imports DeclarationList: declarations
             {: RESULT = new ProgramNode(declarations, imports); :};
@@ -134,7 +143,9 @@ ImportList ::= ImportList: imports Import: file
              |
                {: RESULT = new ArrayList<>(); :};
 Import     ::= IMPORT FilePath: path END
-               {: RESULT = path; :};
+               {: RESULT = path; :}
+             | IMPORT error END
+               {: parser.report_error(" - Expected a path to a file\n", null); RESULT = ""; :};
 FilePath   ::= FilePath: path DIV Filename: filename
                {: RESULT = path + "/" + filename; :}
              | Filename: filename
@@ -156,7 +167,10 @@ Declaration     ::= GlobalVarConstDeclaration: declaration
                   | FunctionDeclaration: declaration
                     {: RESULT = declaration; :}
                   | ClassDeclaration: declaration
-                    {: RESULT = declaration; :};
+                    {: RESULT = declaration; :}
+                  | error
+                    {: parser.report_error(" - Expected a declaration\n", null);
+                      RESULT = new ErrorDeclarationNode(); :};
 
 // Variables
 GlobalVarConstDeclaration ::= VarDeclaration: declaration
@@ -172,14 +186,17 @@ VarDeclaration            ::= BaseVarDeclaration: declaration END
                             | VarInitDeclaration: declaration END
                               {: RESULT = declaration; :};
 BaseVarDeclaration        ::= Type: type IDENTIFIER: id
-                              {: RESULT = new Name(id, type); :};
+                              {: RESULT = new Name(id, type); :}
+                            | Type: type error
+                              {: parser.report_error(" - Expected an identifier\n", null);
+                                 RESULT = new Name(null, type); :};
 VarInitDeclaration        ::= BaseVarDeclaration: name ASSIGNMENT InitialValueExpression: initialValue
                               {: RESULT = new VarDeclarationNode(name, initialValue); :}
                             | ConstructorCallExpression: constructor IDENTIFIER: id
                               {: RESULT = VarDeclarationNode.fromConstructor(constructor, id); :};
-GlobalConstDeclaration    ::= CONST Type: type GLOBAL: id ASSIGNMENT InitialValueExpression: initialValue
+GlobalConstDeclaration    ::= CONST Type: type Global: id ASSIGNMENT InitialValueExpression: initialValue
                               {: RESULT = new VarDeclarationNode(new Name(id, type), initialValue, true); :}
-                            | CONST ConstructorCallExpression: constructor GLOBAL: id
+                            | CONST ConstructorCallExpression: constructor Global: id
                               {: RESULT = VarDeclarationNode.fromConstructor(constructor, id).constant(); :};
 LocalConstDeclaration     ::= CONST VarInitDeclaration: declaration
                               {: RESULT = declaration.constant(); :};
@@ -187,6 +204,10 @@ InitialValueExpression    ::= Expression: expression
                               {: RESULT = expression; :}
                             | AnonymousObjectConstructorExpression: expression
                               {: RESULT = expression; :};
+Global                     ::= GLOBAL: global
+                               {: RESULT = global; :}
+                             | error
+                               {: parser.report_error(" - Expected a global identifier\n", null); RESULT = null; :};
 
 // Functions
 FunctionDeclaration ::= BaseVarDeclaration: name FunctionParameters: parameters BlockStatement: block
@@ -198,13 +219,22 @@ FunctionParameters  ::= PARENTH_L PARENTH_R
 ParameterList       ::= BaseVarDeclaration: parameter
                         {: RESULT = new ArrayList<>(Collections.singletonList(parameter)); :}
                       | ParameterList: parameters COMMA BaseVarDeclaration: parameter
-                        {: parameters.add(parameter); RESULT = parameters; :};
+                        {: parameters.add(parameter); RESULT = parameters; :}
+                      | error
+                        {: parser.report_error(" - Expected a variable declaration\n", null);
+                           RESULT = new ArrayList<>(Collections.singletonList(new Name("", new Type(null)))); :}
+                      | ParameterList: parameters COMMA error
+                        {: parser.report_error(" - Expected a variable declaration\n", null);
+                           parameters.add(new Name("", new Type(null))); RESULT = parameters; :};
 
 // Classes
 ClassDeclaration       ::= CLASS TYPE: name ClassBlock: block
                            {: RESULT = new ClassDeclarationNode(name, block); :}
                          | CLASS GLOBAL: name ClassBlock: block
-                           {: RESULT = new ClassDeclarationNode(name, block); :};
+                           {: RESULT = new ClassDeclarationNode(name, block); :}
+                         | CLASS error ClassBlock: block
+                           {: parser.report_error(" - Expected a type name\n", null);
+                              RESULT = new ClassDeclarationNode("", block); :};
 ClassBlock             ::= CURLY_L ClassElementList: contents CURLY_R
                            {: RESULT = contents; :};
 ClassElementList       ::= ClassElement: element ClassElementList: elements

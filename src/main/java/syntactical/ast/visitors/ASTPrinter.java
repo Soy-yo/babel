@@ -31,8 +31,7 @@ public class ASTPrinter implements Visitor {
 
     public void print() {
         try {
-            stdOut = new PrintWriter(new OutputStreamWriter(System.out,
-                StandardCharsets.UTF_8.name()));
+            stdOut = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8.name()));
             root.accept(this);
             stdOut.flush();
         } catch (UnsupportedEncodingException e) {
@@ -415,7 +414,12 @@ public class ASTPrinter implements Visitor {
 
     @Override
     public void visit(ErrorExpressionNode node) {
-        println("error");
+        println("expression error");
+    }
+
+    @Override
+    public void visit(ErrorDeclarationNode node) {
+        println("declaration error");
     }
 
     private void println(String value) {

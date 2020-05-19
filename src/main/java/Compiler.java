@@ -53,6 +53,8 @@ public class Compiler {
         boolean first = true;
         DeclarationNode insertionPoint = null;
         for (String file : program.importedFiles()) {
+            // TODO if there were errors in input some may be empty strings ""
+            // don't generate code in such cases
             try {
                 File fileObj = new File(workingDir + "/" + file + ".bbl");
                 // Don't add same file multiple times

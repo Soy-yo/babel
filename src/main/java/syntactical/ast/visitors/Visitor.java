@@ -48,4 +48,6 @@ public interface Visitor {
 
     void visit(ErrorExpressionNode node);
 
+    void visit(ErrorDeclarationNode node);
+
 }

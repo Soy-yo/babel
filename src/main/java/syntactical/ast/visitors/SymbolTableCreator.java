@@ -173,6 +173,11 @@ public class SymbolTableCreator implements Visitor {
 
     }
 
+    @Override
+    public void visit(ErrorDeclarationNode node) {
+
+    }
+
     private String nextScopeId() {
         String result = SCOPE_ID_PREFIX + nextId;
         nextId++;
