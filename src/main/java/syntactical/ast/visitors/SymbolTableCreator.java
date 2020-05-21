@@ -169,12 +169,17 @@ public class SymbolTableCreator implements Visitor {
     }
 
     @Override
-    public void visit(ErrorExpressionNode node) {
+    public void visit(ErrorDeclarationNode node) {
 
     }
 
     @Override
-    public void visit(ErrorDeclarationNode node) {
+    public void visit(ErrorStatementNode node) {
+
+    }
+
+    @Override
+    public void visit(ErrorExpressionNode node) {
 
     }
 

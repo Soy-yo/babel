@@ -413,13 +413,18 @@ public class ASTPrinter implements Visitor {
     }
 
     @Override
-    public void visit(ErrorExpressionNode node) {
-        println("expression error");
+    public void visit(ErrorDeclarationNode node) {
+        println("declaration error");
     }
 
     @Override
-    public void visit(ErrorDeclarationNode node) {
-        println("declaration error");
+    public void visit(ErrorStatementNode node) {
+        println("statement error");
+    }
+
+    @Override
+    public void visit(ErrorExpressionNode node) {
+        println("expression error");
     }
 
     private void println(String value) {

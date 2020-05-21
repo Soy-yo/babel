@@ -16,20 +16,28 @@ scan with {:
 action code {::}
 parser code {:
     private LexicalAnalyser analyser = (LexicalAnalyser) getScanner();
+    private int errors = 0;
+    private Deque<SyntacticalException> pendingErrors = new ArrayDeque<>();
+    private Map<SyntacticalException, String> reportedErrors = new HashMap<>();
+
+    public int errors() {
+        return errors;
+    }
 
     @Override
     public void syntax_error(Symbol token) {
+        errors++;
         SyntacticalException e = new SyntacticalException((LexicalUnit) token);
-        report_error(e.getMessage(), null);
+        pendingErrors.push(e);
     }
 
     @Override
     public void report_error(String message, Object info) {
-        System.err.print(message);
-        if (info instanceof Throwable) {
-            System.err.print(" - " + ((Throwable) info).getMessage() + "\n");
+        SyntacticalException error = pendingErrors.pop();
+        reportedErrors.put(error, message);
+        if (pendingErrors.isEmpty()) {
+            displayErrors();
         }
-        System.err.flush();
     }
 
     @Override
@@ -40,13 +48,31 @@ parser code {:
 
     @Override
     public void report_fatal_error(String message, Object info) {
-        this.done_parsing();
-        this.report_error(message, info);
+        report_error(message, info);
+        done_parsing();
         if (info instanceof SyntacticalException) {
             throw (SyntacticalException) info;
         } else {
             throw new IllegalStateException("Can't recover from previous error(s)");
         }
+    }
+
+    @Override
+    public void done_parsing() {
+        while (!pendingErrors.isEmpty()) {
+            report_error("Unknown cause", null);
+        }
+        super.done_parsing();
+    }
+
+    private void displayErrors() {
+        reportedErrors.entrySet().stream()
+            .sorted(Comparator.<Map.Entry<SyntacticalException, String>>
+                comparingInt(e -> e.getKey().getLexicalUnit().getRow())
+                .thenComparingInt(e -> e.getKey().getLexicalUnit().getColumn())
+            ).forEach(e -> System.err.println("[ERROR] " + e.getKey().getMessage() + " - " + e.getValue()));
+        System.err.flush();
+        reportedErrors.clear();
     }
 :}
 
@@ -66,9 +92,9 @@ nonterminal String Import, FilePath, Filename;
 nonterminal DeclarationNode DeclarationList, Declaration;
 // Variables
 nonterminal VarDeclarationNode VarDeclaration, GlobalVarConstDeclaration, VarConstDeclaration, VarInitDeclaration,
-            GlobalConstDeclaration, LocalConstDeclaration;
+            GlobalConstDeclaration, LocalConstDeclarationEnd, LocalConstDeclaration;
 nonterminal Name BaseVarDeclaration;
-nonterminal String Global;
+nonterminal String Global, Identifier;
 // Functions
 nonterminal FunctionDeclarationNode FunctionDeclaration;
 nonterminal List<Name> FunctionParameters, ParameterList;
@@ -125,13 +151,6 @@ nonterminal ConstructorCallExpressionNode ConstructorCallExpression;
 nonterminal Type Type;
 nonterminal List<ExpressionNode> Arguments, ArgumentList;
 
-// TODO contar cuántas veces se llama a syntax_error y si son muchas notificar error fatal
-// así podemos luego saber si ha habido errores o no para generar código sin tener que andar mirando si hay nulls o
-// nodos de error, etc
-// TODO quizá quitar el error de las declaracoiones para personalizar un poco más
-// porque casi cualquier cosa se la traga como error de declaración
-// p.e. Int X = 0; sí da error en el identificador pero Int foo(Int X) {} ya debe petar mucho y da error de declaración
-// TODO class Bar; por ejemplo, da errores muy raros - revisar la comprobación de errores "recursiva"
 
 // Program
 Program ::= ImportList: imports DeclarationList: declarations
@@ -145,7 +164,7 @@ ImportList ::= ImportList: imports Import: file
 Import     ::= IMPORT FilePath: path END
                {: RESULT = path; :}
              | IMPORT error END
-               {: parser.report_error(" - Expected a path to a file\n", null); RESULT = ""; :};
+               {: parser.report_error("Expected a path to a file", null); RESULT = ""; :};
 FilePath   ::= FilePath: path DIV Filename: filename
                {: RESULT = path + "/" + filename; :}
              | Filename: filename
@@ -168,48 +187,72 @@ Declaration     ::= GlobalVarConstDeclaration: declaration
                     {: RESULT = declaration; :}
                   | ClassDeclaration: declaration
                     {: RESULT = declaration; :}
-                  | error
-                    {: parser.report_error(" - Expected a declaration\n", null);
+                  // TODO quitar esto y dejar sólo error?
+                  | error END
+                    {: parser.report_error("Expected a declaration", null);
+                      RESULT = new ErrorDeclarationNode(); :}
+                  | error CURLY_R
+                    {: parser.report_error("Expected a declaration", null);
                       RESULT = new ErrorDeclarationNode(); :};
 
 // Variables
 GlobalVarConstDeclaration ::= VarDeclaration: declaration
                               {: RESULT = declaration; :}
-                            | GlobalConstDeclaration: declaration END
+                            | GlobalConstDeclaration: declaration
                               {: RESULT = declaration; :};
 VarConstDeclaration       ::= VarDeclaration: declaration
                               {: RESULT = declaration; :}
-                            | LocalConstDeclaration: declaration END
+                            | LocalConstDeclarationEnd: declaration
                               {: RESULT = declaration; :};
 VarDeclaration            ::= BaseVarDeclaration: declaration END
                               {: RESULT = new VarDeclarationNode(declaration); :}
                             | VarInitDeclaration: declaration END
                               {: RESULT = declaration; :};
-BaseVarDeclaration        ::= Type: type IDENTIFIER: id
-                              {: RESULT = new Name(id, type); :}
-                            | Type: type error
-                              {: parser.report_error(" - Expected an identifier\n", null);
-                                 RESULT = new Name(null, type); :};
+BaseVarDeclaration        ::= Type: type Identifier: id
+                              {: RESULT = new Name(id, type); :};
 VarInitDeclaration        ::= BaseVarDeclaration: name ASSIGNMENT InitialValueExpression: initialValue
                               {: RESULT = new VarDeclarationNode(name, initialValue); :}
-                            | ConstructorCallExpression: constructor IDENTIFIER: id
+                            | ConstructorCallExpression: constructor Identifier: id
                               {: RESULT = VarDeclarationNode.fromConstructor(constructor, id); :};
-GlobalConstDeclaration    ::= CONST Type: type Global: id ASSIGNMENT InitialValueExpression: initialValue
+GlobalConstDeclaration    ::= CONST Type: type Global: id ASSIGNMENT InitialValueExpression: initialValue END
                               {: RESULT = new VarDeclarationNode(new Name(id, type), initialValue, true); :}
-                            | CONST ConstructorCallExpression: constructor Global: id
-                              {: RESULT = VarDeclarationNode.fromConstructor(constructor, id).constant(); :};
+                            | CONST ConstructorCallExpression: constructor Global: id END
+                              {: RESULT = VarDeclarationNode.fromConstructor(constructor, id).constant(); :}
+                            | CONST Type: type Global: id error END
+                              {: parser.report_error("Constants must be initialized", null);
+                                 RESULT = new VarDeclarationNode(new Name(id, type), new ErrorExpressionNode(), true);
+                              :};
+LocalConstDeclarationEnd  ::= LocalConstDeclaration: declaration END
+                              {: RESULT = declaration; :}
+                            | CONST Type: type Identifier: id error END
+                              {: parser.report_error("Constants must be initialized", null);
+                                 RESULT = new VarDeclarationNode(new Name(id, type), new ErrorExpressionNode(), true);
+                              :};
 LocalConstDeclaration     ::= CONST VarInitDeclaration: declaration
                               {: RESULT = declaration.constant(); :};
 InitialValueExpression    ::= Expression: expression
                               {: RESULT = expression; :}
                             | AnonymousObjectConstructorExpression: expression
                               {: RESULT = expression; :};
+// TYPE error was added to fix a bug with declarations like Constructor(...) TypeLikeId; where the parser couldn't
+// recover from the error
+// Now the problem is that the error will be notified on the semicolon instead of the identifier
+Identifier                 ::= IDENTIFIER: id
+                               {: RESULT = id; :}
+                             | error
+                               {: parser.report_error("Expected a non uppercase identifier", null); RESULT = null; :}
+                             | TYPE error
+                               {: parser.report_error("Expected a non uppercase identifier", null); RESULT = null; :};
 Global                     ::= GLOBAL: global
                                {: RESULT = global; :}
                              | error
-                               {: parser.report_error(" - Expected a global identifier\n", null); RESULT = null; :};
+                               {: parser.report_error("Expected an uppercase identifier", null); RESULT = null; :}
+                             | TYPE error
+                               {: parser.report_error("Expected an uppercase identifier", null); RESULT = null; :};
 
 // Functions
+// TODO errores de funciones sin usar después las llaves dan errores irrecuperables (no sé cómo solucionarlo, es todo una mierda)
+// TODO lo mismo se aplica más alante a los constructores
 FunctionDeclaration ::= BaseVarDeclaration: name FunctionParameters: parameters BlockStatement: block
                         {: RESULT = new FunctionDeclarationNode(name, parameters, block); :};
 FunctionParameters  ::= PARENTH_L PARENTH_R
@@ -221,10 +264,10 @@ ParameterList       ::= BaseVarDeclaration: parameter
                       | ParameterList: parameters COMMA BaseVarDeclaration: parameter
                         {: parameters.add(parameter); RESULT = parameters; :}
                       | error
-                        {: parser.report_error(" - Expected a variable declaration\n", null);
+                        {: parser.report_error("Expected a variable declaration", null);
                            RESULT = new ArrayList<>(Collections.singletonList(new Name("", new Type(null)))); :}
                       | ParameterList: parameters COMMA error
-                        {: parser.report_error(" - Expected a variable declaration\n", null);
+                        {: parser.report_error("Expected a variable declaration", null);
                            parameters.add(new Name("", new Type(null))); RESULT = parameters; :};
 
 // Classes
@@ -233,7 +276,7 @@ ClassDeclaration       ::= CLASS TYPE: name ClassBlock: block
                          | CLASS GLOBAL: name ClassBlock: block
                            {: RESULT = new ClassDeclarationNode(name, block); :}
                          | CLASS error ClassBlock: block
-                           {: parser.report_error(" - Expected a type name\n", null);
+                           {: parser.report_error("Expected a type name", null);
                               RESULT = new ClassDeclarationNode("", block); :};
 ClassBlock             ::= CURLY_L ClassElementList: contents CURLY_R
                            {: RESULT = contents; :};
@@ -246,7 +289,13 @@ ClassElement           ::= VarConstDeclaration: declaration
                          | ConstructorDeclaration: declaration
                            {: RESULT = declaration; :}
                          | FunctionDeclaration: declaration
-                           {: RESULT = declaration; :};
+                           {: RESULT = declaration; :}
+                         | error END
+                           {: parser.report_error("Expected a declaration", null);
+                              RESULT = new ErrorDeclarationNode(); :}
+                         | error CURLY_R
+                           {: parser.report_error("Expected a declaration", null);
+                              RESULT = new ErrorDeclarationNode(); :};
 ConstructorDeclaration ::= CONSTRUCTOR FunctionParameters: parameters BlockStatement: block
                            {: RESULT = new ConstructorDeclarationNode(parameters, block); :};
 
@@ -272,7 +321,9 @@ Statement     ::= VarDeclarationStatement: statement
                 | ForStatement: statement
                   {: RESULT = statement; :}
                 | BlockStatement: statement
-                  {: RESULT = statement; :};
+                  {: RESULT = statement; :}
+                | error END
+                  {: parser.report_error("Expected a statement", null); RESULT = new ErrorStatementNode(); :};
 
 // Block
 BlockStatement ::= CURLY_L StatementList: root CURLY_R
@@ -436,7 +487,7 @@ Expr9       ::= PARENTH_L Expression0: expression PARENTH_R
               | ConstructorCallExpression: expression
                 {: RESULT = expression; :}
               | error
-                {: parser.report_error(" - Expected an expression\n", null); RESULT = new ErrorExpressionNode(); :};
+                {: parser.report_error("Expected an expression", null); RESULT = new ErrorExpressionNode(); :};
 
 ArrayAccessExpression  ::= Expression8: array SQUARE_L Expression: index SQUARE_R
                            {: RESULT = new ArrayAccessExpressionNode(array, index); :};

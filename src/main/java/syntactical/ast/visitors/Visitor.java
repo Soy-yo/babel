@@ -46,8 +46,10 @@ public interface Visitor {
 
     void visit(ConstructorCallExpressionNode node);
 
-    void visit(ErrorExpressionNode node);
-
     void visit(ErrorDeclarationNode node);
+
+    void visit(ErrorStatementNode node);
+
+    void visit(ErrorExpressionNode node);
 
 }
