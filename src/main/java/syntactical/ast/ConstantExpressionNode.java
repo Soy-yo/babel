@@ -13,55 +13,55 @@ public class ConstantExpressionNode extends ExpressionNode {
     private int value;
     private String representation;
 
-    protected ConstantExpressionNode(int value, String representation, Type type) {
-        super(type);
+    protected ConstantExpressionNode(IdGenerator id, int value, String representation, Type type) {
+        super(id, type);
         this.value = value;
         this.representation = representation;
     }
 
-    protected ConstantExpressionNode(int n) {
-        this(n, "" + n, INT);
+    protected ConstantExpressionNode(IdGenerator id, int n) {
+        this(id, n, "" + n, INT);
     }
 
-    protected ConstantExpressionNode(float x) {
-        this(Float.floatToIntBits(x), "" + x, REAL);
+    protected ConstantExpressionNode(IdGenerator id, float x) {
+        this(id, Float.floatToIntBits(x), "" + x, REAL);
     }
 
-    protected ConstantExpressionNode(boolean b) {
-        this(b ? 0b1 : 0b0, "" + b, BOOL);
+    protected ConstantExpressionNode(IdGenerator id, boolean b) {
+        this(id, b ? 0b1 : 0b0, "" + b, BOOL);
     }
 
-    protected ConstantExpressionNode(char c) {
-        this(c, "" + c, CHAR);
+    protected ConstantExpressionNode(IdGenerator id, char c) {
+        this(id, c, "" + c, CHAR);
     }
 
-    public static ConstantExpressionNode fromInt(String n) {
+    public static ConstantExpressionNode fromInt(IdGenerator id, String n) {
         int v = n.contains("b") ? Integer.valueOf(n.substring(2), 2) : Integer.decode(n);
-        return new ConstantExpressionNode(v);
+        return new ConstantExpressionNode(id, v);
     }
 
-    public static ConstantExpressionNode fromFloat(String x) {
-        return new ConstantExpressionNode(Float.parseFloat(x));
+    public static ConstantExpressionNode fromFloat(IdGenerator id, String x) {
+        return new ConstantExpressionNode(id, Float.parseFloat(x));
     }
 
-    public static ConstantExpressionNode fromBoolean(String b) {
-        return new ConstantExpressionNode(Boolean.parseBoolean(b));
+    public static ConstantExpressionNode fromBoolean(IdGenerator id, String b) {
+        return new ConstantExpressionNode(id, Boolean.parseBoolean(b));
     }
 
-    public static ConstantExpressionNode fromChar(String c) {
-        return new ConstantExpressionNode(charValue(c), c.substring(1, c.length() - 1), CHAR);
+    public static ConstantExpressionNode fromChar(IdGenerator id, String c) {
+        return new ConstantExpressionNode(id, charValue(c), c.substring(1, c.length() - 1), CHAR);
     }
 
-    public static ConstantExpressionNode ofNothing() {
-        return new ConstantExpressionNode(0b0, "nothing", VOID);
+    public static ConstantExpressionNode ofNothing(IdGenerator id) {
+        return new ConstantExpressionNode(id, 0b0, "nothing", VOID);
     }
 
-    public static ConstantExpressionNode ofNull() {
-        return new ConstantExpressionNode(0b0, "null", null);
+    public static ConstantExpressionNode ofNull(IdGenerator id) {
+        return new ConstantExpressionNode(id, 0b0, "null", null);
     }
 
-    public static ConstantExpressionNode special(String representation, Type type) {
-        return new ConstantExpressionNode(0b0, representation, type);
+    public static ConstantExpressionNode special(IdGenerator id, String representation, Type type) {
+        return new ConstantExpressionNode(id, 0b0, representation, type);
     }
 
     private static char charValue(String c) {

@@ -8,14 +8,15 @@ public class ForStatementNode extends StatementNode {
     private ExpressionNode iterable;
     private BlockStatementNode block;
 
-    public ForStatementNode(VarDeclarationNode variable, ExpressionNode iterable, BlockStatementNode block) {
+    public ForStatementNode(IdGenerator id, VarDeclarationNode variable, ExpressionNode iterable, BlockStatementNode block) {
+        super(id);
         this.variable = variable;
         this.iterable = iterable;
         this.block = block;
     }
 
-    public ForStatementNode(Name variable, ExpressionNode iterable, BlockStatementNode block) {
-        this(new VarDeclarationNode(variable), iterable, block);
+    public ForStatementNode(IdGenerator id, Name variable, ExpressionNode iterable, BlockStatementNode block) {
+        this(id, new VarDeclarationNode(id, variable), iterable, block);
     }
 
     public VarDeclarationNode getVariable() {

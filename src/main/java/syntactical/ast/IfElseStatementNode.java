@@ -8,7 +8,8 @@ public class IfElseStatementNode extends StatementNode {
     private BlockStatementNode ifBlock;
     private StatementNode elsePart;
 
-    public IfElseStatementNode(ExpressionNode condition, BlockStatementNode ifBlock, StatementNode elsePart) {
+    public IfElseStatementNode(IdGenerator id, ExpressionNode condition, BlockStatementNode ifBlock, StatementNode elsePart) {
+        super(id);
         if (elsePart != null && !(elsePart instanceof BlockStatementNode)
                 && !(elsePart instanceof IfElseStatementNode)) {
             throw new IllegalArgumentException("The else part of an if statement must be either a block or another if");

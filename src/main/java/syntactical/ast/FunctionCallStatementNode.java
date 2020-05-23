@@ -6,7 +6,9 @@ public class FunctionCallStatementNode extends StatementNode {
 
     private FunctionCallExpressionNode function;
 
-    public FunctionCallStatementNode(FunctionCallExpressionNode function) {
+    protected FunctionCallStatementNode(FunctionCallExpressionNode function) {
+        super(null);
+        this.id = function.id;
         this.function = function;
     }
 

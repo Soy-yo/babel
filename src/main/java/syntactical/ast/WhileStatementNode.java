@@ -7,8 +7,8 @@ public class WhileStatementNode extends StatementNode {
     private ExpressionNode condition;
     private BlockStatementNode block;
 
-    public WhileStatementNode(ExpressionNode condition,
-                              BlockStatementNode block) {
+    public WhileStatementNode(IdGenerator id, ExpressionNode condition, BlockStatementNode block) {
+        super(id);
         this.condition = condition;
         this.block = block;
     }

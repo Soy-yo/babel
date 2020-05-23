@@ -7,27 +7,26 @@ public class VarDeclarationNode extends DeclarationNode {
     private ExpressionNode initialValue;
     private boolean isConst;
 
-    public VarDeclarationNode(
-            Name name,
-            ExpressionNode initialValue,
-            boolean isConst
-    ) {
-        super(name);
+    public VarDeclarationNode(IdGenerator id, Name name, ExpressionNode initialValue, boolean isConst) {
+        super(id, name);
         this.initialValue = initialValue;
         this.isConst = isConst;
     }
 
-    public VarDeclarationNode(Name name, ExpressionNode initialValue) {
-        this(name, initialValue, false);
+    public VarDeclarationNode(IdGenerator id, Name name, ExpressionNode initialValue) {
+        this(id, name, initialValue, false);
     }
 
-    public VarDeclarationNode(Name name) {
-        this(name, null);
+    public VarDeclarationNode(IdGenerator id, Name name) {
+        this(id, name, null);
     }
 
-    public static VarDeclarationNode fromConstructor(ConstructorCallExpressionNode constructor, String id) {
-        Name name = new Name(id, constructor.getType());
-        return new VarDeclarationNode(name, constructor);
+    public static VarDeclarationNode fromConstructor(
+            IdGenerator id,
+            ConstructorCallExpressionNode constructor,
+            String identifier) {
+        Name name = new Name(identifier, constructor.getType());
+        return new VarDeclarationNode(id, name, constructor);
     }
 
     public ExpressionNode getInitialValue() {
@@ -39,7 +38,9 @@ public class VarDeclarationNode extends DeclarationNode {
     }
 
     public VarDeclarationNode constant() {
-        return new VarDeclarationNode(name, initialValue, true);
+        VarDeclarationNode result = new VarDeclarationNode(null, name, initialValue, true);
+        result.id = id;
+        return result;
     }
 
     public VarDeclarationStatementNode asStatement() {

@@ -11,7 +11,8 @@ public class ProgramNode extends ASTNode {
     private DeclarationNode root;
     private List<String> importedFiles;
 
-    public ProgramNode(DeclarationNode root, Collection<String> importedFiles) {
+    public ProgramNode(IdGenerator id, DeclarationNode root, Collection<String> importedFiles) {
+        super(id);
         this.root = root;
         this.importedFiles = new ArrayList<>(importedFiles);
     }

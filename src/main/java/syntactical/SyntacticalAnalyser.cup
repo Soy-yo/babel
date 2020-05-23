@@ -13,7 +13,9 @@ init with {::}
 scan with {:
     return analyser.next_token();
 :}
-action code {::}
+action code {:
+    private IdGenerator nextId = new IdGenerator();
+:}
 parser code {:
     private LexicalAnalyser analyser = (LexicalAnalyser) getScanner();
     private int errors = 0;
@@ -154,7 +156,7 @@ nonterminal List<ExpressionNode> Arguments, ArgumentList;
 
 // Program
 Program ::= ImportList: imports DeclarationList: declarations
-            {: RESULT = new ProgramNode(declarations, imports); :};
+            {: RESULT = new ProgramNode(nextId, declarations, imports); :};
 
 // Imports
 ImportList ::= ImportList: imports Import: file
@@ -190,10 +192,10 @@ Declaration     ::= GlobalVarConstDeclaration: declaration
                   // TODO quitar esto y dejar sólo error?
                   | error END
                     {: parser.report_error("Expected a declaration", null);
-                      RESULT = new ErrorDeclarationNode(); :}
+                      RESULT = new ErrorDeclarationNode(nextId); :}
                   | error CURLY_R
                     {: parser.report_error("Expected a declaration", null);
-                      RESULT = new ErrorDeclarationNode(); :};
+                      RESULT = new ErrorDeclarationNode(nextId); :};
 
 // Variables
 GlobalVarConstDeclaration ::= VarDeclaration: declaration
@@ -205,28 +207,32 @@ VarConstDeclaration       ::= VarDeclaration: declaration
                             | LocalConstDeclarationEnd: declaration
                               {: RESULT = declaration; :};
 VarDeclaration            ::= BaseVarDeclaration: declaration END
-                              {: RESULT = new VarDeclarationNode(declaration); :}
+                              {: RESULT = new VarDeclarationNode(nextId, declaration); :}
                             | VarInitDeclaration: declaration END
                               {: RESULT = declaration; :};
 BaseVarDeclaration        ::= Type: type Identifier: id
                               {: RESULT = new Name(id, type); :};
 VarInitDeclaration        ::= BaseVarDeclaration: name ASSIGNMENT InitialValueExpression: initialValue
-                              {: RESULT = new VarDeclarationNode(name, initialValue); :}
+                              {: RESULT = new VarDeclarationNode(nextId, name, initialValue); :}
                             | ConstructorCallExpression: constructor Identifier: id
-                              {: RESULT = VarDeclarationNode.fromConstructor(constructor, id); :};
+                              {: RESULT = VarDeclarationNode.fromConstructor(nextId, constructor, id); :};
 GlobalConstDeclaration    ::= CONST Type: type Global: id ASSIGNMENT InitialValueExpression: initialValue END
-                              {: RESULT = new VarDeclarationNode(new Name(id, type), initialValue, true); :}
+                              {: RESULT = new VarDeclarationNode(nextId, new Name(id, type), initialValue, true); :}
                             | CONST ConstructorCallExpression: constructor Global: id END
-                              {: RESULT = VarDeclarationNode.fromConstructor(constructor, id).constant(); :}
+                              {: RESULT = VarDeclarationNode.fromConstructor(nextId, constructor, id).constant(); :}
                             | CONST Type: type Global: id error END
                               {: parser.report_error("Constants must be initialized", null);
-                                 RESULT = new VarDeclarationNode(new Name(id, type), new ErrorExpressionNode(), true);
+                                 RESULT = new VarDeclarationNode(
+                                                nextId, new Name(id, type), new ErrorExpressionNode(nextId), true
+                                          );
                               :};
 LocalConstDeclarationEnd  ::= LocalConstDeclaration: declaration END
                               {: RESULT = declaration; :}
                             | CONST Type: type Identifier: id error END
                               {: parser.report_error("Constants must be initialized", null);
-                                 RESULT = new VarDeclarationNode(new Name(id, type), new ErrorExpressionNode(), true);
+                                 RESULT = new VarDeclarationNode(
+                                                nextId, new Name(id, type), new ErrorExpressionNode(nextId), true
+                                          );
                               :};
 LocalConstDeclaration     ::= CONST VarInitDeclaration: declaration
                               {: RESULT = declaration.constant(); :};
@@ -254,7 +260,7 @@ Global                     ::= GLOBAL: global
 // TODO errores de funciones sin usar después las llaves dan errores irrecuperables (no sé cómo solucionarlo, es todo una mierda)
 // TODO lo mismo se aplica más alante a los constructores
 FunctionDeclaration ::= BaseVarDeclaration: name FunctionParameters: parameters BlockStatement: block
-                        {: RESULT = new FunctionDeclarationNode(name, parameters, block); :};
+                        {: RESULT = new FunctionDeclarationNode(nextId, name, parameters, block); :};
 FunctionParameters  ::= PARENTH_L PARENTH_R
                         {: RESULT = new ArrayList<>(); :}
                       | PARENTH_L ParameterList: parameters PARENTH_R
@@ -272,12 +278,12 @@ ParameterList       ::= BaseVarDeclaration: parameter
 
 // Classes
 ClassDeclaration       ::= CLASS TYPE: name ClassBlock: block
-                           {: RESULT = new ClassDeclarationNode(name, block); :}
+                           {: RESULT = new ClassDeclarationNode(nextId, name, block); :}
                          | CLASS GLOBAL: name ClassBlock: block
-                           {: RESULT = new ClassDeclarationNode(name, block); :}
+                           {: RESULT = new ClassDeclarationNode(nextId, name, block); :}
                          | CLASS error ClassBlock: block
                            {: parser.report_error("Expected a type name", null);
-                              RESULT = new ClassDeclarationNode("", block); :};
+                              RESULT = new ClassDeclarationNode(nextId, "", block); :};
 ClassBlock             ::= CURLY_L ClassElementList: contents CURLY_R
                            {: RESULT = contents; :};
 ClassElementList       ::= ClassElement: element ClassElementList: elements
@@ -292,12 +298,12 @@ ClassElement           ::= VarConstDeclaration: declaration
                            {: RESULT = declaration; :}
                          | error END
                            {: parser.report_error("Expected a declaration", null);
-                              RESULT = new ErrorDeclarationNode(); :}
+                              RESULT = new ErrorDeclarationNode(nextId); :}
                          | error CURLY_R
                            {: parser.report_error("Expected a declaration", null);
-                              RESULT = new ErrorDeclarationNode(); :};
+                              RESULT = new ErrorDeclarationNode(nextId); :};
 ConstructorDeclaration ::= CONSTRUCTOR FunctionParameters: parameters BlockStatement: block
-                           {: RESULT = new ConstructorDeclarationNode(parameters, block); :};
+                           {: RESULT = new ConstructorDeclarationNode(nextId, parameters, block); :};
 
 // Statements
 StatementList ::= Statement: statement StatementList: statements
@@ -323,11 +329,11 @@ Statement     ::= VarDeclarationStatement: statement
                 | BlockStatement: statement
                   {: RESULT = statement; :}
                 | error END
-                  {: parser.report_error("Expected a statement", null); RESULT = new ErrorStatementNode(); :};
+                  {: parser.report_error("Expected a statement", null); RESULT = new ErrorStatementNode(nextId); :};
 
 // Block
 BlockStatement ::= CURLY_L StatementList: root CURLY_R
-                   {: RESULT = new BlockStatementNode(root); :};
+                   {: RESULT = new BlockStatementNode(nextId, root); :};
 
 // Declaration statements
 VarDeclarationStatement ::= VarConstDeclaration: declaration
@@ -335,22 +341,22 @@ VarDeclarationStatement ::= VarConstDeclaration: declaration
 
 // Assignment
 AssignmentStatement ::= Designator: designator ASSIGNMENT Expression: expression END
-                        {: RESULT = new AssignmentStatementNode(designator, expression); :}
+                        {: RESULT = new AssignmentStatementNode(nextId, designator, expression); :}
                       | Designator: designator PLUS_ASSIGN Expression: expression END
                         {: RESULT = AssignmentStatementNode.fromSyntacticSugar(
-                                            designator, OperatorOverloadConstants._PLUS, expression); :}
+                                            nextId, designator, OperatorOverloadConstants._PLUS, expression); :}
                       | Designator: designator MINUS_ASSIGN Expression: expression END
                         {: RESULT = AssignmentStatementNode.fromSyntacticSugar(
-                                            designator, OperatorOverloadConstants._MINUS, expression); :}
+                                            nextId, designator, OperatorOverloadConstants._MINUS, expression); :}
                       | Designator: designator MULT_ASSIGN Expression: expression END
                         {: RESULT = AssignmentStatementNode.fromSyntacticSugar(
-                                            designator, OperatorOverloadConstants._MULT, expression); :}
+                                            nextId, designator, OperatorOverloadConstants._MULT, expression); :}
                       | Designator: designator DIV_ASSIGN Expression: expression END
                         {: RESULT = AssignmentStatementNode.fromSyntacticSugar(
-                                            designator, OperatorOverloadConstants._DIV, expression); :}
+                                            nextId, designator, OperatorOverloadConstants._DIV, expression); :}
                       | Designator: designator MOD_ASSIGN Expression: expression END
                         {: RESULT = AssignmentStatementNode.fromSyntacticSugar(
-                                            designator, OperatorOverloadConstants._MOD, expression); :};
+                                            nextId, designator, OperatorOverloadConstants._MOD, expression); :};
 
 Designator   ::= VariableExpression: expression
                  {: RESULT = Designator.ofVar(expression); :}
@@ -361,17 +367,17 @@ Designator   ::= VariableExpression: expression
 
 // Function call
 FunctionCallStatement ::= FunctionCallExpression: function END
-                          {: RESULT = new FunctionCallStatementNode(function); :};
+                          {: RESULT = function.asStatement(); :};
 
 // Return
 ReturnStatement ::= RETURN END
-                    {: RESULT = new ReturnStatementNode(); :}
+                    {: RESULT = new ReturnStatementNode(nextId); :}
                   | RETURN Expression: expression END
-                    {: RESULT = new ReturnStatementNode(expression); :};
+                    {: RESULT = new ReturnStatementNode(nextId, expression); :};
 
 // Conditionals
 IfElseStatement   ::= IF Expression: condition BlockStatement: ifBlock ElsePartStatement: elsePart
-                      {: RESULT = new IfElseStatementNode(condition, ifBlock, elsePart); :};
+                      {: RESULT = new IfElseStatementNode(nextId, condition, ifBlock, elsePart); :};
 ElsePartStatement ::= ELSE BlockStatement: elseBlock
                       {: RESULT = elseBlock; :}
                     | ELSE IfElseStatement: ifElse
@@ -380,24 +386,27 @@ ElsePartStatement ::= ELSE BlockStatement: elseBlock
                       {: RESULT = null; :};
 
 SwitchStatement      ::= SWITCH Expression: expression CURLY_L SwitchCasesStatement: cases CURLY_R
-                         {: RESULT = new SwitchStatementNode(expression, cases); :};
+                         {: RESULT = new SwitchStatementNode(nextId, expression, cases); :};
 SwitchCasesStatement ::= ConstantExpression: expression ARROW Statement: statement
                          {: RESULT = new HashMap<>(Collections.singletonMap(expression, statement)); :}
                        | UNDERSCORE ARROW Statement: statement
                          {: RESULT = new HashMap<>(Collections.singletonMap(
-                                ConstantExpressionNode.special("<default>", new Type("~Default")), statement)); :}
+                                ConstantExpressionNode.special(nextId, "<default>", new Type("~Default")), statement));
+                         :}
                        | SwitchCasesStatement: cases ConstantExpression: expression ARROW Statement: statement
                          {: cases.put(expression, statement); RESULT = cases; :}
                        | SwitchCasesStatement: cases UNDERSCORE ARROW Statement: statement
-                         {: cases.put(ConstantExpressionNode.special("<default>", new Type("~Default")), statement);
+                         {: cases.put(
+                                ConstantExpressionNode.special(nextId, "<default>", new Type("~Default")), statement
+                            );
                             RESULT = cases; :};
 
 // Loops
 WhileStatement ::= WHILE Expression: condition BlockStatement: whileBlock
-                    {: RESULT = new WhileStatementNode(condition, whileBlock); :};
+                    {: RESULT = new WhileStatementNode(nextId, condition, whileBlock); :};
 
 ForStatement ::= FOR BaseVarDeclaration: variable IN Expression: iterable BlockStatement: forBlock
-                    {: RESULT = new ForStatementNode(variable, iterable, forBlock); :};
+                    {: RESULT = new ForStatementNode(nextId, variable, iterable, forBlock); :};
 
 
 // Expressions
@@ -405,55 +414,61 @@ Expression ::= Expression0: expression
                {: RESULT = expression; :};
 
 Expression0 ::= Expression0: first ELLIPSIS Expression1: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._TO, last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._TO, last); :}
               | Expression1: first
                 {: RESULT = first; :};
 Expression1 ::= Expression1: first OR Expression2: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._OR, last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._OR, last); :}
               | Expression2: first
                 {: RESULT = first; :};
 Expression2 ::= Expression2: first AND Expression3: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._AND, last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._AND, last); :}
               | Expression3: first
                 {: RESULT = first; :};
 Expression3 ::= Expression3: first EQUALS Expression4: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._EQUALS, last); :}
+                {:
+                   RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._EQUALS, last);
+                :}
               | Expression3: first NEQ Expression4: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._NEQ, last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._NEQ, last); :}
               | Expression3: first IDENTITY Expression4: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._ID, last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._ID, last); :}
               | Expression4: first
                 {: RESULT = first; :};
 Expression4 ::= Expression4: first GT Expression5: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._GT, last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._GT, last); :}
               | Expression4: first GE Expression5: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._GE, last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._GE, last); :}
               | Expression4: first LT Expression5: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._LT, last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._LT, last); :}
               | Expression4: first LE Expression5: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._LE, last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._LE, last); :}
               | Expression5: first
                 {: RESULT = first; :};
 Expression5 ::= Expression5: first PLUS Expression6: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._PLUS, last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._PLUS, last); :}
               | Expression5: first MINUS Expression6: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._MINUS, last); :}
+                {:
+                   RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._MINUS, last);
+                :}
               | Expression6: first
                 {: RESULT = first; :};
 Expression6 ::= Expression6: first MULT Expression7: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._MULT, last); :}
+                {:
+                   RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._MULT, last);
+                :}
               | Expression6: first DIV Expression7: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._DIV, last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._DIV, last); :}
               | Expression6: first MOD Expression7: last
-                {: RESULT = FunctionCallExpressionNode.operator(first, OperatorOverloadConstants._MOD, last); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, first, OperatorOverloadConstants._MOD, last); :}
               | Expression7: first
                 {: RESULT = first; :};
 Expression7 ::= PLUS Expression7: first
-                {: RESULT = FunctionCallExpressionNode.operator(OperatorOverloadConstants._PLUS, first); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, OperatorOverloadConstants._PLUS, first); :}
               | MINUS Expression7: first
-                {: RESULT = FunctionCallExpressionNode.operator(OperatorOverloadConstants._MINUS, first); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, OperatorOverloadConstants._MINUS, first); :}
               | NOT Expression7: first
-                {: RESULT = FunctionCallExpressionNode.operator(OperatorOverloadConstants._NOT, first); :}
+                {: RESULT = FunctionCallExpressionNode.operator(nextId, OperatorOverloadConstants._NOT, first); :}
               | Expression8: first
                 {: RESULT = first; :};
 Expression8 ::= FieldAccessExpression: expression
@@ -487,61 +502,62 @@ Expr9       ::= PARENTH_L Expression0: expression PARENTH_R
               | ConstructorCallExpression: expression
                 {: RESULT = expression; :}
               | error
-                {: parser.report_error("Expected an expression", null); RESULT = new ErrorExpressionNode(); :};
+                {: parser.report_error("Expected an expression", null); RESULT = new ErrorExpressionNode(nextId); :};
 
 ArrayAccessExpression  ::= Expression8: array SQUARE_L Expression: index SQUARE_R
-                           {: RESULT = new ArrayAccessExpressionNode(array, index); :};
+                           {: RESULT = new ArrayAccessExpressionNode(nextId, array, index); :};
 FieldAccessExpression  ::= Expression8: expression POINT IDENTIFIER: identifier
-                           {: RESULT = new PointExpressionNode(expression, identifier); :};
+                           {: RESULT = new PointExpressionNode(nextId, expression, identifier); :};
 // Fix to avoid function calls on globals (as that's not possible) so they can be parsed as constructor calls
 FunctionCallExpression ::= Expr8: function Arguments: arguments
-                           {: RESULT = new FunctionCallExpressionNode(function, arguments); :};
+                           {: RESULT = new FunctionCallExpressionNode(nextId, function, arguments); :};
 
 // Still not valid qualified types with upper case names
 ConstructorCallExpression ::= TYPE: type Arguments: arguments
-                              {: RESULT = new ConstructorCallExpressionNode(new Type(type), arguments); :}
+                              {: RESULT = new ConstructorCallExpressionNode(nextId, new Type(type), arguments); :}
                             | GLOBAL: type Arguments: arguments
-                              {: RESULT = new ConstructorCallExpressionNode(new Type(type), arguments); :}
+                              {: RESULT = new ConstructorCallExpressionNode(nextId, new Type(type), arguments); :}
                             | TYPE: type LT Type: qualified GT Arguments: arguments
-                              {: RESULT = new ConstructorCallExpressionNode(new Type(type, qualified), arguments); :};
+                              {: RESULT = new ConstructorCallExpressionNode(
+                                            nextId, new Type(type, qualified), arguments); :};
 
 // Constants
 VariableExpression    ::= IDENTIFIER: id
-                          {: RESULT = new VariableExpressionNode(id); :}
+                          {: RESULT = new VariableExpressionNode(nextId, id); :}
                         | THIS: id
-                          {: RESULT = new VariableExpressionNode(id); :};
+                          {: RESULT = new VariableExpressionNode(nextId, id); :};
 GlobalConstExpression ::= GLOBAL: id
-                          {: RESULT = new VariableExpressionNode(id); :};
+                          {: RESULT = new VariableExpressionNode(nextId, id); :};
 ConstantExpression    ::= INT: n
-                          {: RESULT = ConstantExpressionNode.fromInt(n); :}
+                          {: RESULT = ConstantExpressionNode.fromInt(nextId, n); :}
                         | REAL: x
-                          {: RESULT = ConstantExpressionNode.fromFloat(x); :}
+                          {: RESULT = ConstantExpressionNode.fromFloat(nextId, x); :}
                         | TRUE: t
-                          {: RESULT = ConstantExpressionNode.fromBoolean(t); :}
+                          {: RESULT = ConstantExpressionNode.fromBoolean(nextId, t); :}
                         | FALSE: f
-                          {: RESULT = ConstantExpressionNode.fromBoolean(f); :}
+                          {: RESULT = ConstantExpressionNode.fromBoolean(nextId, f); :}
                         | CHAR: c
-                          {: RESULT = ConstantExpressionNode.fromChar(c); :}
+                          {: RESULT = ConstantExpressionNode.fromChar(nextId, c); :}
                         | NOTHING
-                          {: RESULT = ConstantExpressionNode.ofNothing(); :}
+                          {: RESULT = ConstantExpressionNode.ofNothing(nextId); :}
                         | NULL
-                          {: RESULT = ConstantExpressionNode.ofNull(); :};
+                          {: RESULT = ConstantExpressionNode.ofNull(nextId); :};
 
 ListConstructorExpression ::= STRING: str
-                              {: RESULT = ListConstructorExpressionNode.fromString(str); :}
+                              {: RESULT = ListConstructorExpressionNode.fromString(nextId, str); :}
                             | SQUARE_L SQUARE_R
-                              {: RESULT = new ListConstructorExpressionNode(); :}
+                              {: RESULT = new ListConstructorExpressionNode(nextId); :}
                             | SQUARE_L ListElements: elements SQUARE_R
-                              {: RESULT = new ListConstructorExpressionNode(elements); :};
+                              {: RESULT = new ListConstructorExpressionNode(nextId, elements); :};
 ListElements              ::= Expression: element
                               {: RESULT = new ArrayList<>(Collections.singletonList(element)); :}
                             | ListElements: elements COMMA Expression: element
                               {: elements.add(element); RESULT = elements; :};
 
 AnonymousObjectConstructorExpression ::= CURLY_L CURLY_R
-                                         {: RESULT = new AnonymousObjectConstructorExpressionNode(); :}
+                                         {: RESULT = new AnonymousObjectConstructorExpressionNode(nextId); :}
                                        | CURLY_L AnonymousObjectFields: fields CURLY_R
-                                         {: RESULT = new AnonymousObjectConstructorExpressionNode(fields); :};
+                                         {: RESULT = new AnonymousObjectConstructorExpressionNode(nextId, fields); :};
 AnonymousObjectFields                ::= AnonymousObjectField: field
                                          {: RESULT = field; :}
                                        | AnonymousObjectField: field COMMA AnonymousObjectFields: fields

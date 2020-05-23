@@ -4,8 +4,8 @@ import syntactical.ast.visitors.Visitor;
 
 public class ErrorDeclarationNode extends DeclarationNode {
 
-    public ErrorDeclarationNode() {
-        super(null);
+    public ErrorDeclarationNode(IdGenerator id) {
+        super(id, null);
     }
 
     @Override

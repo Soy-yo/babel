@@ -4,12 +4,13 @@ public abstract class ExpressionNode extends ASTNode {
 
     protected Type type;
 
-    public ExpressionNode(Type type) {
+    public ExpressionNode(IdGenerator id, Type type) {
+        super(id);
         this.type = type;
     }
 
-    public ExpressionNode() {
-        this(null);
+    public ExpressionNode(IdGenerator id) {
+        this(id, null);
     }
 
     public Type getType() {

@@ -7,6 +7,10 @@ public abstract class QueueableNode<N extends QueueableNode<N>> extends ASTNode 
     protected N previous;
     protected N next;
 
+    public QueueableNode(IdGenerator id) {
+        super(id);
+    }
+
     private static <N extends QueueableNode<N>> void checkNext(QueueableNode<N> node) {
         if (node.next != null) {
             throw new IllegalArgumentException(node + " already has a next node");

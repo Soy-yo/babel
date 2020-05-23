@@ -14,8 +14,8 @@ public class AnonymousObjectConstructorExpressionNode extends ExpressionNode {
     private VarDeclarationNode root;
     private Set<Name> fieldNames;
 
-    public AnonymousObjectConstructorExpressionNode(VarDeclarationNode root) {
-        super(TYPE);
+    public AnonymousObjectConstructorExpressionNode(IdGenerator id, VarDeclarationNode root) {
+        super(id, TYPE);
         this.root = root;
         this.fieldNames = new HashSet<>();
         if (root != null) {
@@ -23,8 +23,8 @@ public class AnonymousObjectConstructorExpressionNode extends ExpressionNode {
         }
     }
 
-    public AnonymousObjectConstructorExpressionNode() {
-        this(null);
+    public AnonymousObjectConstructorExpressionNode(IdGenerator id) {
+        this(id, null);
     }
 
     public boolean isEmpty() {

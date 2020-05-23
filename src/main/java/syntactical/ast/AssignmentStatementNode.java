@@ -7,14 +7,19 @@ public class AssignmentStatementNode extends StatementNode {
     private Designator target;
     private ExpressionNode value;
 
-    public AssignmentStatementNode(Designator target, ExpressionNode value) {
+    public AssignmentStatementNode(IdGenerator id, Designator target, ExpressionNode value) {
+        super(id);
         this.target = target;
         this.value = value;
     }
 
-    public static AssignmentStatementNode fromSyntacticSugar(Designator target, String operator, ExpressionNode value) {
+    public static AssignmentStatementNode fromSyntacticSugar(
+            IdGenerator id,
+            Designator target,
+            String operator,
+            ExpressionNode value) {
         ExpressionNode left = target.compose();
-        return new AssignmentStatementNode(target, FunctionCallExpressionNode.operator(left, operator, value));
+        return new AssignmentStatementNode(id, target, FunctionCallExpressionNode.operator(id, left, operator, value));
     }
 
     public ExpressionNode getTarget() {

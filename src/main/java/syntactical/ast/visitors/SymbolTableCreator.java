@@ -73,7 +73,7 @@ public class SymbolTableCreator implements Visitor {
         }
         // TODO quizá nombre concreto para las clases para poder encontrarlas mejor
         String scopeName = nextScopeId();
-        node.setId(scopeName);
+        //node.setId(scopeName);
         symbolTable.openScope(scopeName);
         node.getContentRoot().accept(this);
         symbolTable.closeScope();
@@ -82,7 +82,7 @@ public class SymbolTableCreator implements Visitor {
     @Override
     public void visit(BlockStatementNode node) {
         String scopeName = nextScopeId();
-        node.setId(scopeName);
+        //node.setId(scopeName);
         symbolTable.openScope(scopeName);
         node.accept(this);
         symbolTable.closeScope();

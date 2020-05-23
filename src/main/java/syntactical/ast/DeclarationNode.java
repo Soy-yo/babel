@@ -4,7 +4,8 @@ public abstract class DeclarationNode extends QueueableNode<DeclarationNode> {
 
     protected Name name;
 
-    public DeclarationNode(Name name) {
+    public DeclarationNode(IdGenerator id, Name name) {
+        super(id);
         this.name = name;
     }
 

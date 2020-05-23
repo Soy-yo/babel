@@ -10,8 +10,8 @@ public class ConstructorCallExpressionNode extends ExpressionNode {
 
     private List<ExpressionNode> arguments;
 
-    public ConstructorCallExpressionNode(Type constructor, Collection<ExpressionNode> arguments) {
-        super(constructor);
+    public ConstructorCallExpressionNode(IdGenerator id, Type constructor, Collection<ExpressionNode> arguments) {
+        super(id, constructor);
         this.arguments = new ArrayList<>(arguments);
     }
 

@@ -10,7 +10,11 @@ public class SwitchStatementNode extends StatementNode {
     private ExpressionNode switchExpression;
     private Map<ConstantExpressionNode, StatementNode> cases;
 
-    public SwitchStatementNode(ExpressionNode switchExpression, Map<ConstantExpressionNode, StatementNode> cases) {
+    public SwitchStatementNode(
+            IdGenerator id,
+            ExpressionNode switchExpression,
+            Map<ConstantExpressionNode, StatementNode> cases) {
+        super(id);
         this.switchExpression = switchExpression;
         this.cases = new HashMap<>(cases);
     }

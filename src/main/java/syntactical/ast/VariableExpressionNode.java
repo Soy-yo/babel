@@ -6,7 +6,8 @@ public class VariableExpressionNode extends ExpressionNode {
 
     private String variable;
 
-    public VariableExpressionNode(String variable) {
+    public VariableExpressionNode(IdGenerator id, String variable) {
+        super(id);
         this.variable = variable;
     }
 

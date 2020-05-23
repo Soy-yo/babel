@@ -13,13 +13,13 @@ public class FunctionDeclarationNode extends DeclarationNode {
     private BlockStatementNode code;
 
     public FunctionDeclarationNode(
+            IdGenerator id,
             Name name,
             Collection<Name> parameterNames,
-            BlockStatementNode code
-    ) {
-        super(name);
+            BlockStatementNode code) {
+        super(id, name);
         this.parameters = parameterNames.stream()
-                .map(VarDeclarationNode::new)
+                .map(n -> new VarDeclarationNode(id, n))
                 .collect(Collectors.toList());
         this.code = code;
     }

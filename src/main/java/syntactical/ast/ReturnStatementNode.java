@@ -6,12 +6,13 @@ public class ReturnStatementNode extends StatementNode {
 
     private ExpressionNode returnExpression;
 
-    public ReturnStatementNode(ExpressionNode returnExpression) {
+    public ReturnStatementNode(IdGenerator id, ExpressionNode returnExpression) {
+        super(id);
         this.returnExpression = returnExpression;
     }
 
-    public ReturnStatementNode() {
-        this(ConstantExpressionNode.ofNothing());
+    public ReturnStatementNode(IdGenerator id) {
+        this(id, ConstantExpressionNode.ofNothing(id));
     }
 
     public ExpressionNode getReturnExpression() {
