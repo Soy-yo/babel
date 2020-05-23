@@ -7,12 +7,8 @@ import java.util.stream.Collectors;
 
 public class SymbolTableCreator implements Visitor {
 
-    // TODO arroba por ejemplo
-    private static final String SCOPE_ID_PREFIX = "@scope_";
-
     private final ASTNode root;
     private final SymbolTable symbolTable;
-    private int nextId;
 
     // TODO probablemente en las expresiones comprobar que las variables que usan estén ya declaradas
     // es decir, visitar lo que contenga expresiones y comprobar que las variables ya estén en la tabla de símbolos
@@ -30,7 +26,6 @@ public class SymbolTableCreator implements Visitor {
     public SymbolTableCreator(ASTNode root) {
         this.root = root;
         this.symbolTable = new SymbolTable();
-        this.nextId = 0;
     }
 
     public SymbolTable create() {
@@ -67,23 +62,19 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(ClassDeclarationNode node) {
-        if (!symbolTable.putClass(node.getType())) {
+        if (symbolTable.existsClassScope(node.getType())) {
             // Class already existed !!
             // TODO check errors
+
         }
-        // TODO quizá nombre concreto para las clases para poder encontrarlas mejor
-        String scopeName = nextScopeId();
-        //node.setId(scopeName);
-        symbolTable.openScope(scopeName);
+        symbolTable.openClassScope(node.getId(), node.getType());
         node.getContentRoot().accept(this);
         symbolTable.closeScope();
     }
 
     @Override
     public void visit(BlockStatementNode node) {
-        String scopeName = nextScopeId();
-        //node.setId(scopeName);
-        symbolTable.openScope(scopeName);
+        symbolTable.openScope(node.getId());
         node.accept(this);
         symbolTable.closeScope();
     }
@@ -181,12 +172,6 @@ public class SymbolTableCreator implements Visitor {
     @Override
     public void visit(ErrorExpressionNode node) {
 
-    }
-
-    private String nextScopeId() {
-        String result = SCOPE_ID_PREFIX + nextId;
-        nextId++;
-        return result;
     }
 
 }

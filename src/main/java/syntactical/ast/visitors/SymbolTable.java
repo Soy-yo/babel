@@ -8,18 +8,17 @@ public class SymbolTable {
 
     // Only global function and classes allowed
     private final Map<Function, Type> functionTable;
-    private final Set<Type> classTable;
+    private final Map<Type, Scope> classTable;
     private Scope currentScope;
 
     public SymbolTable() {
         this.functionTable = new HashMap<>();
-        this.classTable = new HashSet<>();
-        // TODO arroba por ejemplo
-        this.currentScope = new Scope("@global_scope", null);
+        this.classTable = new HashMap<>();
+        this.currentScope = new Scope(-1, null);
     }
 
-    public String getCurrentScopeName() {
-        return currentScope.name;
+    public int getCurrentScopeId() {
+        return currentScope.blockId;
     }
 
     public Type getVariable(String variable) {
@@ -47,23 +46,37 @@ public class SymbolTable {
         return functionTable.putIfAbsent(function, type) == null;
     }
 
-    public boolean putClass(Type name) {
-        return classTable.add(name);
+    public boolean existsScope(int id) {
+        return currentScope.scopes.containsKey(id);
     }
 
-    public boolean existsScope(String name) {
-        return currentScope.scopes.containsKey(name);
+    public boolean existsClassScope(Type type) {
+        return classTable.containsKey(type);
     }
 
-    public SymbolTable openScope(String name) {
+    public SymbolTable openScope(int id) {
         // Enters if it already exists
-        if (existsScope(name)) {
-            currentScope = currentScope.scopes.get(name);
+        if (existsScope(id)) {
+            currentScope = currentScope.scopes.get(id);
             return this;
         }
         // Creates it if it doesn't
-        Scope scope = new Scope(name, currentScope);
-        currentScope.scopes.put(name, scope);
+        Scope scope = new Scope(id, currentScope);
+        currentScope.scopes.put(id, scope);
+        currentScope = scope;
+        return this;
+    }
+
+    public SymbolTable openClassScope(int id, Type type) {
+        // Enters if it already exists
+        if (existsClassScope(type)) {
+            currentScope = classTable.get(type);
+            return this;
+        }
+        // Creates it if it doesn't
+        // Creates it if it doesn't
+        Scope scope = new Scope(id, currentScope);
+        classTable.put(type, scope);
         currentScope = scope;
         return this;
     }
@@ -75,13 +88,13 @@ public class SymbolTable {
 
     private static class Scope {
 
-        final String name;
+        final int blockId;
         final Map<String, Type> variableTable;
-        final Map<String, Scope> scopes;
+        final Map<Integer, Scope> scopes;
         final Scope parent;
 
-        private Scope(String name, Scope parent) {
-            this.name = name;
+        private Scope(int blockId, Scope parent) {
+            this.blockId = blockId;
             this.variableTable = new HashMap<>();
             this.scopes = new HashMap<>();
             this.parent = parent;
