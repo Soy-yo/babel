@@ -1,5 +1,6 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
 import syntactical.ast.visitors.Visitor;
 
 import java.util.Arrays;
@@ -14,14 +15,23 @@ public class FunctionDeclarationNode extends DeclarationNode {
 
     public FunctionDeclarationNode(
             IdGenerator id,
+            LexicalUnit lexeme,
             Name name,
             Collection<Name> parameterNames,
             BlockStatementNode code) {
-        super(id, name);
+        super(id, lexeme, name);
         this.parameters = parameterNames.stream()
-                .map(n -> new VarDeclarationNode(id, n))
+                .map(n -> new VarDeclarationNode(id, lexeme, n))
                 .collect(Collectors.toList());
         this.code = code;
+    }
+
+    public FunctionDeclarationNode(
+        IdGenerator id,
+        Name name,
+        Collection<Name> parameterNames,
+        BlockStatementNode code) {
+        this(id, null, name, parameterNames, code);
     }
 
     public List<VarDeclarationNode> getParameters() {

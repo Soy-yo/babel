@@ -7,7 +7,7 @@ public class FunctionCallStatementNode extends StatementNode {
     private FunctionCallExpressionNode function;
 
     protected FunctionCallStatementNode(FunctionCallExpressionNode function) {
-        super(null);
+        super(null, null);
         this.id = function.id;
         this.function = function;
     }

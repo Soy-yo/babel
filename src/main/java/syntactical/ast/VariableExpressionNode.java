@@ -1,13 +1,14 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
 import syntactical.ast.visitors.Visitor;
 
 public class VariableExpressionNode extends ExpressionNode {
 
     private String variable;
 
-    public VariableExpressionNode(IdGenerator id, String variable) {
-        super(id);
+    public VariableExpressionNode(IdGenerator id, LexicalUnit lexeme, String variable) {
+        super(id, lexeme);
         this.variable = variable;
     }
 

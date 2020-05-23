@@ -1,5 +1,6 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
 import syntactical.ast.visitors.Visitor;
 
 import java.util.ArrayList;
@@ -12,24 +13,32 @@ public class FunctionCallExpressionNode extends ExpressionNode {
     private final ExpressionNode function;
     private final List<ExpressionNode> arguments;
 
-    public FunctionCallExpressionNode(IdGenerator id, ExpressionNode function, Collection<ExpressionNode> arguments) {
-        super(id);
+    public FunctionCallExpressionNode(IdGenerator id, LexicalUnit lexeme, ExpressionNode function, Collection<ExpressionNode> arguments) {
+        super(id, lexeme);
         this.function = function;
         this.arguments = new ArrayList<>(arguments);
     }
 
+    public FunctionCallExpressionNode(IdGenerator id, ExpressionNode function, Collection<ExpressionNode> arguments) {
+        this(id, null, function, arguments);
+    }
+
     public static FunctionCallExpressionNode operator(
             IdGenerator id,
+            LexicalUnit lexeme,
             ExpressionNode left,
             String operator,
             ExpressionNode right) {
-        return new FunctionCallExpressionNode(id, new PointExpressionNode(id, left, operator),
+        return new FunctionCallExpressionNode(id, lexeme, new PointExpressionNode(id, lexeme, left,
+            operator),
                 new ArrayList<>(Collections.singletonList(right))
         );
     }
 
-    public static FunctionCallExpressionNode operator(IdGenerator id, String operator, ExpressionNode target) {
-        return new FunctionCallExpressionNode(id, new PointExpressionNode(id, target, operator), new ArrayList<>());
+    public static FunctionCallExpressionNode operator(IdGenerator id, LexicalUnit lexeme, String operator, ExpressionNode target) {
+        return new FunctionCallExpressionNode(id, lexeme, new PointExpressionNode(id, lexeme,
+            target,
+            operator), new ArrayList<>());
     }
 
     public ExpressionNode getFunction() {

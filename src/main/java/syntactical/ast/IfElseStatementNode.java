@@ -1,5 +1,6 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
 import syntactical.ast.visitors.Visitor;
 
 public class IfElseStatementNode extends StatementNode {
@@ -8,8 +9,8 @@ public class IfElseStatementNode extends StatementNode {
     private BlockStatementNode ifBlock;
     private StatementNode elsePart;
 
-    public IfElseStatementNode(IdGenerator id, ExpressionNode condition, BlockStatementNode ifBlock, StatementNode elsePart) {
-        super(id);
+    public IfElseStatementNode(IdGenerator id, LexicalUnit lexeme, ExpressionNode condition, BlockStatementNode ifBlock, StatementNode elsePart) {
+        super(id, lexeme);
         if (elsePart != null && !(elsePart instanceof BlockStatementNode)
                 && !(elsePart instanceof IfElseStatementNode)) {
             throw new IllegalArgumentException("The else part of an if statement must be either a block or another if");
@@ -17,6 +18,10 @@ public class IfElseStatementNode extends StatementNode {
         this.condition = condition;
         this.ifBlock = ifBlock;
         this.elsePart = elsePart;
+    }
+
+    public IfElseStatementNode(IdGenerator id, ExpressionNode condition, BlockStatementNode ifBlock, StatementNode elsePart) {
+        this(id, null, condition, ifBlock, elsePart);
     }
 
     public ExpressionNode getCondition() {

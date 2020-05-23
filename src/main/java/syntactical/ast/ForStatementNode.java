@@ -1,5 +1,6 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
 import syntactical.ast.visitors.Visitor;
 
 public class ForStatementNode extends StatementNode {
@@ -8,15 +9,23 @@ public class ForStatementNode extends StatementNode {
     private ExpressionNode iterable;
     private BlockStatementNode block;
 
-    public ForStatementNode(IdGenerator id, VarDeclarationNode variable, ExpressionNode iterable, BlockStatementNode block) {
-        super(id);
+    public ForStatementNode(IdGenerator id, LexicalUnit lexeme, VarDeclarationNode variable, ExpressionNode iterable, BlockStatementNode block) {
+        super(id, lexeme);
         this.variable = variable;
         this.iterable = iterable;
         this.block = block;
     }
 
+    public ForStatementNode(IdGenerator id, VarDeclarationNode variable, ExpressionNode iterable, BlockStatementNode block) {
+        this(id, null, variable, iterable, block);
+    }
+
+    public ForStatementNode(IdGenerator id, LexicalUnit lexeme, Name variable, ExpressionNode iterable, BlockStatementNode block) {
+        this(id, lexeme, new VarDeclarationNode(id, lexeme, variable), iterable, block);
+    }
+
     public ForStatementNode(IdGenerator id, Name variable, ExpressionNode iterable, BlockStatementNode block) {
-        this(id, new VarDeclarationNode(id, variable), iterable, block);
+        this(id, null, variable, iterable, block);
     }
 
     public VarDeclarationNode getVariable() {

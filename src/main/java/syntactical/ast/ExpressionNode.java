@@ -1,17 +1,23 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
+
 public abstract class ExpressionNode extends ASTNode {
 
     protected Type type;
 
-    public ExpressionNode(IdGenerator id, Type type) {
-        super(id);
+    public ExpressionNode(IdGenerator id, LexicalUnit lexeme, Type type) {
+        super(id, lexeme);
         this.type = type;
     }
 
     public ExpressionNode(IdGenerator id) {
-        this(id, null);
+        this(id, null, null);
     }
+
+    public ExpressionNode(IdGenerator id, LexicalUnit lexeme) { this(id, lexeme, null); }
+
+    public ExpressionNode(IdGenerator id, Type type) { this(id, null, type); }
 
     public Type getType() {
         return type;

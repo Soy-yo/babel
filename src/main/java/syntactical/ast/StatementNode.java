@@ -1,9 +1,11 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
+
 public abstract class StatementNode extends QueueableNode<StatementNode> {
 
-    public StatementNode(IdGenerator id) {
-        super(id);
+    public StatementNode(IdGenerator id, LexicalUnit lexeme) {
+        super(id, lexeme);
     }
 
     @Override

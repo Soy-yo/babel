@@ -1,5 +1,7 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
+
 import java.util.Iterator;
 
 public abstract class QueueableNode<N extends QueueableNode<N>> extends ASTNode implements Iterable<N> {
@@ -7,8 +9,8 @@ public abstract class QueueableNode<N extends QueueableNode<N>> extends ASTNode 
     protected N previous;
     protected N next;
 
-    public QueueableNode(IdGenerator id) {
-        super(id);
+    public QueueableNode(IdGenerator id, LexicalUnit lexeme) {
+        super(id, lexeme);
     }
 
     private static <N extends QueueableNode<N>> void checkNext(QueueableNode<N> node) {

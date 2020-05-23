@@ -1,5 +1,6 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
 import syntactical.ast.visitors.Visitor;
 
 public class PointExpressionNode extends ExpressionNode {
@@ -7,14 +8,14 @@ public class PointExpressionNode extends ExpressionNode {
     private final ExpressionNode host;
     private final VariableExpressionNode field;
 
-    public PointExpressionNode(IdGenerator id, ExpressionNode host, VariableExpressionNode field) {
-        super(id);
+    public PointExpressionNode(IdGenerator id, LexicalUnit lexeme, ExpressionNode host, VariableExpressionNode field) {
+        super(id, lexeme);
         this.host = host;
         this.field = field;
     }
 
-    public PointExpressionNode(IdGenerator id, ExpressionNode host, String field) {
-        this(id, host, new VariableExpressionNode(id, field));
+    public PointExpressionNode(IdGenerator id, LexicalUnit lexeme, ExpressionNode host, String field) {
+        this(id, lexeme, host, new VariableExpressionNode(id, lexeme, field));
     }
 
     public ExpressionNode getHost() {

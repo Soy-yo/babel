@@ -1,5 +1,6 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
 import syntactical.ast.visitors.Visitor;
 
 import java.util.ArrayList;
@@ -14,8 +15,8 @@ public class ListConstructorExpressionNode extends ExpressionNode {
     private List<ExpressionNode> elements;
     private List<ExpressionNode> view;
 
-    private ListConstructorExpressionNode(IdGenerator id, List<ExpressionNode> elements, boolean copy, Type type) {
-        super(id, type);
+    private ListConstructorExpressionNode(IdGenerator id, LexicalUnit lexeme, List<ExpressionNode> elements, boolean copy, Type type) {
+        super(id, lexeme, type);
         if (copy) {
             this.elements = new ArrayList<>(elements);
         } else {
@@ -24,15 +25,15 @@ public class ListConstructorExpressionNode extends ExpressionNode {
         this.view = Collections.unmodifiableList(elements);
     }
 
-    public ListConstructorExpressionNode(IdGenerator id, List<ExpressionNode> elements) {
-        this(id, elements, true, null);
+    public ListConstructorExpressionNode(IdGenerator id, LexicalUnit lexeme, List<ExpressionNode> elements) {
+        this(id, lexeme, elements, true, null);
     }
 
-    public ListConstructorExpressionNode(IdGenerator id) {
-        this(id, new ArrayList<>(), false, null);
+    public ListConstructorExpressionNode(IdGenerator id, LexicalUnit lexeme) {
+        this(id, lexeme, new ArrayList<>(), false, null);
     }
 
-    public static ListConstructorExpressionNode fromString(IdGenerator id, String s) {
+    public static ListConstructorExpressionNode fromString(IdGenerator id, LexicalUnit lexeme, String s) {
         if (s.charAt(0) == '"') {
             s = s.substring(1, s.length() - 1);
         }
@@ -42,28 +43,28 @@ public class ListConstructorExpressionNode extends ExpressionNode {
             if (escaping) {
                 switch (c) {
                     case 't':
-                        elements.add(new ConstantExpressionNode(id, '\t', "\\t", CHAR));
+                        elements.add(new ConstantExpressionNode(id, lexeme, '\t', "\\t", CHAR));
                         break;
                     case 'b':
-                        elements.add(new ConstantExpressionNode(id, '\b', "\\b", CHAR));
+                        elements.add(new ConstantExpressionNode(id, lexeme, '\b', "\\b", CHAR));
                         break;
                     case 'n':
-                        elements.add(new ConstantExpressionNode(id, '\n', "\\n", CHAR));
+                        elements.add(new ConstantExpressionNode(id, lexeme, '\n', "\\n", CHAR));
                         break;
                     case 'r':
-                        elements.add(new ConstantExpressionNode(id, '\r', "\\r", CHAR));
+                        elements.add(new ConstantExpressionNode(id, lexeme, '\r', "\\r", CHAR));
                         break;
                     case 'f':
-                        elements.add(new ConstantExpressionNode(id, '\f', "\\f", CHAR));
+                        elements.add(new ConstantExpressionNode(id, lexeme, '\f', "\\f", CHAR));
                         break;
                     case '0':
-                        elements.add(new ConstantExpressionNode(id, '\0', "\\0", CHAR));
+                        elements.add(new ConstantExpressionNode(id, lexeme, '\0', "\\0", CHAR));
                         break;
                     case '\\':
-                        elements.add(new ConstantExpressionNode(id, '\\', "\\\\", CHAR));
+                        elements.add(new ConstantExpressionNode(id, lexeme, '\\', "\\\\", CHAR));
                         break;
                     case '"':
-                        elements.add(new ConstantExpressionNode(id, '"'));
+                        elements.add(new ConstantExpressionNode(id, lexeme, '"'));
                         break;
                 }
                 escaping = false;
@@ -71,11 +72,11 @@ public class ListConstructorExpressionNode extends ExpressionNode {
                 if (c == '\\') {
                     escaping = true;
                 } else {
-                    elements.add(new ConstantExpressionNode(id, c));
+                    elements.add(new ConstantExpressionNode(id, lexeme, c));
                 }
             }
         }
-        return new ListConstructorExpressionNode(id, elements, false, STRING);
+        return new ListConstructorExpressionNode(id, lexeme, elements, false, STRING);
     }
 
     public List<ExpressionNode> getElements() {

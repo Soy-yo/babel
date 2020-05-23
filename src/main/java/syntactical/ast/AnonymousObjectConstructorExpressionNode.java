@@ -1,5 +1,6 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
 import syntactical.ast.visitors.Visitor;
 
 import java.util.HashSet;
@@ -14,8 +15,10 @@ public class AnonymousObjectConstructorExpressionNode extends ExpressionNode {
     private VarDeclarationNode root;
     private Set<Name> fieldNames;
 
-    public AnonymousObjectConstructorExpressionNode(IdGenerator id, VarDeclarationNode root) {
-        super(id, TYPE);
+    public AnonymousObjectConstructorExpressionNode(IdGenerator id,
+                                                    LexicalUnit lexeme,
+                                                    VarDeclarationNode root) {
+        super(id, lexeme, TYPE);
         this.root = root;
         this.fieldNames = new HashSet<>();
         if (root != null) {
@@ -23,8 +26,12 @@ public class AnonymousObjectConstructorExpressionNode extends ExpressionNode {
         }
     }
 
+    public AnonymousObjectConstructorExpressionNode(IdGenerator id, VarDeclarationNode root) {
+        this(id, null, root);
+    }
+
     public AnonymousObjectConstructorExpressionNode(IdGenerator id) {
-        this(id, null);
+        this(id, null, null);
     }
 
     public boolean isEmpty() {
