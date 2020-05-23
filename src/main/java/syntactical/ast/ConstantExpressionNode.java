@@ -89,6 +89,37 @@ public class ConstantExpressionNode extends ExpressionNode {
         return new ConstantExpressionNode(id, lexeme, 0b0, representation, type);
     }
 
+    public static ConstantExpressionNode fromInt(IdGenerator id, String n) {
+        int v = n.contains("b") ? Integer.valueOf(n.substring(2), 2) : Integer.decode(n);
+        return new ConstantExpressionNode(id, null, v);
+    }
+
+    public static ConstantExpressionNode fromFloat(IdGenerator id, String x) {
+        return new ConstantExpressionNode(id, null, Float.parseFloat(x));
+    }
+
+    public static ConstantExpressionNode fromBoolean(IdGenerator id, String b) {
+        return new ConstantExpressionNode(id, null, Boolean.parseBoolean(b));
+    }
+
+    public static ConstantExpressionNode fromChar(IdGenerator id, String c) {
+        return new ConstantExpressionNode(id, null, charValue(c), c.substring(1, c.length() - 1),
+            CHAR);
+    }
+
+    public static ConstantExpressionNode ofNothing(IdGenerator id) {
+        return new ConstantExpressionNode(id, null, 0b0, "nothing", VOID);
+    }
+
+    public static ConstantExpressionNode ofNull(IdGenerator id) {
+        return new ConstantExpressionNode(id, null, 0b0, "null", null);
+    }
+
+    public static ConstantExpressionNode special(IdGenerator id,
+                                                 String representation, Type type) {
+        return new ConstantExpressionNode(id, null, 0b0, representation, type);
+    }
+
     private static char charValue(String c) {
         switch (c) {
             case "'\\t'":

@@ -14,6 +14,10 @@ public class WhileStatementNode extends StatementNode {
         this.block = block;
     }
 
+    public WhileStatementNode(IdGenerator id, ExpressionNode condition, BlockStatementNode block) {
+        this(id, null, condition, block);
+    }
+
     public ExpressionNode getCondition() {
         return condition;
     }
