@@ -35,10 +35,23 @@ public class FunctionCallExpressionNode extends ExpressionNode {
         );
     }
 
+    public static FunctionCallExpressionNode operator(
+        IdGenerator id,
+        ExpressionNode left,
+        String operator,
+        ExpressionNode right) {
+        return operator(id, null, left, operator, right);
+    }
+
     public static FunctionCallExpressionNode operator(IdGenerator id, LexicalUnit lexeme, String operator, ExpressionNode target) {
         return new FunctionCallExpressionNode(id, lexeme, new PointExpressionNode(id, lexeme,
             target,
             operator), new ArrayList<>());
+    }
+
+    public static FunctionCallExpressionNode operator(IdGenerator id, String operator,
+                                                      ExpressionNode target) {
+        return operator(id, (LexicalUnit) null, operator, target);
     }
 
     public ExpressionNode getFunction() {

@@ -29,8 +29,16 @@ public class ListConstructorExpressionNode extends ExpressionNode {
         this(id, lexeme, elements, true, null);
     }
 
+    public ListConstructorExpressionNode(IdGenerator id, List<ExpressionNode> elements) {
+        this(id, null, elements);
+    }
+
     public ListConstructorExpressionNode(IdGenerator id, LexicalUnit lexeme) {
         this(id, lexeme, new ArrayList<>(), false, null);
+    }
+
+    public ListConstructorExpressionNode(IdGenerator id) {
+        this(id, (LexicalUnit) null);
     }
 
     public static ListConstructorExpressionNode fromString(IdGenerator id, LexicalUnit lexeme, String s) {
@@ -77,6 +85,10 @@ public class ListConstructorExpressionNode extends ExpressionNode {
             }
         }
         return new ListConstructorExpressionNode(id, lexeme, elements, false, STRING);
+    }
+
+    public static ListConstructorExpressionNode fromString(IdGenerator id, String s) {
+        return fromString(id, null, s);
     }
 
     public List<ExpressionNode> getElements() {

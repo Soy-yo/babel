@@ -12,6 +12,10 @@ public class VariableExpressionNode extends ExpressionNode {
         this.variable = variable;
     }
 
+    public VariableExpressionNode(IdGenerator id, String variable) {
+        this(id, null, variable);
+    }
+
     public String get() {
         return variable;
     }
