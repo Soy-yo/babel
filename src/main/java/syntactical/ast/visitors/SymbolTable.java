@@ -7,12 +7,10 @@ import java.util.*;
 public class SymbolTable {
 
     // Only global function and classes allowed
-    private final Map<Function, Type> functionTable;
     private final Map<Type, Scope> classTable;
     private Scope currentScope;
 
     public SymbolTable() {
-        this.functionTable = new HashMap<>();
         this.classTable = new HashMap<>();
         this.currentScope = new Scope(-1, null);
     }
@@ -34,7 +32,14 @@ public class SymbolTable {
 
     public Type getFunction(String name, Collection<Type> parameters) {
         Function function = new Function(name, parameters.toArray(new Type[0]));
-        return functionTable.get(function);
+        Scope current = currentScope;
+        Type result = current.functionTable.get(function);
+        // If variable wasn't in this scope try to find it in previous ones
+        while (result == null && current.parent != null) {
+            current = current.parent;
+            result = current.functionTable.get(function);
+        }
+        return result;
     }
 
     public boolean putVariable(String variable, Type type) {
@@ -43,7 +48,7 @@ public class SymbolTable {
 
     public boolean putFunction(String name, List<Type> parameters, Type type) {
         Function function = new Function(name, parameters.toArray(new Type[0]));
-        return functionTable.putIfAbsent(function, type) == null;
+        return currentScope.functionTable.putIfAbsent(function, type) == null;
     }
 
     public boolean existsScope(int id) {
@@ -74,7 +79,6 @@ public class SymbolTable {
             return this;
         }
         // Creates it if it doesn't
-        // Creates it if it doesn't
         Scope scope = new Scope(id, currentScope);
         classTable.put(type, scope);
         currentScope = scope;
@@ -90,12 +94,14 @@ public class SymbolTable {
 
         final int blockId;
         final Map<String, Type> variableTable;
+        final Map<Function, Type> functionTable;
         final Map<Integer, Scope> scopes;
         final Scope parent;
 
         private Scope(int blockId, Scope parent) {
             this.blockId = blockId;
             this.variableTable = new HashMap<>();
+            this.functionTable = new HashMap<>();
             this.scopes = new HashMap<>();
             this.parent = parent;
         }

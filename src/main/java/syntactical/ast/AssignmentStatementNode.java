@@ -25,6 +25,10 @@ public class AssignmentStatementNode extends StatementNode {
                 FunctionCallExpressionNode.operator(id, lexeme, left, operator, value));
     }
 
+    public ExpressionNode getDesignableExpression() {
+        return target.compose();
+    }
+
     public ExpressionNode getTarget() {
         return target.getTarget();
     }

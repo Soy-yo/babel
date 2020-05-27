@@ -98,6 +98,11 @@ public class ASTPrinter implements Visitor {
     }
 
     @Override
+    public void visit(ConstructorDeclarationNode node) {
+        visit((FunctionDeclarationNode) node);
+    }
+
+    @Override
     public void visit(ClassDeclarationNode node) {
         println("class declaration");
         indent(!node.hasNext());

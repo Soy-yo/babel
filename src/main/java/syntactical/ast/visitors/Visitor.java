@@ -10,6 +10,8 @@ public interface Visitor {
 
     void visit(FunctionDeclarationNode node);
 
+    void visit(ConstructorDeclarationNode node);
+
     void visit(ClassDeclarationNode node);
 
     void visit(BlockStatementNode node);

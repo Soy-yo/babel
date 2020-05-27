@@ -17,7 +17,7 @@ public class LexicalUnit extends Symbol {
     }
 
     public LexicalUnit(String lexeme) {
-        this(0, 0, 0, lexeme);
+        this(-1, -1, -1, lexeme);
     }
 
     public int lexicalClass() {

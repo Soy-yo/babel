@@ -1,11 +1,17 @@
 package syntactical.ast.visitors;
 
+import lexical.LexicalUnit;
 import syntactical.ast.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SymbolTableCreator implements Visitor {
+
+    private static final Type FORM = new Type(new LexicalUnit("Form"));
+    private static final String THIS = "this";
+    private static final String ARRAY = "Array";
 
     private final ASTNode root;
     private final SymbolTable symbolTable;
@@ -23,9 +29,15 @@ public class SymbolTableCreator implements Visitor {
 
     // TODO aquí sólo se comprueba que las cosas existan y hará falta otro Visitor que compruebe tipos una vez todo existe
 
+    // TODO caso especial para Array<?> al comprobar tipos
+
     public SymbolTableCreator(ASTNode root) {
         this.root = root;
         this.symbolTable = new SymbolTable();
+    }
+
+    private void initializeTable() {
+        // TODO add default classes and methods (Int, Form, Array<?>, Int._plus, etc)
     }
 
     public SymbolTable create() {
@@ -61,11 +73,17 @@ public class SymbolTableCreator implements Visitor {
     }
 
     @Override
+    public void visit(ConstructorDeclarationNode node) {
+        // TODO get current class name and set the type of the constructor
+        // node.setType( :( );
+        visit((FunctionDeclarationNode) node);
+    }
+
+    @Override
     public void visit(ClassDeclarationNode node) {
         if (symbolTable.existsClassScope(node.getType())) {
             // Class already existed !!
             // TODO check errors
-
         }
         symbolTable.openClassScope(node.getId(), node.getType());
         node.getContentRoot().accept(this);
@@ -75,7 +93,9 @@ public class SymbolTableCreator implements Visitor {
     @Override
     public void visit(BlockStatementNode node) {
         symbolTable.openScope(node.getId());
-        node.accept(this);
+        for (StatementNode n : node) {
+            n.accept(this);
+        }
         symbolTable.closeScope();
     }
 
@@ -86,37 +106,49 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(AssignmentStatementNode node) {
-
+        node.getDesignableExpression().accept(this);
+        node.getValue().accept(this);
     }
 
     @Override
     public void visit(FunctionCallStatementNode node) {
-
+        node.asExpression().accept(this);
     }
 
     @Override
     public void visit(ReturnStatementNode node) {
-
+        node.getReturnExpression().accept(this);
     }
 
     @Override
     public void visit(IfElseStatementNode node) {
-
+        node.getCondition().accept(this);
+        node.getIfBlock().accept(this);
+        if (node.getElsePart() != null) {
+            node.getElsePart().accept(this);
+        }
     }
 
     @Override
     public void visit(SwitchStatementNode node) {
-
+        node.getSwitchExpression().accept(this);
+        for (Map.Entry<ConstantExpressionNode, StatementNode> e : node.getCases().entrySet()) {
+            e.getKey().accept(this);
+            e.getValue().accept(this);
+        }
     }
 
     @Override
     public void visit(WhileStatementNode node) {
-
+        node.getCondition().accept(this);
+        node.getBlock().accept(this);
     }
 
     @Override
     public void visit(ForStatementNode node) {
-
+        node.getVariable().accept(this);
+        node.getIterable().accept(this);
+        node.getBlock().accept(this);
     }
 
     @Override
@@ -141,22 +173,28 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(ConstantExpressionNode node) {
-
+        // Probably nothing to do - type already set
     }
 
     @Override
     public void visit(ListConstructorExpressionNode node) {
-
+        for (ExpressionNode n : node.getElements()) {
+            n.accept(this);
+        }
     }
 
     @Override
     public void visit(AnonymousObjectConstructorExpressionNode node) {
-
+        symbolTable.openScope(node.getId());
+        for (DeclarationNode n : node.getFields()) {
+            n.accept(this);
+        }
+        symbolTable.closeScope();
     }
 
     @Override
     public void visit(ConstructorCallExpressionNode node) {
-
+        // TODO check constructor's type exists (or save it to check at the end)
     }
 
     @Override
