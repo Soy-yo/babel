@@ -29,29 +29,15 @@ public class FunctionCallExpressionNode extends ExpressionNode {
             ExpressionNode left,
             String operator,
             ExpressionNode right) {
-        return new FunctionCallExpressionNode(id, lexeme, new PointExpressionNode(id, lexeme, left,
-            operator),
+        return new FunctionCallExpressionNode(id, lexeme, new PointExpressionNode(id, left, new LexicalUnit(operator)),
                 new ArrayList<>(Collections.singletonList(right))
         );
     }
 
-    public static FunctionCallExpressionNode operator(
-        IdGenerator id,
-        ExpressionNode left,
-        String operator,
-        ExpressionNode right) {
-        return operator(id, null, left, operator, right);
-    }
-
-    public static FunctionCallExpressionNode operator(IdGenerator id, LexicalUnit lexeme, String operator, ExpressionNode target) {
-        return new FunctionCallExpressionNode(id, lexeme, new PointExpressionNode(id, lexeme,
-            target,
-            operator), new ArrayList<>());
-    }
-
-    public static FunctionCallExpressionNode operator(IdGenerator id, String operator,
+    public static FunctionCallExpressionNode operator(IdGenerator id, LexicalUnit lexeme, String operator,
                                                       ExpressionNode target) {
-        return operator(id, (LexicalUnit) null, operator, target);
+        return new FunctionCallExpressionNode(id, lexeme,
+                new PointExpressionNode(id, target, new LexicalUnit(operator)), new ArrayList<>());
     }
 
     public ExpressionNode getFunction() {

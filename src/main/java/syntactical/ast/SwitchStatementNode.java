@@ -1,6 +1,5 @@
 package syntactical.ast;
 
-import lexical.LexicalUnit;
 import syntactical.ast.visitors.Visitor;
 
 import java.util.HashMap;
@@ -13,19 +12,11 @@ public class SwitchStatementNode extends StatementNode {
 
     public SwitchStatementNode(
             IdGenerator id,
-            LexicalUnit lexeme,
             ExpressionNode switchExpression,
             Map<ConstantExpressionNode, StatementNode> cases) {
-        super(id, lexeme);
+        super(id, null);
         this.switchExpression = switchExpression;
         this.cases = new HashMap<>(cases);
-    }
-
-    public SwitchStatementNode(
-        IdGenerator id,
-        ExpressionNode switchExpression,
-        Map<ConstantExpressionNode, StatementNode> cases) {
-        this(id, null, switchExpression, cases);
     }
 
     public ExpressionNode getSwitchExpression() {

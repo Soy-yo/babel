@@ -1,5 +1,6 @@
 package syntactical.ast.visitors;
 
+import lexical.LexicalUnit;
 import syntactical.ast.*;
 
 import java.io.OutputStreamWriter;
@@ -46,7 +47,9 @@ public class ASTPrinter implements Visitor {
         indent();
         println("imports");
         indent();
-        printAll(node.importedFiles());
+        printAll(node.importedFiles().stream()
+                .map(LexicalUnit::lexeme)
+                .collect(Collectors.toList()));
         outdent();
         lastChild();
         println("global scope");

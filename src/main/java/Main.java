@@ -1,6 +1,7 @@
 import error.SyntacticalException;
 import java_cup.runtime.Symbol;
 import lexical.LexicalAnalyser;
+import lexical.LexicalUnit;
 import syntactical.SyntacticalAnalyser;
 import syntactical.ast.ProgramNode;
 import syntactical.ast.visitors.ASTPrinter;
@@ -62,7 +63,7 @@ public class Main {
             System.out.println(la.row() + ":" + la.column());
             symbol = la.next_token();
             System.out.println("\t" + symbol);
-        } while (!symbol.value.equals(""));
+        } while (!"".equals(((LexicalUnit) symbol).lexeme()));
         System.out.println("Lexical parsing finished successfully");
     }
 

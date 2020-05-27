@@ -12,16 +12,8 @@ public class ReturnStatementNode extends StatementNode {
         this.returnExpression = returnExpression;
     }
 
-    public ReturnStatementNode(IdGenerator id, ExpressionNode returnExpression) {
-        this(id, null, returnExpression);
-    }
-
     public ReturnStatementNode(IdGenerator id, LexicalUnit lexeme) {
-        this(id, lexeme, ConstantExpressionNode.ofNothing(id, lexeme));
-    }
-
-    public ReturnStatementNode(IdGenerator id) {
-        this(id, null, ConstantExpressionNode.ofNothing(id, null));
+        this(id, lexeme, ConstantExpressionNode.ofNothing(id, new LexicalUnit("nothing")));
     }
 
     public ExpressionNode getReturnExpression() {

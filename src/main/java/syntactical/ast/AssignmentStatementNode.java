@@ -8,26 +8,21 @@ public class AssignmentStatementNode extends StatementNode {
     private Designator target;
     private ExpressionNode value;
 
-    public AssignmentStatementNode(IdGenerator id, LexicalUnit lexeme, Designator target,
-                                   ExpressionNode value) {
-        super(id, lexeme);
+    public AssignmentStatementNode(IdGenerator id, Designator target, ExpressionNode value) {
+        super(id, null);
         this.target = target;
         this.value = value;
     }
 
-    public AssignmentStatementNode(IdGenerator id, Designator target, ExpressionNode value) {
-        this(id, null, target, value);
-    }
-
     public static AssignmentStatementNode fromSyntacticSugar(
             IdGenerator id,
+            LexicalUnit lexeme,
             Designator target,
             String operator,
             ExpressionNode value) {
         ExpressionNode left = target.compose();
-        return new AssignmentStatementNode(id, null, target,
-            FunctionCallExpressionNode.operator(id, null,
-            left, operator, value));
+        return new AssignmentStatementNode(id, target,
+                FunctionCallExpressionNode.operator(id, lexeme, left, operator, value));
     }
 
     public ExpressionNode getTarget() {

@@ -1,6 +1,5 @@
 package syntactical.ast;
 
-import lexical.LexicalUnit;
 import syntactical.ast.visitors.Visitor;
 
 import java.util.ArrayList;
@@ -11,13 +10,9 @@ public class ConstructorCallExpressionNode extends ExpressionNode {
 
     private List<ExpressionNode> arguments;
 
-    public ConstructorCallExpressionNode(IdGenerator id, LexicalUnit lexeme, Type constructor, Collection<ExpressionNode> arguments) {
-        super(id, lexeme, constructor);
-        this.arguments = new ArrayList<>(arguments);
-    }
-
     public ConstructorCallExpressionNode(IdGenerator id, Type constructor, Collection<ExpressionNode> arguments) {
-        this(id, null, constructor, arguments);
+        super(id, constructor.getNameLexicalUnit(), constructor);
+        this.arguments = new ArrayList<>(arguments);
     }
 
     public List<ExpressionNode> getArguments() {

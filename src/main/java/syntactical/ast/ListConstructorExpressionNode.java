@@ -9,8 +9,8 @@ import java.util.List;
 
 public class ListConstructorExpressionNode extends ExpressionNode {
 
-    private static final Type CHAR = new Type("Char");
-    private static final Type STRING = new Type("Array", CHAR);
+    private static final Type CHAR = new Type(new LexicalUnit("Char"));
+    private static final Type STRING = new Type(new LexicalUnit("Array"), CHAR);
 
     private List<ExpressionNode> elements;
     private List<ExpressionNode> view;
@@ -41,7 +41,8 @@ public class ListConstructorExpressionNode extends ExpressionNode {
         this(id, (LexicalUnit) null);
     }
 
-    public static ListConstructorExpressionNode fromString(IdGenerator id, LexicalUnit lexeme, String s) {
+    public static ListConstructorExpressionNode fromString(IdGenerator id, LexicalUnit lexeme) {
+        String s = lexeme.lexeme();
         if (s.charAt(0) == '"') {
             s = s.substring(1, s.length() - 1);
         }
@@ -51,28 +52,28 @@ public class ListConstructorExpressionNode extends ExpressionNode {
             if (escaping) {
                 switch (c) {
                     case 't':
-                        elements.add(new ConstantExpressionNode(id, lexeme, '\t', "\\t", CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("\\t"), '\t', CHAR));
                         break;
                     case 'b':
-                        elements.add(new ConstantExpressionNode(id, lexeme, '\b', "\\b", CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("\\b"), '\b', CHAR));
                         break;
                     case 'n':
-                        elements.add(new ConstantExpressionNode(id, lexeme, '\n', "\\n", CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("\\n"), '\n', CHAR));
                         break;
                     case 'r':
-                        elements.add(new ConstantExpressionNode(id, lexeme, '\r', "\\r", CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("\\r"), '\r', CHAR));
                         break;
                     case 'f':
-                        elements.add(new ConstantExpressionNode(id, lexeme, '\f', "\\f", CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("\\f"), '\f', CHAR));
                         break;
                     case '0':
-                        elements.add(new ConstantExpressionNode(id, lexeme, '\0', "\\0", CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("\\0"), '\0', CHAR));
                         break;
                     case '\\':
-                        elements.add(new ConstantExpressionNode(id, lexeme, '\\', "\\\\", CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("\\\\"), '\\', CHAR));
                         break;
                     case '"':
-                        elements.add(new ConstantExpressionNode(id, lexeme, '"'));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("\\\""), '"', CHAR));
                         break;
                 }
                 escaping = false;
@@ -85,10 +86,6 @@ public class ListConstructorExpressionNode extends ExpressionNode {
             }
         }
         return new ListConstructorExpressionNode(id, lexeme, elements, false, STRING);
-    }
-
-    public static ListConstructorExpressionNode fromString(IdGenerator id, String s) {
-        return fromString(id, null, s);
     }
 
     public List<ExpressionNode> getElements() {

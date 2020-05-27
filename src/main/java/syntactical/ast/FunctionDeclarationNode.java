@@ -21,7 +21,7 @@ public class FunctionDeclarationNode extends DeclarationNode {
             BlockStatementNode code) {
         super(id, lexeme, name);
         this.parameters = parameterNames.stream()
-                .map(n -> new VarDeclarationNode(id, lexeme, n))
+                .map(n -> new VarDeclarationNode(id, n))
                 .collect(Collectors.toList());
         this.code = code;
     }

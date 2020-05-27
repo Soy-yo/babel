@@ -5,21 +5,18 @@ import syntactical.ast.visitors.Visitor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class ProgramNode extends ASTNode {
 
     private DeclarationNode root;
-    private List<String> importedFiles;
+    private List<LexicalUnit> importedFiles;
 
-    public ProgramNode(IdGenerator id, LexicalUnit lexeme, DeclarationNode root, Collection<String> importedFiles) {
-        super(id, lexeme);
+    public ProgramNode(IdGenerator id, DeclarationNode root, Collection<LexicalUnit> importedFiles) {
+        super(id, null);
         this.root = root;
         this.importedFiles = new ArrayList<>(importedFiles);
-    }
-
-    public ProgramNode(IdGenerator id, DeclarationNode root, Collection<String> importedFiles) {
-        this(id, null, root, importedFiles);
     }
 
     public DeclarationNode root() {
@@ -32,8 +29,8 @@ public class ProgramNode extends ASTNode {
         return old;
     }
 
-    public Iterable<String> importedFiles() {
-        return importedFiles;
+    public List<LexicalUnit> importedFiles() {
+        return Collections.unmodifiableList(importedFiles);
     }
 
     @Override

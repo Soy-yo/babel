@@ -10,7 +10,7 @@ public class SyntacticalException extends RuntimeException {
         super("Unexpected element in " +
                 +lexicalUnit.getRow() + ":"
                 + lexicalUnit.getColumn() + ":"
-                + lexicalUnit.value(), cause);
+                + lexicalUnit.lexeme(), cause);
         this.lexicalUnit = lexicalUnit;
     }
 

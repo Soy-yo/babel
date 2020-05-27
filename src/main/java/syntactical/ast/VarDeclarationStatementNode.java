@@ -9,7 +9,7 @@ public class VarDeclarationStatementNode extends StatementNode {
     private VarDeclarationNode declaration;
 
     VarDeclarationStatementNode(VarDeclarationNode declaration) {
-        super(null, null);
+        super(null, declaration.lexeme);
         this.id = declaration.id;
         Objects.requireNonNull(declaration,
                 "VarDeclarationStatements must be created from non null VarDeclarations");

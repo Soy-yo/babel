@@ -13,7 +13,6 @@ public abstract class ASTNode implements Visitable {
         this.id = id == null ? -1 : id.get();
     }
 
-
     protected ASTNode(IdGenerator id, LexicalUnit lexeme) {
         this.id = id == null ? -1 : id.get();
         this.lexeme = lexeme;
@@ -27,7 +26,7 @@ public abstract class ASTNode implements Visitable {
 
     @Override
     public String toString() {
-        return "AST Node @" + id + "contains" + lexeme;
+        return "AST Node @" + id + " contains " + lexeme;
     }
 
 }

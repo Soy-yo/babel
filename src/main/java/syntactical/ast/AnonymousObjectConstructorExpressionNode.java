@@ -10,7 +10,7 @@ import java.util.stream.StreamSupport;
 
 public class AnonymousObjectConstructorExpressionNode extends ExpressionNode {
 
-    private static final Type TYPE = new Type("Form");
+    private static final Type TYPE = new Type(new LexicalUnit("Form"));
 
     private VarDeclarationNode root;
     private Set<Name> fieldNames;

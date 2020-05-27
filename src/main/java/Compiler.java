@@ -1,5 +1,6 @@
 import java_cup.runtime.Symbol;
 import lexical.LexicalAnalyser;
+import lexical.LexicalUnit;
 import syntactical.SyntacticalAnalyser;
 import syntactical.ast.DeclarationNode;
 import syntactical.ast.ProgramNode;
@@ -53,9 +54,10 @@ public class Compiler {
     private void mergeFiles(ProgramNode program) {
         boolean first = true;
         DeclarationNode insertionPoint = null;
-        for (String file : program.importedFiles()) {
+        for (LexicalUnit lu : program.importedFiles()) {
             // TODO if there were errors in input some may be empty strings ""
             // don't generate code in such cases
+            String file = lu.lexeme();
             try {
                 File fileObj = new File(workingDir + "/" + file + ".bbl");
                 // Don't add same file multiple times

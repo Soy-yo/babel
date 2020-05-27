@@ -1,19 +1,25 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
+
 import java.util.Objects;
 
 public class Name {
 
-    private final String identifier;
+    private final LexicalUnit identifier;
     private final Type type;
 
-    public Name(String identifier, Type type) {
+    public Name(LexicalUnit identifier, Type type) {
         this.identifier = identifier;
         this.type = type;
     }
 
-    public String getIdentifier() {
+    public LexicalUnit getIdentifierLexicalUnit() {
         return identifier;
+    }
+
+    public String getIdentifier() {
+        return identifier.lexeme();
     }
 
     public Type getType() {
@@ -22,7 +28,7 @@ public class Name {
 
     @Override
     public String toString() {
-        return identifier + ": " + type;
+        return getIdentifier() + ": " + type;
     }
 
     @Override
@@ -34,13 +40,13 @@ public class Name {
             return false;
         }
         Name name = (Name) other;
-        return Objects.equals(identifier, name.identifier) &&
+        return Objects.equals(getIdentifier(), name.getIdentifier()) &&
                 Objects.equals(type, name.type);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(identifier, type);
+        return Objects.hash(getIdentifier(), type);
     }
 
 }

@@ -11,13 +11,17 @@ public abstract class ExpressionNode extends ASTNode {
         this.type = type;
     }
 
+    public ExpressionNode(IdGenerator id, Type type) {
+        this(id, null, type);
+    }
+
     public ExpressionNode(IdGenerator id) {
         this(id, null, null);
     }
 
-    public ExpressionNode(IdGenerator id, LexicalUnit lexeme) { this(id, lexeme, null); }
-
-    public ExpressionNode(IdGenerator id, Type type) { this(id, null, type); }
+    public ExpressionNode(IdGenerator id, LexicalUnit lexeme) {
+        this(id, lexeme, null);
+    }
 
     public Type getType() {
         return type;

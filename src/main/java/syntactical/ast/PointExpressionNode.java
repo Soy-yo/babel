@@ -8,22 +8,14 @@ public class PointExpressionNode extends ExpressionNode {
     private final ExpressionNode host;
     private final VariableExpressionNode field;
 
-    public PointExpressionNode(IdGenerator id, LexicalUnit lexeme, ExpressionNode host, VariableExpressionNode field) {
-        super(id, lexeme);
+    public PointExpressionNode(IdGenerator id, ExpressionNode host, VariableExpressionNode field) {
+        super(id);
         this.host = host;
         this.field = field;
     }
 
-    public PointExpressionNode(IdGenerator id, ExpressionNode host, VariableExpressionNode field) {
-        this(id, null, host, field);
-    }
-
-    public PointExpressionNode(IdGenerator id, LexicalUnit lexeme, ExpressionNode host, String field) {
-        this(id, lexeme, host, new VariableExpressionNode(id, lexeme, field));
-    }
-
-    public PointExpressionNode(IdGenerator id, ExpressionNode host, String field) {
-        this(id, null, host, field);
+    public PointExpressionNode(IdGenerator id, ExpressionNode host, LexicalUnit field) {
+        this(id, host, new VariableExpressionNode(id, field));
     }
 
     public ExpressionNode getHost() {
