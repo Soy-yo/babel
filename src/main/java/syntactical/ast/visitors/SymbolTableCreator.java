@@ -3,41 +3,33 @@ package syntactical.ast.visitors;
 import lexical.LexicalUnit;
 import syntactical.ast.*;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class SymbolTableCreator implements Visitor {
 
+    // TODO probably move some of this constants to another class
     private static final Type FORM = new Type(new LexicalUnit("Form"));
+    private static final Type INT = new Type(new LexicalUnit("Int"));
     private static final String THIS = "this";
     private static final String ARRAY = "Array";
+    private static final String ARRAY_SIZE = "size";
 
-    private final ASTNode root;
+    private final ProgramNode root;
     private final SymbolTable symbolTable;
-
-    // TODO probablemente en las expresiones comprobar que las variables que usan estén ya declaradas
-    // es decir, visitar lo que contenga expresiones y comprobar que las variables ya estén en la tabla de símbolos
-    // pero cuidado con las funciones y los accesos a atributos, que pueden ser del tipo [var]() o [var].[var]
-
-    // quizá tener funciones visit especiales para las expresiones en función de si son el nodo principal o uno interno
-    // p.e. x() llama al visit normal de nodo de llamada a funcion, pero para x se llama a otro visit privado y así no
-    // comprueba que exista una variable x, sino una función x ???
-
-    // TODO probablemente guardar info de los tipos y funciones que se van encontrando para comprobar al final
-    // ya que en principio no debería haber obligación de declarar las clases y las funciones en un orden concreto
-
-    // TODO aquí sólo se comprueba que las cosas existan y hará falta otro Visitor que compruebe tipos una vez todo existe
+    private int errors;
 
     // TODO caso especial para Array<?> al comprobar tipos
 
-    public SymbolTableCreator(ASTNode root) {
+    public SymbolTableCreator(ProgramNode root) {
         this.root = root;
         this.symbolTable = new SymbolTable();
+        initializeTable();
     }
 
     private void initializeTable() {
         // TODO add default classes and methods (Int, Form, Array<?>, Int._plus, etc)
+        SymbolTableInitializer initializer = new SymbolTableInitializer(root, symbolTable);
+        errors = initializer.start();
     }
 
     public SymbolTable create() {
@@ -54,38 +46,22 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(VarDeclarationNode node) {
-        if (!symbolTable.putVariable(node.getIdentifier(), node.getType())) {
-            // Variable already existed in current scope !!
-            // TODO check errors
-        }
+
     }
 
     @Override
     public void visit(FunctionDeclarationNode node) {
-        List<Type> types = node.getParameters().stream()
-                .map(VarDeclarationNode::getType)
-                .collect(Collectors.toList());
-        if (!symbolTable.putFunction(node.getIdentifier(), types, node.getType())) {
-            // Function already existed !!
-            // TODO check errors
-        }
         node.getCode().accept(this);
     }
 
     @Override
     public void visit(ConstructorDeclarationNode node) {
-        // TODO get current class name and set the type of the constructor
-        // node.setType( :( );
         visit((FunctionDeclarationNode) node);
     }
 
     @Override
     public void visit(ClassDeclarationNode node) {
-        if (symbolTable.existsClassScope(node.getType())) {
-            // Class already existed !!
-            // TODO check errors
-        }
-        symbolTable.openClassScope(node.getId(), node.getType());
+        symbolTable.openScope(node.getId());
         node.getContentRoot().accept(this);
         symbolTable.closeScope();
     }
@@ -153,7 +129,25 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(PointExpressionNode node) {
+        ExpressionNode host = node.getHost();
+        host.accept(this);
+        Type hostType = host.getType();
+        if (hostType == null) {
+            // TODO couldn't know host's type so we can't know this expression's type (check at the end)
+        }
+        VariableExpressionNode field = node.getField();
+        if (FORM.equals(hostType)) {
 
+        } else if (ARRAY.equals(hostType.getName())) {
+            // Array<?>.size is the only available property
+            if (ARRAY_SIZE.equals(field.get())) {
+                node.setType(INT);
+            } else {
+                // TODO error: whatever field it is, Array<?> does not have it
+            }
+        } else {
+
+        }
     }
 
     @Override
@@ -168,7 +162,12 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(VariableExpressionNode node) {
-
+        String name = node.get();
+        Type type = symbolTable.getVariable(name);
+        if (type == null) {
+            // TODO check at the end etc
+        }
+        node.setType(type);
     }
 
     @Override
@@ -178,18 +177,25 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(ListConstructorExpressionNode node) {
+        // TODO empty list?
+        Type parameter = null;
         for (ExpressionNode n : node.getElements()) {
             n.accept(this);
+            Type t = n.getType();
+            if (t == null) {
+                // TODO check later
+            } else if (parameter == null) {
+                parameter = t;
+            } else if (!parameter.equals(t)) {
+                // TODO elements are not of the same type: notify error :(
+            }
         }
+        node.setType(new Type(new LexicalUnit(ARRAY), parameter));
     }
 
     @Override
     public void visit(AnonymousObjectConstructorExpressionNode node) {
-        symbolTable.openScope(node.getId());
-        for (DeclarationNode n : node.getFields()) {
-            n.accept(this);
-        }
-        symbolTable.closeScope();
+
     }
 
     @Override
