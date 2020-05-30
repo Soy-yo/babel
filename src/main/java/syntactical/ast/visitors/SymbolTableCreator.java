@@ -1,6 +1,7 @@
 package syntactical.ast.visitors;
 
 import lexical.LexicalUnit;
+import sun.tools.jstat.Operator;
 import syntactical.OperatorOverloadConstants;
 import syntactical.ast.*;
 
@@ -10,20 +11,35 @@ import java.util.Map;
 
 public class SymbolTableCreator implements Visitor {
 
-    // TODO probably move some of this constants to another class
+    // TODO probably move some of this constants to another class (yes, definitely)
     private static final Type FORM = new Type(new LexicalUnit("Form"));
     private static final Type INT = new Type(new LexicalUnit("Int"));
+    private static final Type REAL = new Type(new LexicalUnit("Real"));
+    private static final Type BOOL = new Type(new LexicalUnit("Bool"));
+    private static final Type CHAR = new Type(new LexicalUnit("Char"));
+    private static final Type VOID = new Type(new LexicalUnit("Void"));
+    private static final Type STRING = new Type(new LexicalUnit("String"));
+    // TODO ARRAY_TYPE isn't right, just provisional
+    private static final Type ARRAY_TYPE = new Type(new LexicalUnit("Array"));
     private static final String THIS = "this";
     private static final String ARRAY = "Array";
     private static final String ARRAY_SIZE = "size";
+    // TODO I don't really know what the IDs should be
     private static final int INT_ID = 0;
-    private static final int FORM_ID = 1;
+    private static final int REAL_ID = 1;
+    private static final int BOOL_ID = 2;
+    private static final int CHAR_ID = 3;
+    private static final int VOID_ID = 4;
+    private static final int FORM_ID = 5;
+    private static final int ARRAY_ID = 6;
+    private static final int STRING_ID = 7;
 
     private final ProgramNode root;
     private final SymbolTable symbolTable;
     private int errors;
 
-    // TODO caso especial para Array<?> al comprobar tipos
+    // TODO caso especial para Array<?> al comprobar tipos illo si comentas en inglés comentas en
+    //  inglés
 
     public SymbolTableCreator(ProgramNode root) {
         this.root = root;
@@ -32,21 +48,129 @@ public class SymbolTableCreator implements Visitor {
     }
 
     private void initializeTable() {
-        symbolTable.createClassScope(INT_ID,INT);
-        List<Type> params = new ArrayList<Type>();
-        params.add(INT);
-        symbolTable.putFunction(OperatorOverloadConstants._PLUS, params, INT);
-        symbolTable.putFunction(OperatorOverloadConstants._MINUS, params, INT);
-        symbolTable.putFunction(OperatorOverloadConstants._MULT, params, INT);
-        symbolTable.putFunction(OperatorOverloadConstants._DIV, params, INT);
-        symbolTable.putFunction(OperatorOverloadConstants._MOD, params, INT);
-        symbolTable.createClassScope(FORM_ID, FORM);
-        // TODO add default
-        // classes and methods
-        // (Int,
-        // Form, Array<?>, Int._plus, etc)
+        addIntegers();
+        addForms();
+        addReals();
+        addBools();
+        addChars();
+        addVoid();
+        addArrays();
+        addStrings();
         SymbolTableInitializer initializer = new SymbolTableInitializer(root, symbolTable);
         errors = initializer.start();
+    }
+
+    public void addIntegers() {
+      symbolTable.createClassScope(INT_ID,INT);
+      List<Type> params = new ArrayList<>();
+      params.add(INT);
+      symbolTable.putFunction(OperatorOverloadConstants._PLUS, params, INT);
+      symbolTable.putFunction(OperatorOverloadConstants._MINUS, params, INT);
+      symbolTable.putFunction(OperatorOverloadConstants._MULT, params, INT);
+      symbolTable.putFunction(OperatorOverloadConstants._DIV, params, INT);
+      symbolTable.putFunction(OperatorOverloadConstants._MOD, params, INT);
+      symbolTable.putFunction(OperatorOverloadConstants._GE, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._GT, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._LE, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._LT, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._PLUS, new ArrayList<>(), INT);
+      symbolTable.putFunction(OperatorOverloadConstants._MINUS, new ArrayList<>(), INT);
+      symbolTable.putFunction(OperatorOverloadConstants._EQUALS, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._NEQ, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._ID, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._TO, params, ARRAY_TYPE);
+      // TODO tostring and maybe some others
+      symbolTable.closeScope();
+    }
+
+    public void addForms() {
+      symbolTable.createClassScope(FORM_ID, FORM);
+      List<Type> params = new ArrayList<>();
+      params.add(FORM);
+      symbolTable.putFunction(OperatorOverloadConstants._EQUALS, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._NEQ, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._ID, params, BOOL);
+      symbolTable.closeScope();
+    }
+
+    public void addReals() {
+      symbolTable.createClassScope(REAL_ID,REAL);
+      List<Type> params = new ArrayList<>();
+      params.add(REAL);
+      symbolTable.putFunction(OperatorOverloadConstants._PLUS, params, REAL);
+      symbolTable.putFunction(OperatorOverloadConstants._MINUS, params, REAL);
+      symbolTable.putFunction(OperatorOverloadConstants._MULT, params, REAL);
+      symbolTable.putFunction(OperatorOverloadConstants._DIV, params, REAL);
+      symbolTable.putFunction(OperatorOverloadConstants._GE, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._GT, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._LE, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._LT, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._PLUS, new ArrayList<>(), REAL);
+      symbolTable.putFunction(OperatorOverloadConstants._MINUS, new ArrayList<>(), REAL);
+      symbolTable.putFunction(OperatorOverloadConstants._EQUALS, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._NEQ, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._ID, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._TO, params, ARRAY_TYPE);
+      symbolTable.closeScope();
+    }
+
+    public void addBools() {
+      symbolTable.createClassScope(BOOL_ID, BOOL);
+      List<Type> params = new ArrayList<>();
+      params.add(BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._EQUALS, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._NEQ, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._ID, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._AND, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._OR, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._NOT, new ArrayList<>(), BOOL);
+      symbolTable.closeScope();
+    }
+
+    public void addChars() {
+      symbolTable.createClassScope(CHAR_ID, CHAR);
+      List<Type> params = new ArrayList<>();
+      params.add(CHAR);
+      symbolTable.putFunction(OperatorOverloadConstants._EQUALS, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._NEQ, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._ID, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._GE, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._GT, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._LE, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._LT, params, BOOL);
+      // TODO not sure about this last one, but it'll probably do
+      symbolTable.putFunction(OperatorOverloadConstants._TO, params, ARRAY_TYPE);
+      symbolTable.closeScope();
+    }
+
+    public void addVoid() {
+      symbolTable.createClassScope(VOID_ID, VOID);
+      symbolTable.closeScope();
+    }
+
+    public void addArrays() {
+      symbolTable.createClassScope(ARRAY_ID, ARRAY_TYPE);
+      symbolTable.putVariable("Size", INT);
+      List<Type> params = new ArrayList<>();
+      params.add(INT);
+      symbolTable.putFunction(ARRAY, params, VOID);
+      symbolTable.putFunction("Access", params, ARRAY_TYPE.getParameter());
+      params.clear();
+      params.add(ARRAY_TYPE);
+      symbolTable.putFunction(OperatorOverloadConstants._EQUALS, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._NEQ, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._ID, params, BOOL);
+      symbolTable.closeScope();
+    }
+
+    public void addStrings() {
+      symbolTable.createClassScope(STRING_ID, STRING);
+      List<Type> params = new ArrayList<>();
+      params.add(STRING);
+      symbolTable.putFunction(OperatorOverloadConstants._EQUALS, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._NEQ, params, BOOL);
+      symbolTable.putFunction(OperatorOverloadConstants._ID, params, BOOL);
+      symbolTable.closeScope();
     }
 
     public SymbolTable create() {
