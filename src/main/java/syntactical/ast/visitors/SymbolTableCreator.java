@@ -1,8 +1,11 @@
 package syntactical.ast.visitors;
 
 import lexical.LexicalUnit;
+import syntactical.OperatorOverloadConstants;
 import syntactical.ast.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class SymbolTableCreator implements Visitor {
@@ -13,6 +16,8 @@ public class SymbolTableCreator implements Visitor {
     private static final String THIS = "this";
     private static final String ARRAY = "Array";
     private static final String ARRAY_SIZE = "size";
+    private static final int INT_ID = 0;
+    private static final int FORM_ID = 1;
 
     private final ProgramNode root;
     private final SymbolTable symbolTable;
@@ -27,7 +32,19 @@ public class SymbolTableCreator implements Visitor {
     }
 
     private void initializeTable() {
-        // TODO add default classes and methods (Int, Form, Array<?>, Int._plus, etc)
+        symbolTable.createClassScope(INT_ID,INT);
+        List<Type> params = new ArrayList<Type>();
+        params.add(INT);
+        symbolTable.putFunction(OperatorOverloadConstants._PLUS, params, INT);
+        symbolTable.putFunction(OperatorOverloadConstants._MINUS, params, INT);
+        symbolTable.putFunction(OperatorOverloadConstants._MULT, params, INT);
+        symbolTable.putFunction(OperatorOverloadConstants._DIV, params, INT);
+        symbolTable.putFunction(OperatorOverloadConstants._MOD, params, INT);
+        symbolTable.createClassScope(FORM_ID, FORM);
+        // TODO add default
+        // classes and methods
+        // (Int,
+        // Form, Array<?>, Int._plus, etc)
         SymbolTableInitializer initializer = new SymbolTableInitializer(root, symbolTable);
         errors = initializer.start();
     }
