@@ -9,8 +9,8 @@ import java.util.List;
 
 public class ListConstructorExpressionNode extends ExpressionNode {
 
-    private static final Type CHAR = new Type(new LexicalUnit("Char"));
-    private static final Type STRING = new Type(new LexicalUnit("Array"), CHAR);
+    private static final Type CHAR = new Type("Char");
+    private static final Type STRING = new Type("Array", CHAR);
 
     private List<ExpressionNode> elements;
     private List<ExpressionNode> view;

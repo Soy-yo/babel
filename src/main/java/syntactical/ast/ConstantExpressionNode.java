@@ -5,11 +5,11 @@ import syntactical.ast.visitors.Visitor;
 
 public class ConstantExpressionNode extends ExpressionNode {
 
-    private static final Type INT = new Type(new LexicalUnit("Int"));
-    private static final Type REAL = new Type(new LexicalUnit("Real"));
-    private static final Type BOOL = new Type(new LexicalUnit("Bool"));
-    private static final Type CHAR = new Type(new LexicalUnit("Char"));
-    private static final Type VOID = new Type(new LexicalUnit("Void"));
+    private static final Type INT = new Type("Int");
+    private static final Type REAL = new Type("Real");
+    private static final Type BOOL = new Type("Bool");
+    private static final Type CHAR = new Type("Char");
+    private static final Type VOID = new Type("Void");
 
     private int value;
 

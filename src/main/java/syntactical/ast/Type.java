@@ -6,6 +6,8 @@ import java.util.Objects;
 
 public class Type {
 
+    public static final Type WILDCARD = new Type("*");
+
     private LexicalUnit name;
     private Type parameter;
 
@@ -16,6 +18,14 @@ public class Type {
 
     public Type(LexicalUnit name) {
         this(name, null);
+    }
+
+    public Type(String name, Type parameter) {
+        this(new LexicalUnit(name), parameter);
+    }
+
+    public Type(String name) {
+        this(new LexicalUnit(name));
     }
 
     public Type() {
@@ -48,8 +58,9 @@ public class Type {
             return false;
         }
         Type type = (Type) o;
-        return Objects.equals(getName(), type.getName()) &&
-                Objects.equals(parameter, type.parameter);
+        return this == WILDCARD || o == WILDCARD ||
+                Objects.equals(getName(), type.getName()) &&
+                        Objects.equals(parameter, type.parameter);
     }
 
     @Override

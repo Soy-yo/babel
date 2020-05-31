@@ -273,10 +273,12 @@ ParameterList       ::= BaseVarDeclaration: parameter
                       | error
                         {: parser.report_error("Expected a variable declaration", null);
                            RESULT = new ArrayList<>(
-                                    Collections.singletonList(new Name(new LexicalUnit(""), new Type(null)))); :}
+                                    Collections.singletonList(new Name(new LexicalUnit(""), new Type((String) null))));
+                        :}
                       | ParameterList: parameters COMMA error
                         {: parser.report_error("Expected a variable declaration", null);
-                           parameters.add(new Name(new LexicalUnit(""), new Type(null))); RESULT = parameters; :};
+                           parameters.add(new Name(new LexicalUnit(""), new Type((String) null))); RESULT = parameters;
+                        :};
 
 // Classes
 ClassDeclaration       ::= CLASS TYPE: name ClassBlock: block
@@ -393,14 +395,14 @@ SwitchCasesStatement ::= ConstantExpression: expression ARROW Statement: stateme
                          {: RESULT = new HashMap<>(Collections.singletonMap(expression, statement)); :}
                        | UNDERSCORE: u ARROW Statement: statement
                          {: RESULT = new HashMap<>(Collections.singletonMap(
-                                ConstantExpressionNode.special(nextId, u, new Type(new LexicalUnit("~Default"))),
+                                ConstantExpressionNode.special(nextId, u, new Type("~Default")),
                                                                 statement));
                          :}
                        | SwitchCasesStatement: cases ConstantExpression: expression ARROW Statement: statement
                          {: cases.put(expression, statement); RESULT = cases; :}
                        | SwitchCasesStatement: cases UNDERSCORE: u ARROW Statement: statement
                          {: cases.put(
-                                ConstantExpressionNode.special(nextId, u, new Type(new LexicalUnit("~Default"))),
+                                ConstantExpressionNode.special(nextId, u, new Type("~Default")),
                                                             statement);
                             RESULT = cases; :};
 

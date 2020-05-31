@@ -1,15 +1,13 @@
 package syntactical.ast.visitors;
 
 import error.SemanticException;
-import lexical.LexicalUnit;
+import syntactical.OperatorOverloadConstants;
 import syntactical.ast.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SymbolTableInitializer implements Visitor {
-
-    private static final Type FORM = new Type(new LexicalUnit("Form"));
 
     private final ProgramNode root;
     private final SymbolTable symbolTable;
@@ -40,7 +38,7 @@ public class SymbolTableInitializer implements Visitor {
             error(node, "Variable already defined in this scope");
         }
         // Generate scope for object definition
-        if (FORM.equals(type)) {
+        if (SymbolTableCreator.FORM.equals(type)) {
             ExpressionNode initialValue = node.getInitialValue();
             if (initialValue instanceof AnonymousObjectConstructorExpressionNode) {
                 initialValue.accept(this);
@@ -53,25 +51,29 @@ public class SymbolTableInitializer implements Visitor {
     @Override
     public void visit(FunctionDeclarationNode node) {
         Type returnType = node.getType();
-        if (FORM.equals(returnType)) {
+        if (SymbolTableCreator.FORM.equals(returnType)) {
             error(node, "Form object cannot be returned by a function/method");
         }
         List<Type> parameterTypes = new ArrayList<>();
         for (VarDeclarationNode p : node.getParameters()) {
             Type t = p.getType();
-            if (FORM.equals(t)) {
+            if (SymbolTableCreator.FORM.equals(t)) {
                 error(p, "Functions/methods cannot have Form objects as parameters");
             }
             parameterTypes.add(t);
         }
-        if (!symbolTable.putFunction(node.getIdentifier(), parameterTypes, returnType)) {
+        String functionName = node.getIdentifier();
+        if (checkOperatorOverloading(functionName, parameterTypes, returnType)) {
+
+        }
+        if (!symbolTable.putFunction(functionName, parameterTypes, returnType)) {
             error(node, "Function/method already defined in this scope");
         }
     }
 
     @Override
     public void visit(ConstructorDeclarationNode node) {
-        Type type = new Type(new LexicalUnit(symbolTable.getCurrentScopeName()));
+        Type type = new Type(symbolTable.getCurrentScopeName());
         node.setType(type);
     }
 
@@ -81,7 +83,11 @@ public class SymbolTableInitializer implements Visitor {
             error(node, "Class already defined");
         }
         symbolTable.createClassScope(node.getId(), node.getType());
-        node.getContentRoot().accept(this);
+        if (node.getContentRoot() != null) {
+            for (DeclarationNode n : node.getContentRoot()) {
+                n.accept(this);
+            }
+        }
         symbolTable.closeScope();
     }
 
@@ -187,6 +193,47 @@ public class SymbolTableInitializer implements Visitor {
     @Override
     public void visit(ErrorExpressionNode node) {
 
+    }
+
+    private boolean checkOperatorOverloading(String functionName, List<Type> parameterTypes, Type returnType) {
+        String className = symbolTable.getCurrentScopeName();
+        if (className == null) {
+            return true;
+        }
+        switch (functionName) {
+            // 0 or 1 params, any return type
+            case OperatorOverloadConstants._PLUS:
+            case OperatorOverloadConstants._MINUS:
+                // TODO check
+                return parameterTypes.isEmpty() || parameterTypes.size() == 1;
+            // 1 param, any return type
+            case OperatorOverloadConstants._MULT:
+            case OperatorOverloadConstants._DIV:
+            case OperatorOverloadConstants._MOD:
+            case OperatorOverloadConstants._AND:
+            case OperatorOverloadConstants._OR:
+                // TODO check
+                return parameterTypes.size() == 1;
+            // 0 params, any return type
+            case OperatorOverloadConstants._NOT:
+                // TODO check
+                return parameterTypes.isEmpty();
+            // 1 param of the same type as this, returns bool
+            case OperatorOverloadConstants._GE:
+            case OperatorOverloadConstants._GT:
+            case OperatorOverloadConstants._LE:
+            case OperatorOverloadConstants._LT:
+            case OperatorOverloadConstants._EQUALS:
+                return parameterTypes.size() == 1 && className.equals(parameterTypes.get(0).getName()) &&
+                        SymbolTableCreator.BOOL.equals(returnType);
+            // can't overload
+            case OperatorOverloadConstants._NEQ:
+                // TODO should be x._equals(y)._not()?
+            case OperatorOverloadConstants._TO:
+            case OperatorOverloadConstants._ID:
+                return false;
+        }
+        return true;
     }
 
     private void error(ASTNode node, String message) {
