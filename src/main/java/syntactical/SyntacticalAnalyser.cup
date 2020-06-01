@@ -435,7 +435,11 @@ Expression3 ::= Expression3: first EQUALS: e Expression4: last
                    RESULT = FunctionCallExpressionNode.operator(nextId, e, first, OperatorOverloadConstants._EQUALS, last);
                 :}
               | Expression3: first NEQ: n Expression4: last
-                {: RESULT = FunctionCallExpressionNode.operator(nextId, n, first, OperatorOverloadConstants._NEQ, last); :}
+                {:
+                   // first._equals(last)._not()
+                   RESULT = FunctionCallExpressionNode.operator(nextId, n, OperatorOverloadConstants._NOT,
+                        FunctionCallExpressionNode.operator(nextId, n, first, OperatorOverloadConstants._EQUALS, last));
+                :}
               | Expression3: first IDENTITY: i Expression4: last
                 {: RESULT = FunctionCallExpressionNode.operator(nextId, i, first, OperatorOverloadConstants._ID, last); :}
               | Expression4: first

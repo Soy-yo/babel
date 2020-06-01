@@ -34,7 +34,10 @@ public class SymbolTableInitializer implements Visitor {
     @Override
     public void visit(VarDeclarationNode node) {
         Type type = node.getType();
-        if (!symbolTable.putVariable(node.getIdentifier(), type)) {
+        if (SymbolTableCreator.ARRAY_TYPE.equals(type) && type.contains(SymbolTableCreator.FORM)) {
+            error(node, "Arrays of Forms not allowed");
+        }
+        if (!symbolTable.putVariable(node.getId(), node.getIdentifier(), type)) {
             error(node, "Variable already defined in this scope");
         }
         // Generate scope for object definition
@@ -51,22 +54,22 @@ public class SymbolTableInitializer implements Visitor {
     @Override
     public void visit(FunctionDeclarationNode node) {
         Type returnType = node.getType();
-        if (SymbolTableCreator.FORM.equals(returnType)) {
+        if (returnType.contains(SymbolTableCreator.FORM)) {
             error(node, "Form object cannot be returned by a function/method");
         }
         List<Type> parameterTypes = new ArrayList<>();
         for (VarDeclarationNode p : node.getParameters()) {
             Type t = p.getType();
-            if (SymbolTableCreator.FORM.equals(t)) {
+            if (t.contains(SymbolTableCreator.FORM)) {
                 error(p, "Functions/methods cannot have Form objects as parameters");
             }
             parameterTypes.add(t);
         }
         String functionName = node.getIdentifier();
-        if (checkOperatorOverloading(functionName, parameterTypes, returnType)) {
-
+        if (!checkOperatorOverloading(functionName, parameterTypes, returnType)) {
+            error(node, "Trying to overload " + functionName + " with wrong parameter or return types");
         }
-        if (!symbolTable.putFunction(functionName, parameterTypes, returnType)) {
+        if (!symbolTable.putFunction(node.getId(), functionName, parameterTypes, returnType)) {
             error(node, "Function/method already defined in this scope");
         }
     }
@@ -75,6 +78,7 @@ public class SymbolTableInitializer implements Visitor {
     public void visit(ConstructorDeclarationNode node) {
         Type type = new Type(symbolTable.getCurrentScopeName());
         node.setType(type);
+        visit((FunctionDeclarationNode) node);
     }
 
     @Override
@@ -201,37 +205,22 @@ public class SymbolTableInitializer implements Visitor {
             return true;
         }
         switch (functionName) {
-            // 0 or 1 params, any return type
-            case OperatorOverloadConstants._PLUS:
-            case OperatorOverloadConstants._MINUS:
-                // TODO check
-                return parameterTypes.isEmpty() || parameterTypes.size() == 1;
-            // 1 param, any return type
-            case OperatorOverloadConstants._MULT:
-            case OperatorOverloadConstants._DIV:
-            case OperatorOverloadConstants._MOD:
-            case OperatorOverloadConstants._AND:
-            case OperatorOverloadConstants._OR:
-                // TODO check
-                return parameterTypes.size() == 1;
-            // 0 params, any return type
-            case OperatorOverloadConstants._NOT:
-                // TODO check
-                return parameterTypes.isEmpty();
-            // 1 param of the same type as this, returns bool
+            // if 1 param then it is of the same type as this and returns bool
             case OperatorOverloadConstants._GE:
             case OperatorOverloadConstants._GT:
             case OperatorOverloadConstants._LE:
             case OperatorOverloadConstants._LT:
             case OperatorOverloadConstants._EQUALS:
-                return parameterTypes.size() == 1 && className.equals(parameterTypes.get(0).getName()) &&
+                return parameterTypes.size() != 1 || className.equals(parameterTypes.get(0).getName()) &&
                         SymbolTableCreator.BOOL.equals(returnType);
-            // can't overload
-            case OperatorOverloadConstants._NEQ:
-                // TODO should be x._equals(y)._not()?
+            // if 1 param then it is of the same type as this and returns Array<[type of this]>
             case OperatorOverloadConstants._TO:
+                return parameterTypes.size() != 1 || className.equals(parameterTypes.get(0).getName()) &&
+                        new Type(SymbolTableCreator.ARRAY, new Type(className)).equals(returnType);
+            // if 1 param then can't overload
+            // TODO change name so it is impossible to overload (~id for example)
             case OperatorOverloadConstants._ID:
-                return false;
+                return parameterTypes.size() != 1;
         }
         return true;
     }

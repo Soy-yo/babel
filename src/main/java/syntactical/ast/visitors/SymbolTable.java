@@ -6,12 +6,16 @@ import java.util.*;
 
 public class SymbolTable {
 
-    // Only global function and classes allowed
+    // Only global classes allowed
     private final Map<Type, Scope> classTable;
+    private final Map<Integer, Variable> variableRelations;
+    private final Map<Integer, Function> functionRelations;
     private Scope currentScope;
 
     public SymbolTable() {
         this.classTable = new HashMap<>();
+        this.variableRelations = new HashMap<>();
+        this.functionRelations = new HashMap<>();
         this.currentScope = new Scope(-1, null);
     }
 
@@ -23,44 +27,69 @@ public class SymbolTable {
         return currentScope.name;
     }
 
-    public Type getVariable(String variable) {
+    public Variable getVariable(String variable, int id) {
+        if (variableRelations.containsKey(id)) {
+            return variableRelations.get(id);
+        }
         Scope current = currentScope;
-        Type result = current.variableTable.get(variable);
+        Variable result = null;
         // If variable wasn't in this scope try to find it in previous ones
-        while (result == null && current.parent != null) {
-            current = current.parent;
+        while (result == null && current != null) {
             result = current.variableTable.get(variable);
+            current = current.parent;
+        }
+        if (result != null) {
+            variableRelations.put(id, result);
         }
         return result;
     }
 
-    public Type getFunction(String name, Collection<Type> parameters) {
-        Function function = new Function(name, parameters.toArray(new Type[0]));
+    public Variable getVariableHere(String variable, int id) {
+        Variable result = currentScope.variableTable.get(variable);
+        if (result != null) {
+            variableRelations.put(id, result);
+        }
+        return result;
+    }
+
+    public Function getFunction(String name, Collection<Type> parameters, int id) {
+        if (functionRelations.containsKey(id)) {
+            return functionRelations.get(id);
+        }
+        Func function = new Func(name, parameters.toArray(new Type[0]));
         Scope current = currentScope;
-        Type result = current.functionTable.get(function);
+        Function result = current.functionTable.get(function);
         // If variable wasn't in this scope try to find it in previous ones
         while (result == null && current.parent != null) {
             current = current.parent;
             result = current.functionTable.get(function);
         }
+        if (result != null) {
+            functionRelations.put(id, result);
+        }
         return result;
     }
 
-    public boolean putVariable(String variable, Type type) {
-        return currentScope.variableTable.putIfAbsent(variable, type) == null;
+    public Function getFunctionHere(String name, Collection<Type> parameters, int id) {
+        Function result = currentScope.functionTable.get(new Func(name, parameters.toArray(new Type[0])));
+        if (result != null) {
+            functionRelations.put(id, result);
+        }
+        return result;
     }
 
-    public boolean putFunction(String name, List<Type> parameters, Type type) {
-        Function function = new Function(name, parameters.toArray(new Type[0]));
-        return currentScope.functionTable.putIfAbsent(function, type) == null;
+    public boolean putVariable(int id, String variable, Type type) {
+        return currentScope.variableTable.putIfAbsent(variable, new Variable(id, variable, type)) == null;
+    }
+
+    public boolean putFunction(int id, String name, List<Type> parameters, Type type) {
+        Func func = new Func(name, parameters.toArray(new Type[0]));
+        Function function = new Function(id, name, parameters.toArray(new Type[0]), type);
+        return currentScope.functionTable.putIfAbsent(func, function) == null;
     }
 
     public boolean existsScope(int id) {
         return currentScope.scopes.containsKey(id);
-    }
-
-    public boolean existsClassScope(Type type) {
-        return classTable.containsKey(type);
     }
 
     public void openScope(int id) {
@@ -84,33 +113,54 @@ public class SymbolTable {
         }
         // Couldn't find it: restore scope and return null
         if (currentScope == null) {
-            while (!result.isEmpty()) {
-                int block = result.pop();
-                openScope(block);
-            }
+            restoreScope(result);
             return null;
         }
         return result;
     }
 
+    public void restoreScope(Deque<Integer> stack) {
+        while (!stack.isEmpty()) {
+            int block = stack.pop();
+            openScope(block);
+        }
+    }
+
+    public boolean existsClassScope(Type type) {
+        return classTable.containsKey(type);
+    }
+
     public void createClassScope(int id, Type type) {
-        // Creates it if it doesn't
         Scope scope = new Scope(id, type.getName(), currentScope);
         classTable.put(type, scope);
         currentScope = scope;
     }
 
-    public SymbolTable closeScope() {
+    public Deque<Integer> openClassScope(Type type) {
+        Scope classScope = classTable.get(type);
+        if (classScope == null) {
+            return null;
+        }
+        Deque<Integer> result = new ArrayDeque<>();
+        // Go to global scope
+        while (currentScope.parent != null) {
+            result.push(currentScope.blockId);
+            currentScope = currentScope.parent;
+        }
+        currentScope = classScope;
+        return result;
+    }
+
+    public void closeScope() {
         currentScope = currentScope.parent;
-        return this;
     }
 
     private static class Scope {
 
         final int blockId;
         final String name;
-        final Map<String, Type> variableTable;
-        final Map<Function, Type> functionTable;
+        final Map<String, Variable> variableTable;
+        final Map<Func, Function> functionTable;
         final Map<Integer, Scope> scopes;
         final Scope parent;
 
@@ -129,12 +179,12 @@ public class SymbolTable {
 
     }
 
-    private static class Function {
+    private static class Func {
 
         final String name;
         final Type[] parameters;
 
-        private Function(String name, Type[] parameters) {
+        Func(String name, Type[] parameters) {
             this.name = name;
             this.parameters = parameters;
         }
@@ -147,8 +197,8 @@ public class SymbolTable {
             if (o == null || getClass() != o.getClass()) {
                 return false;
             }
-            Function function = (Function) o;
-            return Objects.equals(name, function.name) &&
+            Func function = (Func) o;
+            return name.equals(function.name) &&
                     Arrays.equals(parameters, function.parameters);
         }
 

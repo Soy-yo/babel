@@ -1,0 +1,43 @@
+package syntactical.ast.visitors;
+
+import syntactical.ast.Type;
+
+import java.util.Arrays;
+import java.util.Objects;
+
+public class Function {
+
+    final int id;
+    final String name;
+    final Type[] parameters;
+    final Type returnType;
+
+    Function(int id, String name, Type[] parameters, Type returnType) {
+        this.id = id;
+        this.name = name;
+        this.parameters = parameters;
+        this.returnType = returnType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Function function = (Function) o;
+        return name.equals(function.name) &&
+                Arrays.equals(parameters, function.parameters) &&
+                returnType.equals(function.returnType);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(name, returnType);
+        result = 31 * result + Arrays.hashCode(parameters);
+        return result;
+    }
+
+}

@@ -12,7 +12,6 @@ public class OperatorOverloadConstants {
     public static final String _LE = "_le";
     public static final String _LT = "_lt";
     public static final String _EQUALS = "_equals";
-    public static final String _NEQ = "_neq";
     public static final String _ID = "_id";
     public static final String _AND = "_and";
     public static final String _OR = "_or";

@@ -44,6 +44,16 @@ public class Type {
         return parameter;
     }
 
+    public boolean contains(Type type) {
+        boolean result = false;
+        Type current = this;
+        while (current != null && !result) {
+            result = current.equals(type);
+            current = current.parameter;
+        }
+        return result;
+    }
+
     @Override
     public String toString() {
         return getName() + (parameter != null ? "<" + parameter + ">" : "");

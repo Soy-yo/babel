@@ -7,7 +7,10 @@ import java.util.Collection;
 
 public class ConstructorDeclarationNode extends FunctionDeclarationNode {
 
-    public ConstructorDeclarationNode(IdGenerator id, LexicalUnit lexeme, Collection<Name> parameterNames, BlockStatementNode code) {
+    public ConstructorDeclarationNode(IdGenerator id,
+                                      LexicalUnit lexeme,
+                                      Collection<Name> parameterNames,
+                                      BlockStatementNode code) {
         super(id, lexeme, new Name(lexeme, null), parameterNames, code);
     }
 
