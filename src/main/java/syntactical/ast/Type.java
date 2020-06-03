@@ -2,11 +2,12 @@ package syntactical.ast;
 
 import lexical.LexicalUnit;
 
-import java.util.Objects;
+import java.util.*;
 
 public class Type {
 
     public static final Type WILDCARD = new Type("*");
+    public static final List<String> PRIMITIVES = Collections.unmodifiableList(Arrays.asList("Int", "Real", "Bool", "Char"));
 
     private LexicalUnit name;
     private Type parameter;
@@ -74,6 +75,8 @@ public class Type {
         return Objects.equals(getName(), type.getName()) && Objects.equals(parameter, type.parameter);
     }
 
+
+
     @Override
     public String toString() {
         return getName() + (parameter != null ? "<" + parameter + ">" : "");
@@ -96,6 +99,10 @@ public class Type {
     @Override
     public int hashCode() {
         return Objects.hash(getName(), parameter);
+    }
+
+    public static boolean isPrimitive(String type) {
+        return PRIMITIVES.contains(type);
     }
 
 }

@@ -39,6 +39,7 @@ public class SymbolTableCreator implements Visitor {
     private final ProgramNode root;
     private final SymbolTable symbolTable;
     private String currentClass;
+    private String currentFunction;
     private Deque<Integer> pointRecPath;
     private int pointRecDepth;
 
@@ -50,6 +51,7 @@ public class SymbolTableCreator implements Visitor {
         this.root = root;
         this.symbolTable = new SymbolTable();
         this.currentClass = null;
+        this.currentFunction = null;
         this.pointRecPath = null;
         this.pointRecDepth = 0;
         initializeTable();
@@ -184,6 +186,7 @@ public class SymbolTableCreator implements Visitor {
         BlockStatementNode block = node.getCode();
         // Create block here to add all parameters to scope
         symbolTable.openScope(node.getId());
+        currentFunction = node.getType().getName();
         if (currentClass != null) {
             // TODO make sure it's safe to set class id for "this"
             int thisId = symbolTable.getCurrentScopeId();
@@ -297,8 +300,19 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(ReturnStatementNode node) {
-        node.getReturnExpression().accept(this);
-        // TODO check return type matches function type (if "return;" then display error at return else at expression)
+        ExpressionNode expression = node.getReturnExpression();
+        expression.accept(this);
+        Type found = expression.getType();
+        if(found != null && !currentFunction.equals(found.getName())) {
+            if (VOID.equals(found)) {
+                error(node, "Missing return value");
+            } else {
+                error(expression, "Expected " + currentFunction + ", but found " + found);
+            }
+        }
+        if(found == null && Type.isPrimitive(currentFunction)) {
+            error(expression, "Primitive type cannot be null");
+        }
     }
 
     @Override
