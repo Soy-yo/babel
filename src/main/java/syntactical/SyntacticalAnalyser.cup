@@ -441,7 +441,12 @@ Expression3 ::= Expression3: first EQUALS: e Expression4: last
                         FunctionCallExpressionNode.operator(nextId, n, first, OperatorOverloadConstants._EQUALS, last));
                 :}
               | Expression3: first IDENTITY: i Expression4: last
-                {: RESULT = FunctionCallExpressionNode.operator(nextId, i, first, OperatorOverloadConstants._ID, last); :}
+                {:
+                   // ~id(first, last)
+                   RESULT = new FunctionCallExpressionNode(nextId, i,
+                                new VariableExpressionNode(nextId, new LexicalUnit(OperatorOverloadConstants._ID)),
+                                Arrays.asList(first, last));
+                :}
               | Expression4: first
                 {: RESULT = first; :};
 Expression4 ::= Expression4: first GT: g Expression5: last

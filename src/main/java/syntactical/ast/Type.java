@@ -54,6 +54,26 @@ public class Type {
         return result;
     }
 
+    public int depth() {
+        int depth = 0;
+        Type t = this;
+        while (t.parameter != null) {
+            depth++;
+            t = t.parameter;
+        }
+        return depth;
+    }
+
+    public boolean realEquals(Type type) {
+        if (this == type) {
+            return true;
+        }
+        if (type == null) {
+            return false;
+        }
+        return Objects.equals(getName(), type.getName()) && Objects.equals(parameter, type.parameter);
+    }
+
     @Override
     public String toString() {
         return getName() + (parameter != null ? "<" + parameter + ">" : "");
