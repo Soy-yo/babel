@@ -2,16 +2,22 @@ package syntactical.ast.visitors;
 
 import syntactical.ast.*;
 
-import java.io.File;
+import java.io.*;
 
 public class CodeGenerator implements Visitor {
 
   private final ASTNode root;
-  private final File file;
+  private String file;
+  private BufferedWriter writer;
 
-  public CodeGenerator(ASTNode root, File file) {
+  public CodeGenerator(ASTNode root, String file) {
     this.root = root;
     this.file = file;
+    try {
+      this.writer = new BufferedWriter(new FileWriter(file));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   @Override
@@ -141,7 +147,11 @@ public class CodeGenerator implements Visitor {
 
   }
 
-  public void issue() {
-    // TODO: method that makes actual things happen, maybe writing on a file
+  public void issue(String instruction) {
+    try {
+      writer.write(instruction);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }
