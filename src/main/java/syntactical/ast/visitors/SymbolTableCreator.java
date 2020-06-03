@@ -310,9 +310,10 @@ public class SymbolTableCreator implements Visitor {
                 error(expression, "Expected " + currentFunction + ", but found " + found);
             }
         }
-        if(found == null && Type.isPrimitive(currentFunction)) {
+        if(found == Type.WILDCARD && Type.isPrimitive(currentFunction)) {
             error(expression, "Primitive type cannot be null");
         }
+        // TODO: in function calls a primitive cant be null
     }
 
     @Override
