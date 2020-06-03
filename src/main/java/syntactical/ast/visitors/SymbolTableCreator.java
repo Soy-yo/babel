@@ -462,10 +462,6 @@ public class SymbolTableCreator implements Visitor {
         }
         Type parameter = null;
         List<ExpressionNode> elements = node.getElements();
-        if (elements.isEmpty()) {
-            // TODO prob remove this as empty lists [Type] might have their type already set
-            node.setType(ARRAY_TYPE);
-        }
         for (ExpressionNode n : elements) {
             n.accept(this);
             Type t = n.getType();

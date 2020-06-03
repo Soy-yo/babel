@@ -554,8 +554,10 @@ ConstantExpression    ::= INT: n
 
 ListConstructorExpression ::= STRING: str
                               {: RESULT = ListConstructorExpressionNode.fromString(nextId, str); :}
-                            | SQUARE_L SQUARE_R
-                              {: RESULT = new ListConstructorExpressionNode(nextId); :}
+                            | SQUARE_L TYPE: type SQUARE_R
+                              {: RESULT = new ListConstructorExpressionNode(nextId, new Type(type)); :}
+                            | SQUARE_L TYPE: type LT Type: param GT SQUARE_R
+                              {: RESULT = new ListConstructorExpressionNode(nextId, new Type(type, param)); :}
                             | SQUARE_L ListElements: elements SQUARE_R
                               {: RESULT = new ListConstructorExpressionNode(nextId, elements); :};
 ListElements              ::= Expression: element
