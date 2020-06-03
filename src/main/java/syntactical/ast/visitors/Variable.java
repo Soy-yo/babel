@@ -9,11 +9,13 @@ public class Variable {
     final int id;
     final String name;
     final Type type;
+    final boolean isConst;
 
-    Variable(int id, String name, Type type) {
+    Variable(int id, String name, Type type, boolean isConst) {
         this.id = id;
         this.name = name;
         this.type = type;
+        this.isConst = isConst;
     }
 
     @Override

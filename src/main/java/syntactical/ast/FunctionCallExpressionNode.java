@@ -13,7 +13,10 @@ public class FunctionCallExpressionNode extends ExpressionNode {
     private final ExpressionNode function;
     private final List<ExpressionNode> arguments;
 
-    public FunctionCallExpressionNode(IdGenerator id, LexicalUnit lexeme, ExpressionNode function, Collection<ExpressionNode> arguments) {
+    public FunctionCallExpressionNode(IdGenerator id,
+                                      LexicalUnit lexeme,
+                                      ExpressionNode function,
+                                      Collection<ExpressionNode> arguments) {
         super(id, lexeme);
         this.function = function;
         this.arguments = new ArrayList<>(arguments);

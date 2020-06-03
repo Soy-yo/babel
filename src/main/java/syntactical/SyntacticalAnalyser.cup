@@ -441,7 +441,12 @@ Expression3 ::= Expression3: first EQUALS: e Expression4: last
                         FunctionCallExpressionNode.operator(nextId, n, first, OperatorOverloadConstants._EQUALS, last));
                 :}
               | Expression3: first IDENTITY: i Expression4: last
-                {: RESULT = FunctionCallExpressionNode.operator(nextId, i, first, OperatorOverloadConstants._ID, last); :}
+                {:
+                   // ~id(first, last)
+                   RESULT = new FunctionCallExpressionNode(nextId, i,
+                                new VariableExpressionNode(nextId, new LexicalUnit(OperatorOverloadConstants._ID)),
+                                Arrays.asList(first, last));
+                :}
               | Expression4: first
                 {: RESULT = first; :};
 Expression4 ::= Expression4: first GT: g Expression5: last
@@ -554,8 +559,10 @@ ConstantExpression    ::= INT: n
 
 ListConstructorExpression ::= STRING: str
                               {: RESULT = ListConstructorExpressionNode.fromString(nextId, str); :}
-                            | SQUARE_L SQUARE_R
-                              {: RESULT = new ListConstructorExpressionNode(nextId); :}
+                            | SQUARE_L TYPE: type SQUARE_R
+                              {: RESULT = new ListConstructorExpressionNode(nextId, new Type(type)); :}
+                            | SQUARE_L TYPE: type LT Type: param GT SQUARE_R
+                              {: RESULT = new ListConstructorExpressionNode(nextId, new Type(type, param)); :}
                             | SQUARE_L ListElements: elements SQUARE_R
                               {: RESULT = new ListConstructorExpressionNode(nextId, elements); :};
 ListElements              ::= Expression: element

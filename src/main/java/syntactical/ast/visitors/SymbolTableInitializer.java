@@ -34,10 +34,14 @@ public class SymbolTableInitializer implements Visitor {
     @Override
     public void visit(VarDeclarationNode node) {
         Type type = node.getType();
-        if (SymbolTableCreator.ARRAY_TYPE.equals(type) && type.contains(SymbolTableCreator.FORM)) {
-            error(node, "Arrays of Forms not allowed");
+        if (SymbolTableCreator.ARRAY_TYPE.equals(type)) {
+            if (type.depth() == 0) {
+                error(node, "Must give parametric type on Array");
+            } else if (type.contains(SymbolTableCreator.FORM)) {
+                error(node, "Arrays of Forms not allowed");
+            }
         }
-        if (!symbolTable.putVariable(node.getId(), node.getIdentifier(), type)) {
+        if (!symbolTable.putVariable(node.getId(), node.getIdentifier(), type, node.isConst())) {
             error(node, "Variable already defined in this scope");
         }
         // Generate scope for object definition
@@ -46,7 +50,8 @@ public class SymbolTableInitializer implements Visitor {
             if (initialValue instanceof AnonymousObjectConstructorExpressionNode) {
                 initialValue.accept(this);
             } else {
-                error(initialValue, "Expected an anonymous object definition");
+                ASTNode errorReceiver = initialValue == null ? node : initialValue;
+                error(errorReceiver, "Expected an anonymous object definition");
             }
         }
     }
@@ -54,13 +59,17 @@ public class SymbolTableInitializer implements Visitor {
     @Override
     public void visit(FunctionDeclarationNode node) {
         Type returnType = node.getType();
-        if (returnType.contains(SymbolTableCreator.FORM)) {
+        if (SymbolTableCreator.ARRAY_TYPE.equals(returnType) && returnType.depth() == 0) {
+            error(node, "Must give parametric type on Array");
+        } else if (returnType.contains(SymbolTableCreator.FORM)) {
             error(node, "Form object cannot be returned by a function/method");
         }
         List<Type> parameterTypes = new ArrayList<>();
         for (VarDeclarationNode p : node.getParameters()) {
             Type t = p.getType();
-            if (t.contains(SymbolTableCreator.FORM)) {
+            if (SymbolTableCreator.ARRAY_TYPE.equals(t) && t.depth() == 0) {
+                error(p, "Must give parametric type on Array");
+            } else if (t.contains(SymbolTableCreator.FORM)) {
                 error(p, "Functions/methods cannot have Form objects as parameters");
             }
             parameterTypes.add(t);
@@ -83,10 +92,11 @@ public class SymbolTableInitializer implements Visitor {
 
     @Override
     public void visit(ClassDeclarationNode node) {
-        if (symbolTable.existsClassScope(node.getType())) {
+        Type type = node.getType();
+        if (symbolTable.existsClassScope(type)) {
             error(node, "Class already defined");
         }
-        symbolTable.createClassScope(node.getId(), node.getType());
+        symbolTable.createClassScope(node.getId(), type);
         if (node.getContentRoot() != null) {
             for (DeclarationNode n : node.getContentRoot()) {
                 n.accept(this);
@@ -217,10 +227,6 @@ public class SymbolTableInitializer implements Visitor {
             case OperatorOverloadConstants._TO:
                 return parameterTypes.size() != 1 || className.equals(parameterTypes.get(0).getName()) &&
                         new Type(SymbolTableCreator.ARRAY, new Type(className)).equals(returnType);
-            // if 1 param then can't overload
-            // TODO change name so it is impossible to overload (~id for example)
-            case OperatorOverloadConstants._ID:
-                return parameterTypes.size() != 1;
         }
         return true;
     }

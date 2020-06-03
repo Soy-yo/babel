@@ -9,13 +9,18 @@ import java.util.List;
 
 public class ListConstructorExpressionNode extends ExpressionNode {
 
+    private static final String ARRAY = "Array";
     private static final Type CHAR = new Type("Char");
-    private static final Type STRING = new Type("Array", CHAR);
+    private static final Type STRING = new Type(ARRAY, CHAR);
 
     private List<ExpressionNode> elements;
     private List<ExpressionNode> view;
 
-    private ListConstructorExpressionNode(IdGenerator id, LexicalUnit lexeme, List<ExpressionNode> elements, boolean copy, Type type) {
+    private ListConstructorExpressionNode(IdGenerator id,
+                                          LexicalUnit lexeme,
+                                          List<ExpressionNode> elements,
+                                          boolean copy,
+                                          Type type) {
         super(id, lexeme, type);
         if (copy) {
             this.elements = new ArrayList<>(elements);
@@ -37,8 +42,8 @@ public class ListConstructorExpressionNode extends ExpressionNode {
         this(id, lexeme, new ArrayList<>(), false, null);
     }
 
-    public ListConstructorExpressionNode(IdGenerator id) {
-        this(id, (LexicalUnit) null);
+    public ListConstructorExpressionNode(IdGenerator id, Type type) {
+        this(id, null, new ArrayList<>(), false, new Type(ARRAY, type));
     }
 
     public static ListConstructorExpressionNode fromString(IdGenerator id, LexicalUnit lexeme) {

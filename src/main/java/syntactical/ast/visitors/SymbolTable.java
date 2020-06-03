@@ -7,7 +7,7 @@ import java.util.*;
 public class SymbolTable {
 
     // Only global classes allowed
-    private final Map<Type, Scope> classTable;
+    private final Map<Type, Integer> classTable;
     private final Map<Integer, Variable> variableRelations;
     private final Map<Integer, Function> functionRelations;
     private Scope currentScope;
@@ -25,6 +25,10 @@ public class SymbolTable {
 
     public String getCurrentScopeName() {
         return currentScope.name;
+    }
+
+    public Variable getVariable(int id) {
+        return variableRelations.get(id);
     }
 
     public Variable getVariable(String variable, int id) {
@@ -50,6 +54,10 @@ public class SymbolTable {
             variableRelations.put(id, result);
         }
         return result;
+    }
+
+    public Function getFunction(int id) {
+        return functionRelations.get(id);
     }
 
     public Function getFunction(String name, Collection<Type> parameters, int id) {
@@ -78,8 +86,12 @@ public class SymbolTable {
         return result;
     }
 
+    public boolean putVariable(int id, String variable, Type type, boolean isConst) {
+        return currentScope.variableTable.putIfAbsent(variable, new Variable(id, variable, type, isConst)) == null;
+    }
+
     public boolean putVariable(int id, String variable, Type type) {
-        return currentScope.variableTable.putIfAbsent(variable, new Variable(id, variable, type)) == null;
+        return putVariable(id, variable, type, false);
     }
 
     public boolean putFunction(int id, String name, List<Type> parameters, Type type) {
@@ -131,24 +143,16 @@ public class SymbolTable {
     }
 
     public void createClassScope(int id, Type type) {
-        Scope scope = new Scope(id, type.getName(), currentScope);
-        classTable.put(type, scope);
-        currentScope = scope;
+        classTable.putIfAbsent(type, id);
+        openScope(id);
     }
 
     public Deque<Integer> openClassScope(Type type) {
-        Scope classScope = classTable.get(type);
-        if (classScope == null) {
+        Integer id = classTable.get(type);
+        if (id == null) {
             return null;
         }
-        Deque<Integer> result = new ArrayDeque<>();
-        // Go to global scope
-        while (currentScope.parent != null) {
-            result.push(currentScope.blockId);
-            currentScope = currentScope.parent;
-        }
-        currentScope = classScope;
-        return result;
+        return openPreviousScope(id);
     }
 
     public void closeScope() {
@@ -197,16 +201,13 @@ public class SymbolTable {
             if (o == null || getClass() != o.getClass()) {
                 return false;
             }
-            Func function = (Func) o;
-            return name.equals(function.name) &&
-                    Arrays.equals(parameters, function.parameters);
+            Func func = (Func) o;
+            return name.equals(func.name) && Arrays.equals(parameters, func.parameters);
         }
 
         @Override
         public int hashCode() {
-            int result = Objects.hash(name);
-            result = 31 * result + Arrays.hashCode(parameters);
-            return result;
+            return Objects.hash(name);
         }
 
     }
