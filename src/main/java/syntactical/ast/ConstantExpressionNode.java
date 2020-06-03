@@ -57,7 +57,7 @@ public class ConstantExpressionNode extends ExpressionNode {
     }
 
     public static ConstantExpressionNode ofNull(IdGenerator id, LexicalUnit lexeme) {
-        return new ConstantExpressionNode(id, lexeme, 0b0, null);
+        return new ConstantExpressionNode(id, lexeme, 0b0, Type.WILDCARD);
     }
 
     public static ConstantExpressionNode special(IdGenerator id, LexicalUnit lexeme, Type type) {

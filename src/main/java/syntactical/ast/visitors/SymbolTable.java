@@ -78,7 +78,7 @@ public class SymbolTable {
         return result;
     }
 
-    public Function  getFunctionHere(String name, Collection<Type> parameters, int id) {
+    public Function getFunctionHere(String name, Collection<Type> parameters, int id) {
         Function result = currentScope.functionTable.get(new Func(name, parameters.toArray(new Type[0])));
         if (result != null) {
             functionRelations.put(id, result);

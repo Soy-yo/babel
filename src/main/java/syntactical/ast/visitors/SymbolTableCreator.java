@@ -39,7 +39,7 @@ public class SymbolTableCreator implements Visitor {
     private final ProgramNode root;
     private final SymbolTable symbolTable;
     private String currentClass;
-    private String currentFunction;
+    private Type currentFunctionType;
     private Deque<Integer> pointRecPath;
     private int pointRecDepth;
 
@@ -51,7 +51,7 @@ public class SymbolTableCreator implements Visitor {
         this.root = root;
         this.symbolTable = new SymbolTable();
         this.currentClass = null;
-        this.currentFunction = null;
+        this.currentFunctionType = null;
         this.pointRecPath = null;
         this.pointRecDepth = 0;
         initializeTable();
@@ -175,9 +175,21 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(VarDeclarationNode node) {
+        // TODO can't completely ignore Forms here as their fields' initial values has not been yet checked !!
+        // probably make a separate method just for this instead of using the regular visit method of the visitor
         // Form initial values should have already been checked
         if (!FORM.equals(node.getType()) && node.getInitialValue() != null) {
-            node.getInitialValue().accept(this);
+            ExpressionNode initialValue = node.getInitialValue();
+            initialValue.accept(this);
+            Type found = initialValue.getType();
+            Type expected = node.getType();
+            // If initial value was null set its type to the correct one
+            if (found == Type.WILDCARD) {
+                checkNullOnPrimitive(found, expected, initialValue);
+                initialValue.setType(expected);
+            } else if (found != null && !expected.realEquals(found)) {
+                error(initialValue, "Expected " + expected + ", but found " + found);
+            }
         }
     }
 
@@ -186,7 +198,7 @@ public class SymbolTableCreator implements Visitor {
         BlockStatementNode block = node.getCode();
         // Create block here to add all parameters to scope
         symbolTable.openScope(node.getId());
-        currentFunction = node.getType().getName();
+        currentFunctionType = node.getType();
         if (currentClass != null) {
             // TODO make sure it's safe to set class id for "this"
             int thisId = symbolTable.getCurrentScopeId();
@@ -195,6 +207,7 @@ public class SymbolTableCreator implements Visitor {
         for (VarDeclarationNode param : node.getParameters()) {
             symbolTable.putVariable(param.getId(), param.getIdentifier(), param.getType());
         }
+        currentFunctionType = null;
         symbolTable.closeScope();
         block.accept(this);
     }
@@ -240,9 +253,9 @@ public class SymbolTableCreator implements Visitor {
         if (!symbolTable.putVariable(declaration.getId(), declaration.getIdentifier(), type, declaration.isConst())) {
             error(node, "Variable already defined in this scope");
         }
-        // Generate scope for object definition
         ExpressionNode initialValue = declaration.getInitialValue();
         if (FORM.equals(type)) {
+            // Generate scope for object definition
             if (initialValue instanceof AnonymousObjectConstructorExpressionNode) {
                 initialValue.accept(this);
             } else {
@@ -250,6 +263,13 @@ public class SymbolTableCreator implements Visitor {
             }
         } else {
             initialValue.accept(this);
+            Type found = initialValue.getType();
+            if (found == Type.WILDCARD) {
+                checkNullOnPrimitive(found, type, initialValue);
+                initialValue.setType(type);
+            } else if (found != null && !type.realEquals(found)) {
+                error(initialValue, "Expected " + type + ", but found " + found);
+            }
         }
     }
 
@@ -284,13 +304,13 @@ public class SymbolTableCreator implements Visitor {
             if (FORM.equals(expected)) {
                 error(designable, "Form objects cannot be reassigned");
             }
-            if (found != null && !expected.equals(found)) {
-                error(designable, "Expected " + expected + ", but found " + found);
+            if (found == Type.WILDCARD) {
+                checkNullOnPrimitive(found, expected, value);
+                value.setType(expected);
+            } else if (found != null && !expected.realEquals(found)) {
+                error(value, "Expected " + expected + ", but found " + found);
             }
         }
-    }
-
-    private void checkAssignment(AssignmentStatementNode node) {
     }
 
     @Override
@@ -303,15 +323,16 @@ public class SymbolTableCreator implements Visitor {
         ExpressionNode expression = node.getReturnExpression();
         expression.accept(this);
         Type found = expression.getType();
-        if(found != null && !currentFunction.equals(found.getName())) {
+        if (found != null && !found.realEquals(currentFunctionType)) {
             if (VOID.equals(found)) {
                 error(node, "Missing return value");
             } else {
-                error(expression, "Expected " + currentFunction + ", but found " + found);
+                error(expression, "Expected " + currentFunctionType + ", but found " + found);
             }
         }
-        if(found == null && Type.isPrimitive(currentFunction)) {
-            error(expression, "Primitive type cannot be null");
+        if (found == Type.WILDCARD) {
+            checkNullOnPrimitive(found, currentFunctionType, expression);
+            expression.setType(currentFunctionType);
         }
     }
 
@@ -320,7 +341,7 @@ public class SymbolTableCreator implements Visitor {
         ExpressionNode condition = node.getCondition();
         condition.accept(this);
         Type found = condition.getType();
-        if (found != null && !BOOL.equals(found)) {
+        if (found != null && !BOOL.realEquals(found)) {
             error(condition, "Expected Bool, but found " + found);
         }
         node.getIfBlock().accept(this);
@@ -334,7 +355,7 @@ public class SymbolTableCreator implements Visitor {
         ExpressionNode target = node.getSwitchExpression();
         target.accept(this);
         Type type = target.getType();
-        if (type != null && !INT.equals(type) && !REAL.equals(type) && !BOOL.equals(type) && !CHAR.equals(type)) {
+        if (type != null && !type.isPrimitive()) {
             error(target, "Expected a primitive type, but found " + type);
         }
         Set<Integer> seen = new HashSet<>();
@@ -342,8 +363,8 @@ public class SymbolTableCreator implements Visitor {
             ConstantExpressionNode key = e.getKey();
             key.accept(this);
             Type t = key.getType();
-            // Underscore: sets target's type
-            if (DEFAULT.equals(key.getType())) {
+            if (DEFAULT.realEquals(key.getType())) {
+                // Underscore: sets target's type
                 key.setType(type);
                 if (!seen.add(null)) {
                     error(key, "Repeated switch branch");
@@ -351,7 +372,7 @@ public class SymbolTableCreator implements Visitor {
             } else if (!seen.add(key.getValue())) {
                 error(key, "Repeated switch branch");
             }
-            if (type != null && !type.equals(t)) {
+            if (type != null && !type.realEquals(t)) {
                 error(key, "Expected " + type + ", but found " + t);
             }
             e.getValue().accept(this);
@@ -363,7 +384,7 @@ public class SymbolTableCreator implements Visitor {
         ExpressionNode condition = node.getCondition();
         condition.accept(this);
         Type found = condition.getType();
-        if (found != null && !BOOL.equals(found)) {
+        if (found != null && !BOOL.realEquals(found)) {
             error(condition, "Expected Bool, but found " + found);
         }
         node.getBlock().accept(this);
@@ -382,7 +403,7 @@ public class SymbolTableCreator implements Visitor {
         Type type = variable.getType();
         Type found = iterable.getType();
         // Iterable must be of type Array<T> if variable is of type T
-        if (type != null && found != null && (!found.equals(ARRAY_TYPE) || !type.equals(found.getParameter()))) {
+        if (type != null && found != null && (!found.realEquals(ARRAY_TYPE) || !type.equals(found.getParameter()))) {
             error(iterable, "Expected " + type + ", but found " + found);
         }
         block.accept(this);
@@ -695,6 +716,12 @@ public class SymbolTableCreator implements Visitor {
         errors++;
         SemanticException error = new SemanticException(node.getLexeme(), message);
         System.err.println("[ERROR] " + error.getMessage());
+    }
+
+    private void checkNullOnPrimitive(Type possiblyNull, Type possiblyPrimitive, ASTNode node) {
+        if (possiblyNull == Type.WILDCARD && possiblyPrimitive.isPrimitive()) {
+            error(node, "Primitive type cannot be null");
+        }
     }
 
 }
