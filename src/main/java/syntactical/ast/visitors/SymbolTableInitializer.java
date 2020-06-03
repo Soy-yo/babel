@@ -227,10 +227,6 @@ public class SymbolTableInitializer implements Visitor {
             case OperatorOverloadConstants._TO:
                 return parameterTypes.size() != 1 || className.equals(parameterTypes.get(0).getName()) &&
                         new Type(SymbolTableCreator.ARRAY, new Type(className)).equals(returnType);
-            // if 1 param then can't overload
-            // TODO change name so it is impossible to overload (~id for example)
-            case OperatorOverloadConstants._ID:
-                return parameterTypes.size() != 1;
         }
         return true;
     }

@@ -39,6 +39,9 @@ public class SymbolTableCreator implements Visitor {
     private final ProgramNode root;
     private final SymbolTable symbolTable;
     private String currentClass;
+    private Deque<Integer> pointRecPath;
+    private int pointRecDepth;
+
     private int errors;
 
     // TODO add a map (first declaration node of file -> filename) so we can show which file contains errors
@@ -47,6 +50,8 @@ public class SymbolTableCreator implements Visitor {
         this.root = root;
         this.symbolTable = new SymbolTable();
         this.currentClass = null;
+        this.pointRecPath = null;
+        this.pointRecDepth = 0;
         initializeTable();
     }
 
@@ -253,7 +258,25 @@ public class SymbolTableCreator implements Visitor {
         value.accept(this);
         Type expected = designable.getType();
         Type found = value.getType();
-        checkAssignment(node);
+        Designator.AccessMethod method = node.getAccessMethod();
+        switch (method) {
+            case NONE: {
+                ExpressionNode target = node.getTarget();
+                Variable v = symbolTable.getVariable(target.getId());
+                if (v != null && v.isConst) {
+                    error(target, "Trying to assign a value to a constant variable");
+                }
+            }
+            break;
+            case FIELD: {
+                VariableExpressionNode field = ((PointExpressionNode) designable).getField();
+                Variable v = symbolTable.getVariable(field.getId());
+                if (v != null && v.isConst) {
+                    error(designable, "Trying to assign a value to a constant field");
+                }
+            }
+            break;
+        }
         if (expected != null) {
             if (FORM.equals(expected)) {
                 error(designable, "Form objects cannot be reassigned");
@@ -265,25 +288,6 @@ public class SymbolTableCreator implements Visitor {
     }
 
     private void checkAssignment(AssignmentStatementNode node) {
-        Designator.AccessMethod method = node.getAccessMethod();
-        ExpressionNode target = node.getTarget();
-        switch (method) {
-            case NONE: {
-                Variable v = symbolTable.getVariable(target.getId());
-                if (v != null && v.isConst) {
-                    error(target, "Trying to assign a value to a constant variable");
-                }
-            }
-            break;
-            case FIELD: {
-                VariableExpressionNode variable = ((PointExpressionNode) target).getField();
-                Variable v = symbolTable.getVariable(variable.getId());
-                if (v != null && v.isConst) {
-                    error(variable, "Trying to assign a value to a constant field");
-                }
-            }
-            break;
-        }
     }
 
     @Override
@@ -372,30 +376,98 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(PointExpressionNode node) {
+        pointRecPath = null;
+        pointRecDepth = 0;
+        visitPointRecursive(node);
+        endPointRecursion();
+    }
+
+    private void visitPointRecursive(PointExpressionNode node) {
         ExpressionNode host = node.getHost();
-        host.accept(this);
+        if (host instanceof PointExpressionNode) {
+            visitPointRecursive((PointExpressionNode) host);
+        } else {
+            host.accept(this);
+        }
         Type hostType = host.getType();
         if (hostType == null) {
             // Couldn't set the type of the host so we won't know if it owns the field
+            endPointRecursion();
             return;
         }
         VariableExpressionNode field = node.getField();
+        String fieldName = field.get();
         if (FORM.equals(hostType)) {
-            // TODO somehow enter in scope and look for field there
-        } else if (ARRAY_TYPE.equals(hostType)) {
-            // Array<?>.size is the only available property
-            if (ARRAY_SIZE.equals(field.get())) {
-                node.setType(INT);
+            if (host instanceof VariableExpressionNode) {
+                // Variables don't get inside the scope
+                pointRecPath = symbolTable.openPreviousScope(symbolTable.getVariable(host.getId()).id);
+                pointRecDepth = 1;
+            }
+            Variable v = symbolTable.getVariableHere(fieldName, field.getId());
+            if (v == null) {
+                error(field, "Form object does not have field " + fieldName);
             } else {
-                error(field, "Class " + hostType + " does not have field " + field.get());
+                field.setType(v.type);
+                node.setType(v.type);
+                if (FORM.equals(v.type)) {
+                    // Get inside this Form as well; this scope must already exist
+                    symbolTable.openScope(v.id);
+                    pointRecDepth++;
+                } else {
+                    endPointRecursion();
+                }
             }
         } else {
-            // TODO fix: if hostType == currentClass then check that field exists
-            // notify error otherwise
-            // TODO check if it actually exists or leave it like this?
-            error(field, "Field " + field.get() + " in class " + hostType +
-                    " might be private - use getters or setters");
+            // Stopped finding Forms: return to where we were at the beginning
+            endPointRecursion();
+            if (ARRAY_TYPE.equals(hostType)) {
+                // Array<?>.size is the only available property
+                if (ARRAY_SIZE.equals(fieldName)) {
+                    // Go to Array<*> class
+                    Deque<Integer> arrayPath = symbolTable.openClassScope(ARRAY_TYPE);
+                    symbolTable.getVariableHere(ARRAY_SIZE, field.getId());
+                    // And then return again to where we were at the beginning
+                    symbolTable.closeScope();
+                    symbolTable.restoreScope(arrayPath);
+                    node.setType(INT);
+                } else {
+                    error(field, "Class " + hostType + " does not have field " + fieldName);
+                }
+            } else {
+                if (currentClass != null && currentClass.equals(hostType.getName())) {
+                    // Can only access a private field if we are already inside that class
+                    // Reopen class as we might be inside a method
+                    Deque<Integer> classPath = symbolTable.openClassScope(hostType);
+                    Variable v = symbolTable.getVariableHere(fieldName, field.getId());
+                    // And then return again to where we were at the beginning
+                    symbolTable.closeScope();
+                    symbolTable.restoreScope(classPath);
+                    if (v == null) {
+                        error(field, "Class " + hostType + " does not have field " + fieldName);
+                    } else {
+                        field.setType(v.type);
+                        node.setType(v.type);
+                        if (FORM.equals(v.type)) {
+                            // Open Form's scope
+                            pointRecPath = symbolTable.openPreviousScope(v.id);
+                            pointRecDepth = 1;
+                        }
+                    }
+                } else {
+                    // TODO check if it actually exists or leave it like this?
+                    error(field, "Field " + fieldName + " in class " + hostType +
+                            " might be private - use getters or setters");
+                }
+            }
         }
+    }
+
+    private void endPointRecursion() {
+        while (pointRecDepth > 0) {
+            symbolTable.closeScope();
+            pointRecDepth--;
+        }
+        symbolTable.restoreScope(pointRecPath);
     }
 
     @Override
