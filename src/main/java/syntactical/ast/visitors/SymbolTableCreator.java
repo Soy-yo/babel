@@ -403,8 +403,12 @@ public class SymbolTableCreator implements Visitor {
         Type type = variable.getType();
         Type found = iterable.getType();
         // Iterable must be of type Array<T> if variable is of type T
-        if (type != null && found != null && (!found.realEquals(ARRAY_TYPE) || !type.equals(found.getParameter()))) {
-            error(iterable, "Expected " + type + ", but found " + found);
+        if (type != null && found != null) {
+            if (found == Type.WILDCARD) {
+                error(iterable, "null is not iterable");
+            } else if (!found.equals(ARRAY_TYPE) || !type.equals(found.getParameter())) {
+                error(iterable, "Expected " + type + ", but found " + found);
+            }
         }
         block.accept(this);
     }
@@ -427,6 +431,12 @@ public class SymbolTableCreator implements Visitor {
         Type hostType = host.getType();
         if (hostType == null) {
             // Couldn't set the type of the host so we won't know if it owns the field
+            endPointRecursion();
+            return;
+        }
+        if (hostType == Type.WILDCARD) {
+            // Host is null so it doesn't have any fields
+            error(host, "Can't apply point operator to null element");
             endPointRecursion();
             return;
         }
@@ -513,14 +523,16 @@ public class SymbolTableCreator implements Visitor {
         index.accept(this);
         Type arrayType = array.getType();
         Type indexType = index.getType();
-        if (arrayType != null && !ARRAY_TYPE.equals(arrayType)) {
-            error(array, "Expecting an Array, but found " + arrayType);
-        }
-        if (indexType != null && !INT.equals(indexType)) {
-            error(index, "Array indices must be integers, but found" + indexType);
-        }
         if (arrayType != null) {
+            if (arrayType == Type.WILDCARD) {
+                error(array, "Can't apply array operator to null element");
+            } else if (!ARRAY_TYPE.equals(arrayType)) {
+                error(array, "Expecting an Array, but found " + arrayType);
+            }
             node.setType(arrayType.getParameter());
+        }
+        if (indexType != null && !INT.realEquals(indexType)) {
+            error(index, "Array indices must be integers, but found " + indexType);
         }
     }
 
@@ -541,8 +553,18 @@ public class SymbolTableCreator implements Visitor {
             VariableExpressionNode ve = (VariableExpressionNode) function;
             String functionName = ve.get();
             if (OperatorOverloadConstants._ID.equals(functionName)) {
+                Type arg1 = argumentTypes.get(0);
+                Type arg2 = argumentTypes.get(1);
+                // Set correct types first so realEquals works
+                if (arg1 == Type.WILDCARD) {
+                    checkNullOnPrimitive(arg1, arg2, arguments.get(0));
+                    arguments.get(0).setType(arg2);
+                } else if (arg2 == Type.WILDCARD) {
+                    checkNullOnPrimitive(arg2, arg1, arguments.get(1));
+                    arguments.get(1).setType(arg1);
+                }
                 // Special case === - check types match (argumentTypes.size() must be 2)
-                if (!argumentTypes.get(0).realEquals(argumentTypes.get(1))) {
+                if (!arg1.realEquals(arg2)) {
                     error(node, "Identity operator === must be applied to objects of the same type, but found "
                             + argumentTypes.get(0) + " and " + argumentTypes.get(1));
                 } else {
@@ -554,6 +576,8 @@ public class SymbolTableCreator implements Visitor {
                 if (f == null) {
                     error(node, "Couldn't find function " + functionName + " applied to arguments " +
                             argumentTypes.stream().map(Type::toString).collect(Collectors.joining(", ")));
+                } else {
+                    checkNullArguments(arguments, f.parameters);
                 }
             }
         } else if (function instanceof PointExpressionNode) {
@@ -562,6 +586,11 @@ public class SymbolTableCreator implements Visitor {
             receiver.accept(this);
             Type receiverType = receiver.getType();
             if (receiverType == null) {
+                return;
+            }
+            if (receiverType == Type.WILDCARD) {
+                // Host is null so it doesn't have any fields
+                error(receiver, "Can't apply point operator to null element");
                 return;
             }
             Deque<Integer> path = symbolTable.openClassScope(receiverType);
@@ -595,12 +624,25 @@ public class SymbolTableCreator implements Visitor {
                     error(node.getLexeme() == null ? ve : node, "Couldn't find method " + functionName +
                             " in class" + receiverType + " applied to arguments " +
                             argumentTypes.stream().map(Type::toString).collect(Collectors.joining(", ")));
+                } else {
+                    checkNullArguments(arguments, f.parameters);
                 }
             }
             symbolTable.closeScope();
             symbolTable.restoreScope(path);
         } else {
             error(function, "Not callable");
+        }
+    }
+
+    private void checkNullArguments(List<ExpressionNode> found, Type[] expected) {
+        // They have to be the same length
+        for (int i = 0; i < expected.length; i++) {
+            Type f = found.get(i).getType();
+            if (f == Type.WILDCARD) {
+                checkNullOnPrimitive(f, expected[i], found.get(i));
+                found.get(i).setType(expected[i]);
+            }
         }
     }
 
@@ -628,9 +670,20 @@ public class SymbolTableCreator implements Visitor {
         }
         Type parameter = null;
         List<ExpressionNode> elements = node.getElements();
+        // Just to notify error on something if everything is null
+        ExpressionNode firstNull = null;
+        boolean allNulls = true;
         for (ExpressionNode n : elements) {
             n.accept(this);
             Type t = n.getType();
+            if (t == Type.WILDCARD) {
+                if (firstNull == null) {
+                    firstNull = n;
+                }
+                continue;
+            } else {
+                allNulls = false;
+            }
             if (t != null) {
                 if (parameter == null) {
                     parameter = t;
@@ -640,7 +693,12 @@ public class SymbolTableCreator implements Visitor {
                 }
             }
         }
-        node.setType(new Type(ARRAY, parameter));
+        if (parameter == null && allNulls && firstNull != null) {
+            error(firstNull, "Unknown type of array as all elements are null - " +
+                    "use Array<*> constructor instead");
+        } else {
+            node.setType(new Type(ARRAY, parameter));
+        }
     }
 
     @Override
@@ -679,7 +737,7 @@ public class SymbolTableCreator implements Visitor {
                 error(node, "Must give length of at least the first dimension of the array");
             } else if (argumentTypes.size() > dimensions) {
                 error(node, "Given more arguments than array dimension on Array constructor");
-            } else if (argumentTypes.stream().anyMatch(t -> !INT.equals(t))) {
+            } else if (argumentTypes.stream().anyMatch(t -> !INT.realEquals(t))) {
                 error(node, "Array constructor arguments can only be integers");
             } else {
                 // Just register, we already know the function exists
@@ -691,6 +749,8 @@ public class SymbolTableCreator implements Visitor {
                 error(node, "Couldn't find constructor of class " + type +
                         " with the following argument types: " +
                         argumentTypes.stream().map(Type::toString).collect(Collectors.joining(", ")));
+            } else {
+                checkNullArguments(node.getArguments(), f.parameters);
             }
         }
         symbolTable.closeScope();
