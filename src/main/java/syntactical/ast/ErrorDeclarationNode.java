@@ -1,11 +1,12 @@
 package syntactical.ast;
 
+import lexical.LexicalUnit;
 import syntactical.ast.visitors.Visitor;
 
 public class ErrorDeclarationNode extends DeclarationNode {
 
     public ErrorDeclarationNode(IdGenerator id) {
-        super(id, null, null);
+        super(id, new LexicalUnit("error"), new Name(new LexicalUnit("error"), Type.WILDCARD));
     }
 
     @Override

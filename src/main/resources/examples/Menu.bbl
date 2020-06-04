@@ -11,6 +11,17 @@ Bool doAction(Char action) {
     return true;
 }
 
+Char readChar() {
+    return '\0';
+}
+
+Void print(String text) {
+    /*
+        dummy function that does nothing
+        representing a print function
+    */
+}
+
 Void main() {
     Bool continue = true;
     while continue {

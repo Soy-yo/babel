@@ -23,6 +23,13 @@ Int gcd(Int a, Int b) {
     return gcd(b % a, a);
 }
 
+Void print(Int value) {
+    /*
+        dummy function that does nothing
+        representing a print function
+    */
+}
+
 Void main() {
     print(lcm(72, 54));
     print(gcd(72, 54));

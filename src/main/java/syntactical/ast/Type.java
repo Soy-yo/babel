@@ -11,7 +11,12 @@ public class Type {
 
     public static final Type WILDCARD = new Type("*");
     public static final List<Type> PRIMITIVES = Collections.unmodifiableList(Arrays.asList(
-            new Type("Int"), new Type("Real"), new Type("Bool"), new Type("Char")));
+            new Type("Int"),
+            new Type("Real"),
+            new Type("Bool"),
+            new Type("Char"),
+            new Type("Void")
+    ));
 
     private LexicalUnit name;
     private Type parameter;

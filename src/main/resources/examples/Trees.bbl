@@ -10,21 +10,21 @@ class Node {
     }
 
     Node merge(Node other) {
-         if other == null {
+         if other === null {
              return this;
          }
-         this.value += other.value;
-         this.left = this.merge(this.left, other.left);
-         this.right = this.merge(this.right, other.right);
+         value += other.value;
+         left = left.merge(other.left);
+         right = right.merge(other.right);
          return this;
     }
 
     Int value() {
-        return this.value;
+        return value;
     }
 
     Node left() {
-        return this.left;
+        return left;
     }
 
     Void setLeft(Node left) {
@@ -32,7 +32,7 @@ class Node {
     }
 
     Node right() {
-        return this.right;
+        return right;
     }
 
     Void setRight(Node right) {
@@ -50,19 +50,19 @@ class BinaryTree {
 
     constructor(Array<Int> arr) {
        for Int a in arr {
-            this.add(a);
+            add(a);
        }
     }
 
     Node addRecursive(Node current, Int value) {
-        if current == null {
+        if current === null {
             return Node(value);
         }
 
         if value < current.value() {
-            current.setLeft(this.addRecursive(current.left(), value));
+            current.setLeft(addRecursive(current.left(), value));
         } else if value > current.value() {
-            current.setRight(this.addRecursive(current.right(), value));
+            current.setRight(addRecursive(current.right(), value));
         } else {
             // value already exists
             return current;
@@ -72,23 +72,29 @@ class BinaryTree {
     }
 
     Void add(Int value) {
-        this.root = this.addRecursive(root, value);
+        root = addRecursive(root, value);
     }
 
     Int findSmallestValue() {
-        if this.root.left() == null {
+        if root.left() === null {
             return root.value();
         } else {
-            return this.findSmallestValue(root.left());
+            return BinaryTree(root.left()).findSmallestValue();
         }
     }
 
     BinaryTree _plus(BinaryTree other) {
-        return BinaryTree(this.root.merge(other.root));
+        return BinaryTree(root.merge(other.root));
     }
 
 }
 
+Void print(Int value) {
+    /*
+        dummy function that does nothing
+        representing a print function
+    */
+}
 
 Void main() {
     BinaryTree([1,2,3,4,5]) bt;

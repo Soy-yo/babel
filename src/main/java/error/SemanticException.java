@@ -4,18 +4,25 @@ import lexical.LexicalUnit;
 
 public class SemanticException extends RuntimeException {
 
+    private final String filename;
     private final LexicalUnit lexicalUnit;
 
-    public SemanticException(LexicalUnit lexicalUnit, String message, Throwable cause) {
-        super(message
+    public SemanticException(String filename, LexicalUnit lexicalUnit, String message, Throwable cause) {
+        super(filename + ":"
                 + lexicalUnit.getRow() + ":"
                 + lexicalUnit.getColumn() + ":"
-                + lexicalUnit.lexeme(), cause);
+                + lexicalUnit.lexeme() + " "
+                + message, cause);
+        this.filename = filename;
         this.lexicalUnit = lexicalUnit;
     }
 
-    public SemanticException(LexicalUnit lexicalUnit, String message) {
-        this(lexicalUnit, message, null);
+    public SemanticException(String filename, LexicalUnit lexicalUnit, String message) {
+        this(filename, lexicalUnit, message, null);
+    }
+
+    public String getFilename() {
+        return filename;
     }
 
     public LexicalUnit getLexicalUnit() {

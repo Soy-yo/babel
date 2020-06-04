@@ -5,14 +5,15 @@ import syntactical.SyntacticalAnalyser;
 import syntactical.ast.DeclarationNode;
 import syntactical.ast.ProgramNode;
 import syntactical.ast.visitors.ASTPrinter;
+import syntactical.ast.visitors.CodeGenerator;
+import syntactical.ast.visitors.SymbolTable;
+import syntactical.ast.visitors.SymbolTableCreator;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Compiler {
 
@@ -20,12 +21,14 @@ public class Compiler {
     private final String input;
     private final String workingDir;
     private final Set<File> importedFiles;
+    private final Map<DeclarationNode, String> firstNodeOfFiles;
     private boolean result;
 
     public Compiler(String input) {
         this.input = input;
         this.workingDir = Paths.get(input).getParent().toString();
         this.importedFiles = new HashSet<>(Collections.singleton(new File(input)));
+        this.firstNodeOfFiles = new IdentityHashMap<>();
         this.result = false;
     }
 
@@ -34,12 +37,15 @@ public class Compiler {
     }
 
     public boolean compile() throws Exception {
+        System.out.println("[INFO] Compiling " + input);
         LexicalAnalyser la = new LexicalAnalyser(new InputStreamReader(new FileInputStream(input)));
         SyntacticalAnalyser sa = new SyntacticalAnalyser(la);
         Symbol result = sa.parse();
         if (result != null) {
             ProgramNode program = (ProgramNode) result.value;
-            return compile(program);
+            this.result = compile(program);
+            System.out.println("[INFO] Compile process ended " + (this.result ? "successfully" : "with errors"));
+            return this.result;
         }
         return false;
     }
@@ -47,11 +53,25 @@ public class Compiler {
     private boolean compile(ProgramNode program) {
         // TODO stop at some point if result is already false
         mergeFiles(program);
+        SymbolTableCreator creator = new SymbolTableCreator(program, firstNodeOfFiles);
+        SymbolTable symbolTable = creator.create();
+        int errors = creator.errors();
         new ASTPrinter(program).print();
-        return result;
+        // If there were any error don't try to generate code
+        if (errors > 0) {
+            result = false;
+            System.err.println("[ERROR] Found " + errors + " error(s) during type checking and variable linking");
+        }
+        if (!result) {
+            return false;
+        }
+        CodeGenerator generator = new CodeGenerator(program, null);
+        // TODO generate code
+        return true;
     }
 
     private void mergeFiles(ProgramNode program) {
+        firstNodeOfFiles.put(program.root(), input);
         boolean first = true;
         DeclarationNode insertionPoint = null;
         for (LexicalUnit lu : program.importedFiles()) {
@@ -64,6 +84,7 @@ public class Compiler {
                 if (importedFiles.contains(fileObj)) {
                     continue;
                 }
+                System.out.println("[INFO] Compiling " + file);
                 LexicalAnalyser la = new LexicalAnalyser(new InputStreamReader(new FileInputStream(fileObj)));
                 SyntacticalAnalyser sa = new SyntacticalAnalyser(la);
                 Symbol parsedLib = sa.parse();
@@ -72,6 +93,7 @@ public class Compiler {
                 }
                 importedFiles.add(fileObj);
                 ProgramNode library = (ProgramNode) parsedLib.value;
+                firstNodeOfFiles.put(library.root(), fileObj.toString());
                 // Recursively merging files
                 mergeFiles(library);
                 DeclarationNode libraryRoot = library.root();
@@ -84,6 +106,7 @@ public class Compiler {
                     insertionPoint.unlinked().linkedTo(libraryRoot);
                     insertionPoint = getLast(libraryRoot).linkedTo(next);
                 }
+                System.out.println("[INFO] Ended compiling " + file);
             } catch (Exception e) {
                 System.err.println("[ERROR] imported file " + file + " contains errors: " + e.getMessage());
                 result = false;
@@ -116,6 +139,8 @@ public class Compiler {
             } else {
                 // TODO message
             }
+        } catch (NullPointerException e) {
+            e.printStackTrace();
         } catch (Exception e) {
             System.err.println("[ERROR] " + e.getMessage());
         }

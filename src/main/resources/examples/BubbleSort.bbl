@@ -22,6 +22,19 @@ Void printArray(Array<Int> arr) {
     print('\n');
 }
 
+Void print(Char c) {
+    /*
+        dummy function that does nothing
+        representing a print function
+    */
+}
+
+Void print(Int n) {
+    /*
+        dummy function that does nothing
+        representing a print function
+    */
+}
 
 Void main() {
     Array<Int> arr = [64, 34, 25, 12, 22, 11, 90];

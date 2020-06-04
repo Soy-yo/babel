@@ -296,6 +296,7 @@ public class ASTPrinter implements Visitor {
     public void visit(PointExpressionNode node) {
         println("point operator expression");
         indent(!listing);
+        println("type: " + node.getType());
         println("left hand side");
         indent();
         lastChild();
@@ -314,6 +315,7 @@ public class ASTPrinter implements Visitor {
     public void visit(ArrayAccessExpressionNode node) {
         println("array access operator expression");
         indent(!listing);
+        println("type: " + node.getType());
         println("array");
         indent();
         lastChild();
@@ -332,6 +334,7 @@ public class ASTPrinter implements Visitor {
     public void visit(FunctionCallExpressionNode node) {
         println("function call expression");
         indent(!listing);
+        println("type: " + node.getType());
         println("function");
         indent();
         lastChild();
@@ -351,7 +354,7 @@ public class ASTPrinter implements Visitor {
 
     @Override
     public void visit(VariableExpressionNode node) {
-        println("variable expression: " + node.get());
+        println("variable expression: " + node.get() + " - " + node.getType());
     }
 
     @Override

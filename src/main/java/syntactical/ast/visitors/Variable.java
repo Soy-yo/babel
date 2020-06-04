@@ -35,4 +35,10 @@ public class Variable {
     public int hashCode() {
         return Objects.hash(name, type);
     }
+
+    @Override
+    public String toString() {
+        return (isConst ? "Constant" : "Variable") + " @" + id + " - " + name + ": " + type;
+    }
+
 }

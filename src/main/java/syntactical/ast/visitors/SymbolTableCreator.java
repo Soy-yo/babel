@@ -37,7 +37,9 @@ public class SymbolTableCreator implements Visitor {
     private static final int OFFSET = 15;
 
     private final ProgramNode root;
+    private final Map<DeclarationNode, String> fileErrorHandling;
     private final SymbolTable symbolTable;
+    private String currentFile;
     private String currentClass;
     private Type currentFunctionType;
     private Deque<Integer> pointRecPath;
@@ -45,11 +47,11 @@ public class SymbolTableCreator implements Visitor {
 
     private int errors;
 
-    // TODO add a map (first declaration node of file -> filename) so we can show which file contains errors
-
-    public SymbolTableCreator(ProgramNode root) {
+    public SymbolTableCreator(ProgramNode root, Map<DeclarationNode, String> fileErrorHandling) {
         this.root = root;
+        this.fileErrorHandling = fileErrorHandling;
         this.symbolTable = new SymbolTable();
+        this.currentFile = null;
         this.currentClass = null;
         this.currentFunctionType = null;
         this.pointRecPath = null;
@@ -69,7 +71,7 @@ public class SymbolTableCreator implements Visitor {
         addVoid();
         addArrays();
         addStrings();
-        SymbolTableInitializer initializer = new SymbolTableInitializer(root, symbolTable);
+        SymbolTableInitializer initializer = new SymbolTableInitializer(root, symbolTable, fileErrorHandling);
         errors = initializer.start();
     }
 
@@ -166,9 +168,17 @@ public class SymbolTableCreator implements Visitor {
         return symbolTable;
     }
 
+    public int errors() {
+        return errors;
+    }
+
     @Override
     public void visit(ProgramNode node) {
         for (DeclarationNode n : node.root()) {
+            // Update current file if this node is the first node of that file
+            if (fileErrorHandling.containsKey(n)) {
+                currentFile = fileErrorHandling.get(n);
+            }
             n.accept(this);
         }
     }
@@ -197,8 +207,7 @@ public class SymbolTableCreator implements Visitor {
     public void visit(FunctionDeclarationNode node) {
         BlockStatementNode block = node.getCode();
         // Create block here to add all parameters to scope
-        symbolTable.openScope(node.getId());
-        currentFunctionType = node.getType();
+        symbolTable.openScope(block.getId());
         if (currentClass != null) {
             // TODO make sure it's safe to set class id for "this"
             int thisId = symbolTable.getCurrentScopeId();
@@ -207,9 +216,10 @@ public class SymbolTableCreator implements Visitor {
         for (VarDeclarationNode param : node.getParameters()) {
             symbolTable.putVariable(param.getId(), param.getIdentifier(), param.getType());
         }
-        currentFunctionType = null;
         symbolTable.closeScope();
+        currentFunctionType = node.getType();
         block.accept(this);
+        currentFunctionType = null;
     }
 
     @Override
@@ -233,8 +243,10 @@ public class SymbolTableCreator implements Visitor {
     @Override
     public void visit(BlockStatementNode node) {
         symbolTable.openScope(node.getId());
-        for (StatementNode n : node) {
-            n.accept(this);
+        if (node.root() != null) {
+            for (StatementNode n : node.root()) {
+                n.accept(this);
+            }
         }
         symbolTable.closeScope();
     }
@@ -285,7 +297,7 @@ public class SymbolTableCreator implements Visitor {
         switch (method) {
             case NONE: {
                 ExpressionNode target = node.getTarget();
-                Variable v = symbolTable.getVariable(target.getId());
+                Variable v = symbolTable.getVariableById(target.getId());
                 if (v != null && v.isConst) {
                     error(target, "Trying to assign a value to a constant variable");
                 }
@@ -293,7 +305,7 @@ public class SymbolTableCreator implements Visitor {
             break;
             case FIELD: {
                 VariableExpressionNode field = ((PointExpressionNode) designable).getField();
-                Variable v = symbolTable.getVariable(field.getId());
+                Variable v = symbolTable.getVariableById(field.getId());
                 if (v != null && v.isConst) {
                     error(designable, "Trying to assign a value to a constant field");
                 }
@@ -363,17 +375,18 @@ public class SymbolTableCreator implements Visitor {
             ConstantExpressionNode key = e.getKey();
             key.accept(this);
             Type t = key.getType();
-            if (DEFAULT.realEquals(key.getType())) {
+            if (t == Type.WILDCARD) {
+                error(key, "null is not a valid key for a switch statement");
+            } else if (DEFAULT.realEquals(t)) {
                 // Underscore: sets target's type
                 key.setType(type);
                 if (!seen.add(null)) {
                     error(key, "Repeated switch branch");
                 }
+            } else if (type != null && !type.realEquals(t)) {
+                error(key, "Expected " + type + ", but found " + t);
             } else if (!seen.add(key.getValue())) {
                 error(key, "Repeated switch branch");
-            }
-            if (type != null && !type.realEquals(t)) {
-                error(key, "Expected " + type + ", but found " + t);
             }
             e.getValue().accept(this);
         }
@@ -407,7 +420,7 @@ public class SymbolTableCreator implements Visitor {
             if (found == Type.WILDCARD) {
                 error(iterable, "null is not iterable");
             } else if (!found.equals(ARRAY_TYPE) || !type.equals(found.getParameter())) {
-                error(iterable, "Expected " + type + ", but found " + found);
+                error(iterable, "Expected " + ARRAY + "<" + type + ">, but found " + found);
             }
         }
         block.accept(this);
@@ -445,7 +458,7 @@ public class SymbolTableCreator implements Visitor {
         if (FORM.equals(hostType)) {
             if (host instanceof VariableExpressionNode) {
                 // Variables don't get inside the scope
-                pointRecPath = symbolTable.openPreviousScope(symbolTable.getVariable(host.getId()).id);
+                pointRecPath = symbolTable.openPreviousScope(symbolTable.getVariableById(host.getId()).id);
                 pointRecDepth = 1;
             }
             Variable v = symbolTable.getVariableHere(fieldName, field.getId());
@@ -474,6 +487,7 @@ public class SymbolTableCreator implements Visitor {
                     // And then return again to where we were at the beginning
                     symbolTable.closeScope();
                     symbolTable.restoreScope(arrayPath);
+                    field.setType(INT);
                     node.setType(INT);
                 } else {
                     error(field, "Class " + hostType + " does not have field " + fieldName);
@@ -508,6 +522,9 @@ public class SymbolTableCreator implements Visitor {
     }
 
     private void endPointRecursion() {
+        if (pointRecPath == null) {
+            return;
+        }
         while (pointRecDepth > 0) {
             symbolTable.closeScope();
             pointRecDepth--;
@@ -559,9 +576,11 @@ public class SymbolTableCreator implements Visitor {
                 if (arg1 == Type.WILDCARD) {
                     checkNullOnPrimitive(arg1, arg2, arguments.get(0));
                     arguments.get(0).setType(arg2);
+                    arg1 = arg2;
                 } else if (arg2 == Type.WILDCARD) {
                     checkNullOnPrimitive(arg2, arg1, arguments.get(1));
                     arguments.get(1).setType(arg1);
+                    arg2 = arg1;
                 }
                 // Special case === - check types match (argumentTypes.size() must be 2)
                 if (!arg1.realEquals(arg2)) {
@@ -570,14 +589,18 @@ public class SymbolTableCreator implements Visitor {
                 } else {
                     // Just register
                     symbolTable.getFunction(functionName, argumentTypes, node.getId());
+                    ve.setType(BOOL);
+                    node.setType(BOOL);
                 }
             } else {
                 Function f = symbolTable.getFunction(ve.get(), argumentTypes, node.getId());
                 if (f == null) {
-                    error(node, "Couldn't find function " + functionName + " applied to arguments " +
+                    error(ve, "Couldn't find function " + functionName + " applied to arguments " +
                             argumentTypes.stream().map(Type::toString).collect(Collectors.joining(", ")));
                 } else {
                     checkNullArguments(arguments, f.parameters);
+                    ve.setType(f.returnType);
+                    node.setType(f.returnType);
                 }
             }
         } else if (function instanceof PointExpressionNode) {
@@ -613,6 +636,9 @@ public class SymbolTableCreator implements Visitor {
                     } else {
                         // Ignore result as we already know which function it is
                         symbolTable.getFunctionHere(functionName, argumentTypes, node.getId());
+                        ve.setType(BOOL);
+                        pe.setType(BOOL);
+                        node.setType(BOOL);
                     }
                 } else {
                     error(node.getLexeme() == null ? ve : node,
@@ -622,10 +648,13 @@ public class SymbolTableCreator implements Visitor {
                 Function f = symbolTable.getFunctionHere(functionName, argumentTypes, node.getId());
                 if (f == null) {
                     error(node.getLexeme() == null ? ve : node, "Couldn't find method " + functionName +
-                            " in class" + receiverType + " applied to arguments " +
+                            " in class " + receiverType + " applied to arguments " +
                             argumentTypes.stream().map(Type::toString).collect(Collectors.joining(", ")));
                 } else {
                     checkNullArguments(arguments, f.parameters);
+                    ve.setType(f.returnType);
+                    pe.setType(f.returnType);
+                    node.setType(f.returnType);
                 }
             }
             symbolTable.closeScope();
@@ -680,6 +709,10 @@ public class SymbolTableCreator implements Visitor {
                 if (firstNull == null) {
                     firstNull = n;
                 }
+                if (parameter != null) {
+                    checkNullOnPrimitive(t, parameter, n);
+                    n.setType(parameter);
+                }
                 continue;
             } else {
                 allNulls = false;
@@ -697,6 +730,13 @@ public class SymbolTableCreator implements Visitor {
             error(firstNull, "Unknown type of array as all elements are null - " +
                     "use Array<*> constructor instead");
         } else {
+            // Finally check any pending null
+            for (ExpressionNode n : elements) {
+                if (n.getType() == Type.WILDCARD) {
+                    checkNullOnPrimitive(n.getType(), parameter, n);
+                    n.setType(parameter);
+                }
+            }
             node.setType(new Type(ARRAY, parameter));
         }
     }
@@ -774,7 +814,7 @@ public class SymbolTableCreator implements Visitor {
 
     private void error(ASTNode node, String message) {
         errors++;
-        SemanticException error = new SemanticException(node.getLexeme(), message);
+        SemanticException error = new SemanticException(currentFile, node.getLexeme(), message);
         System.err.println("[ERROR] " + error.getMessage());
     }
 

@@ -23,11 +23,7 @@ public class SymbolTable {
         return currentScope.blockId;
     }
 
-    public String getCurrentScopeName() {
-        return currentScope.name;
-    }
-
-    public Variable getVariable(int id) {
+    public Variable getVariableById(int id) {
         return variableRelations.get(id);
     }
 
@@ -56,7 +52,7 @@ public class SymbolTable {
         return result;
     }
 
-    public Function getFunction(int id) {
+    public Function getFunctionById(int id) {
         return functionRelations.get(id);
     }
 
@@ -128,6 +124,7 @@ public class SymbolTable {
             restoreScope(result);
             return null;
         }
+        openScope(id);
         return result;
     }
 
@@ -162,23 +159,17 @@ public class SymbolTable {
     private static class Scope {
 
         final int blockId;
-        final String name;
         final Map<String, Variable> variableTable;
         final Map<Func, Function> functionTable;
         final Map<Integer, Scope> scopes;
         final Scope parent;
 
-        private Scope(int blockId, String name, Scope parent) {
+        private Scope(int blockId, Scope parent) {
             this.blockId = blockId;
-            this.name = name;
             this.variableTable = new HashMap<>();
             this.functionTable = new HashMap<>();
             this.scopes = new HashMap<>();
             this.parent = parent;
-        }
-
-        private Scope(int blockId, Scope parent) {
-            this(blockId, null, parent);
         }
 
     }

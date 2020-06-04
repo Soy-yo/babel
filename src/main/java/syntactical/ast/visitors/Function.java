@@ -4,6 +4,7 @@ import syntactical.ast.Type;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Function {
 
@@ -38,6 +39,13 @@ public class Function {
         int result = Objects.hash(name, returnType);
         result = 31 * result + Arrays.hashCode(parameters);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Function @" + id + " - " + name + "(" +
+                Arrays.stream(parameters).map(Type::toString).collect(Collectors.joining(", "))
+                + "): " + returnType;
     }
 
 }

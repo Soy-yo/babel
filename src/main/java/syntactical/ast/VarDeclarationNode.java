@@ -10,7 +10,17 @@ public class VarDeclarationNode extends DeclarationNode {
 
     public VarDeclarationNode(IdGenerator id, Name name, ExpressionNode initialValue, boolean isConst) {
         super(id, name.getIdentifierLexicalUnit(), name);
-        this.initialValue = initialValue;
+        if (initialValue == null) {
+            // Variable not initialized so it is null or 0 for primitive types
+            if (!name.getType().isPrimitive()) {
+                this.initialValue = ConstantExpressionNode.ofNull(id, new LexicalUnit("[no initial value set]"));
+            } else {
+                this.initialValue = new ConstantExpressionNode(id, new LexicalUnit("[no initial value set]"),
+                        0, name.getType());
+            }
+        } else {
+            this.initialValue = initialValue;
+        }
         this.isConst = isConst;
     }
 

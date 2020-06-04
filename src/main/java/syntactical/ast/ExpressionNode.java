@@ -4,11 +4,14 @@ import lexical.LexicalUnit;
 
 public abstract class ExpressionNode extends ASTNode {
 
+    private static final Type STRING = new Type("String");
+    private static final Type CHAR_ARRAY = new Type("Array", new Type("Char"));
+
     protected Type type;
 
     public ExpressionNode(IdGenerator id, LexicalUnit lexeme, Type type) {
         super(id, lexeme);
-        this.type = type;
+        this.type = type != null && type.realEquals(STRING) ? CHAR_ARRAY : type;
     }
 
     public ExpressionNode(IdGenerator id, Type type) {

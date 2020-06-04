@@ -6,16 +6,25 @@ import syntactical.ast.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SymbolTableInitializer implements Visitor {
 
     private final ProgramNode root;
     private final SymbolTable symbolTable;
+    private final Map<DeclarationNode, String> fileErrorHandling;
+    private String currentFile;
+    private String currentClass;
     private int errors;
 
-    protected SymbolTableInitializer(ProgramNode root, SymbolTable symbolTable) {
+    protected SymbolTableInitializer(ProgramNode root,
+                                     SymbolTable symbolTable,
+                                     Map<DeclarationNode, String> fileErrorHandling) {
         this.root = root;
         this.symbolTable = symbolTable;
+        this.fileErrorHandling = fileErrorHandling;
+        this.currentFile = null;
+        this.currentClass = null;
         this.errors = 0;
     }
 
@@ -27,6 +36,10 @@ public class SymbolTableInitializer implements Visitor {
     @Override
     public void visit(ProgramNode node) {
         for (DeclarationNode n : node.root()) {
+            // Update current file if this node is the first node of that file
+            if (fileErrorHandling.containsKey(n)) {
+                currentFile = fileErrorHandling.get(n);
+            }
             n.accept(this);
         }
     }
@@ -85,7 +98,7 @@ public class SymbolTableInitializer implements Visitor {
 
     @Override
     public void visit(ConstructorDeclarationNode node) {
-        Type type = new Type(symbolTable.getCurrentScopeName());
+        Type type = new Type(currentClass);
         node.setType(type);
         visit((FunctionDeclarationNode) node);
     }
@@ -97,11 +110,13 @@ public class SymbolTableInitializer implements Visitor {
             error(node, "Class already defined");
         }
         symbolTable.createClassScope(node.getId(), type);
+        currentClass = type.getName();
         if (node.getContentRoot() != null) {
             for (DeclarationNode n : node.getContentRoot()) {
                 n.accept(this);
             }
         }
+        currentClass = null;
         symbolTable.closeScope();
     }
 
@@ -210,8 +225,7 @@ public class SymbolTableInitializer implements Visitor {
     }
 
     private boolean checkOperatorOverloading(String functionName, List<Type> parameterTypes, Type returnType) {
-        String className = symbolTable.getCurrentScopeName();
-        if (className == null) {
+        if (currentClass == null) {
             return true;
         }
         switch (functionName) {
@@ -221,19 +235,19 @@ public class SymbolTableInitializer implements Visitor {
             case OperatorOverloadConstants._LE:
             case OperatorOverloadConstants._LT:
             case OperatorOverloadConstants._EQUALS:
-                return parameterTypes.size() != 1 || className.equals(parameterTypes.get(0).getName()) &&
+                return parameterTypes.size() != 1 || currentClass.equals(parameterTypes.get(0).getName()) &&
                         SymbolTableCreator.BOOL.equals(returnType);
             // if 1 param then it is of the same type as this and returns Array<[type of this]>
             case OperatorOverloadConstants._TO:
-                return parameterTypes.size() != 1 || className.equals(parameterTypes.get(0).getName()) &&
-                        new Type(SymbolTableCreator.ARRAY, new Type(className)).equals(returnType);
+                return parameterTypes.size() != 1 || currentClass.equals(parameterTypes.get(0).getName()) &&
+                        new Type(SymbolTableCreator.ARRAY, new Type(currentClass)).equals(returnType);
         }
         return true;
     }
 
     private void error(ASTNode node, String message) {
         errors++;
-        SemanticException error = new SemanticException(node.getLexeme(), message);
+        SemanticException error = new SemanticException(currentFile, node.getLexeme(), message);
         System.err.println("[ERROR] " + error.getMessage());
     }
 
