@@ -42,6 +42,7 @@ public class SymbolTableCreator implements Visitor {
     private String currentFile;
     private String currentClass;
     private Type currentFunctionType;
+    private int currentFormDepth;
     private Deque<Integer> pointRecPath;
     private int pointRecDepth;
 
@@ -54,6 +55,7 @@ public class SymbolTableCreator implements Visitor {
         this.currentFile = null;
         this.currentClass = null;
         this.currentFunctionType = null;
+        this.currentFormDepth = 0;
         this.pointRecPath = null;
         this.pointRecDepth = 0;
         initializeTable();
@@ -185,21 +187,37 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(VarDeclarationNode node) {
-        // TODO can't completely ignore Forms here as their fields' initial values has not been yet checked !!
-        // probably make a separate method just for this instead of using the regular visit method of the visitor
-        // Form initial values should have already been checked
-        if (!FORM.equals(node.getType()) && node.getInitialValue() != null) {
-            ExpressionNode initialValue = node.getInitialValue();
-            initialValue.accept(this);
-            Type found = initialValue.getType();
-            Type expected = node.getType();
-            // If initial value was null set its type to the correct one
-            if (found == Type.WILDCARD) {
-                checkNullOnPrimitive(found, expected, initialValue);
-                initialValue.setType(expected);
-            } else if (found != null && !expected.realEquals(found)) {
-                error(initialValue, "Expected " + expected + ", but found " + found);
+        Type type = node.getType();
+        ExpressionNode initialValue = node.getInitialValue();
+        if (initialValue != null) {
+            if (FORM.equals(type)) {
+                if (initialValue instanceof AnonymousObjectConstructorExpressionNode) {
+                    symbolTable.openScope(node.getId());
+                    globalFormVisit((AnonymousObjectConstructorExpressionNode) initialValue);
+                    symbolTable.closeScope();
+                }
+            } else {
+                initialValue.accept(this);
+                Type found = initialValue.getType();
+                // If initial value was null set its type to the correct one
+                if (found == Type.WILDCARD) {
+                    checkNullOnPrimitive(found, type, initialValue);
+                    initialValue.setType(type);
+                } else if (found != null && !type.realEquals(found)) {
+                    error(initialValue, "Expected " + type + ", but found " + found);
+                }
             }
+        }
+    }
+
+    private void globalFormVisit(AnonymousObjectConstructorExpressionNode node) {
+        // Same as normal visit but it uses the Declaration method that doesn't put variables into symbol table
+        if (node.getFields() != null) {
+            currentFormDepth++;
+            for (DeclarationNode n : node.getFields()) {
+                n.accept(this);
+            }
+            currentFormDepth--;
         }
     }
 
@@ -262,17 +280,16 @@ public class SymbolTableCreator implements Visitor {
                 error(node, "Arrays of Forms not allowed");
             }
         }
-        if (!symbolTable.putVariable(declaration.getId(), declaration.getIdentifier(), type, declaration.isConst())) {
-            error(node, "Variable already defined in this scope");
-        }
         ExpressionNode initialValue = declaration.getInitialValue();
         if (FORM.equals(type)) {
             // Generate scope for object definition
+            symbolTable.openScope(node.getId());
             if (initialValue instanceof AnonymousObjectConstructorExpressionNode) {
                 initialValue.accept(this);
             } else {
-                error(initialValue, "Expected an anonymous object definition");
+                error(node, "Expected an anonymous object definition");
             }
+            symbolTable.closeScope();
         } else {
             initialValue.accept(this);
             Type found = initialValue.getType();
@@ -282,6 +299,10 @@ public class SymbolTableCreator implements Visitor {
             } else if (found != null && !type.realEquals(found)) {
                 error(initialValue, "Expected " + type + ", but found " + found);
             }
+        }
+        // Put variable at the end so it cannot be used inside the initialization
+        if (!symbolTable.putVariable(declaration.getId(), declaration.getIdentifier(), type, declaration.isConst())) {
+            error(node, "Variable already defined in this scope");
         }
     }
 
@@ -678,12 +699,26 @@ public class SymbolTableCreator implements Visitor {
     @Override
     public void visit(VariableExpressionNode node) {
         String name = node.get();
+        Deque<Integer> path = closeForm();
         Variable variable = symbolTable.getVariable(name, node.getId());
         if (variable == null) {
             error(node, "Undefined variable");
         } else {
             node.setType(variable.type);
         }
+        // Restore Form info
+        currentFormDepth = path.size();
+        symbolTable.restoreScope(path);
+    }
+
+    private Deque<Integer> closeForm() {
+        Deque<Integer> stack = new ArrayDeque<>();
+        while (currentFormDepth > 0) {
+            stack.push(symbolTable.getCurrentScopeId());
+            symbolTable.closeScope();
+            currentFormDepth--;
+        }
+        return stack;
     }
 
     @Override
@@ -743,11 +778,15 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(AnonymousObjectConstructorExpressionNode node) {
-        symbolTable.openScope(node.getId());
-        for (DeclarationNode n : node.getFields()) {
-            n.accept(this);
+        // Scope must already be open
+        if (node.getFields() != null) {
+            currentFormDepth++;
+            for (DeclarationNode n : node.getFields()) {
+                // Use Statement method as it's the one that adds variables to symbol table
+                ((VarDeclarationNode) n).asStatement().accept(this);
+            }
+            currentFormDepth--;
         }
-        symbolTable.closeScope();
     }
 
     @Override

@@ -17,11 +17,34 @@ Void main() {
 
     print(teacher == student);
     Form origin = { Int x = 0, Int y = 0 };
-    print(student == point);
+    print(student == origin);
 
     Form tree = {
         Form left = { Form left = {}, Int value = 0, Form right = {} },
         Int value = 3,
         Form right = { Form left = {}, Int value = 5, Form right = {} }
     };
+
+    Int sum = tree.value + tree.left.value + tree.right.value;
+}
+
+Void print(String text) {
+    /*
+        dummy function that does nothing
+        representing a print function
+    */
+}
+
+Void print(Int n) {
+    /*
+        dummy function that does nothing
+        representing a print function
+    */
+}
+
+Void print(Bool b) {
+    /*
+        dummy function that does nothing
+        representing a print function
+    */
 }

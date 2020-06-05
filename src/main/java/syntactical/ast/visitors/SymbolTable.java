@@ -6,6 +6,8 @@ import java.util.*;
 
 public class SymbolTable {
 
+    private static final int GLOBAL_SCOPE_ID = -1;
+
     // Only global classes allowed
     private final Map<Type, Integer> classTable;
     private final Map<Integer, Variable> variableRelations;
@@ -16,7 +18,11 @@ public class SymbolTable {
         this.classTable = new HashMap<>();
         this.variableRelations = new HashMap<>();
         this.functionRelations = new HashMap<>();
-        this.currentScope = new Scope(-1, null);
+        this.currentScope = new Scope(GLOBAL_SCOPE_ID, null);
+    }
+
+    public boolean inGlobalScope() {
+        return currentScope.blockId == GLOBAL_SCOPE_ID;
     }
 
     public int getCurrentScopeId() {

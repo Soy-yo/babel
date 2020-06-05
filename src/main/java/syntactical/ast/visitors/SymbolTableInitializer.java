@@ -15,6 +15,8 @@ public class SymbolTableInitializer implements Visitor {
     private final Map<DeclarationNode, String> fileErrorHandling;
     private String currentFile;
     private String currentClass;
+    private String currentFormName;
+    private String currentVarName;
     private int errors;
 
     protected SymbolTableInitializer(ProgramNode root,
@@ -25,6 +27,8 @@ public class SymbolTableInitializer implements Visitor {
         this.fileErrorHandling = fileErrorHandling;
         this.currentFile = null;
         this.currentClass = null;
+        this.currentFormName = null;
+        this.currentVarName = null;
         this.errors = 0;
     }
 
@@ -54,18 +58,33 @@ public class SymbolTableInitializer implements Visitor {
                 error(node, "Arrays of Forms not allowed");
             }
         }
-        if (!symbolTable.putVariable(node.getId(), node.getIdentifier(), type, node.isConst())) {
-            error(node, "Variable already defined in this scope");
-        }
+        ExpressionNode initialValue = node.getInitialValue();
         // Generate scope for object definition
         if (SymbolTableCreator.FORM.equals(type)) {
-            ExpressionNode initialValue = node.getInitialValue();
+            symbolTable.openScope(node.getId());
             if (initialValue instanceof AnonymousObjectConstructorExpressionNode) {
-                initialValue.accept(this);
+                // "Recursive" definitions are valid if we are in a class
+                if (currentClass == null && symbolTable.inGlobalScope()) {
+                    currentFormName = node.getIdentifier();
+                    initialValue.accept(this);
+                    currentFormName = null;
+                } else {
+                    currentVarName = node.getIdentifier();
+                    initialValue.accept(this);
+                    currentVarName = null;
+                }
             } else {
-                ASTNode errorReceiver = initialValue == null ? node : initialValue;
-                error(errorReceiver, "Expected an anonymous object definition");
+                error(node, "Expected an anonymous object definition");
             }
+            symbolTable.closeScope();
+        } else {
+            // Just to make sure there aren't any recursive initializations
+            currentVarName = node.getIdentifier();
+            initialValue.accept(this);
+            currentVarName = null;
+        }
+        if (!symbolTable.putVariable(node.getId(), node.getIdentifier(), type, node.isConst())) {
+            error(node, "Variable already defined in this scope");
         }
     }
 
@@ -167,46 +186,62 @@ public class SymbolTableInitializer implements Visitor {
 
     @Override
     public void visit(PointExpressionNode node) {
-        throw new UnsupportedOperationException();
+        node.getHost().accept(this);
     }
 
     @Override
     public void visit(ArrayAccessExpressionNode node) {
-        throw new UnsupportedOperationException();
+        node.getArray().accept(this);
+        node.getIndex().accept(this);
     }
 
     @Override
     public void visit(FunctionCallExpressionNode node) {
-        throw new UnsupportedOperationException();
+        ExpressionNode function = node.getFunction();
+        if (function instanceof PointExpressionNode) {
+            // Only check receiver as field (or just function name) is not a global variable
+            ((PointExpressionNode) function).getHost().accept(this);
+        }
+        for (ExpressionNode n : node.getArguments()) {
+            n.accept(this);
+        }
     }
 
     @Override
     public void visit(VariableExpressionNode node) {
-        throw new UnsupportedOperationException();
+        if (currentFormName != null && currentFormName.equals(node.get())
+                || currentVarName != null && currentVarName.equals(node.get())) {
+            error(node, "Recursive initialization of variable " + node.get());
+        }
     }
 
     @Override
     public void visit(ConstantExpressionNode node) {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public void visit(ListConstructorExpressionNode node) {
-        throw new UnsupportedOperationException();
+        for (ExpressionNode n : node.getElements()) {
+            n.accept(this);
+        }
     }
 
     @Override
     public void visit(AnonymousObjectConstructorExpressionNode node) {
-        symbolTable.openScope(node.getId());
-        for (DeclarationNode n : node.getFields()) {
-            n.accept(this);
+        // Scope must already be open
+        if (node.getFields() != null) {
+            for (DeclarationNode n : node.getFields()) {
+                n.accept(this);
+            }
         }
-        symbolTable.closeScope();
     }
 
     @Override
     public void visit(ConstructorCallExpressionNode node) {
-        throw new UnsupportedOperationException();
+        for (ExpressionNode n : node.getArguments()) {
+            n.accept(this);
+        }
     }
 
     @Override
