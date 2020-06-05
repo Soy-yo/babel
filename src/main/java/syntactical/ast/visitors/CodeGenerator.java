@@ -59,7 +59,10 @@ public class CodeGenerator implements Visitor {
 
   @Override
   public void visit(AssignmentStatementNode node) {
-
+    node.getTarget().accept(this);
+    node.getValue().accept(this);
+    Type type = node.getTarget().getType();
+    issue("sto " + convertType(type) + ';');
   }
 
   @Override
@@ -69,7 +72,8 @@ public class CodeGenerator implements Visitor {
 
   @Override
   public void visit(ReturnStatementNode node) {
-
+    Type type = node.getReturnExpression().getType();
+    issue("lod " + convertType(type) + " 0 0;");
   }
 
   @Override
@@ -301,10 +305,16 @@ public class CodeGenerator implements Visitor {
     }
   }
 
-  private void assignation(String left, String right, char type) {
-    issue(left + ';');
-    issue(right + ';');
-    issue("sto " + type + ';');
+  private char convertType(Type type) {
+    switch (type.getName()) {
+      case "Int":
+        return 'i';
+      case "Bool":
+        return 'b';
+      case "Real":
+        return 'r';
+    }
+    return 'a';
   }
 
   private void issue(String instruction) {
