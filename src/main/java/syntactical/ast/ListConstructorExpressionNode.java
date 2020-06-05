@@ -34,16 +34,12 @@ public class ListConstructorExpressionNode extends ExpressionNode {
         this(id, lexeme, elements, true, null);
     }
 
-    public ListConstructorExpressionNode(IdGenerator id, List<ExpressionNode> elements) {
-        this(id, null, elements);
+    public ListConstructorExpressionNode(IdGenerator id, LexicalUnit lexeme, Type type) {
+        this(id, lexeme, new ArrayList<>(), false, new Type(ARRAY, type));
     }
 
     public ListConstructorExpressionNode(IdGenerator id, LexicalUnit lexeme) {
         this(id, lexeme, new ArrayList<>(), false, null);
-    }
-
-    public ListConstructorExpressionNode(IdGenerator id, Type type) {
-        this(id, null, new ArrayList<>(), false, new Type(ARRAY, type));
     }
 
     public static ListConstructorExpressionNode fromString(IdGenerator id, LexicalUnit lexeme) {

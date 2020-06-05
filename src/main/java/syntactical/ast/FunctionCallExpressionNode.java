@@ -23,7 +23,7 @@ public class FunctionCallExpressionNode extends ExpressionNode {
     }
 
     public FunctionCallExpressionNode(IdGenerator id, ExpressionNode function, Collection<ExpressionNode> arguments) {
-        this(id, null, function, arguments);
+        this(id, function.lexeme, function, arguments);
     }
 
     public static FunctionCallExpressionNode operator(

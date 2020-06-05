@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public class SymbolTableCreator implements Visitor {
 
-    // TODO probably move some of this constants to another class (yes, definitely)
+    // TODO probably move some of this constants to another class (yes, definitely) <- move to Defaults class ??
     protected static final Type FORM = new Type("Form");
     protected static final Type INT = new Type("Int");
     protected static final Type REAL = new Type("Real");
@@ -22,19 +22,6 @@ public class SymbolTableCreator implements Visitor {
     protected static final Type ARRAY_TYPE = new Type(ARRAY, Type.WILDCARD);
     protected static final String THIS = "this";
     protected static final String ARRAY_SIZE = "size";
-
-    protected static final int IDENTITY_OP_ID = 0;
-
-    private static final int INT_ID = 0;
-    private static final int REAL_ID = 1;
-    private static final int BOOL_ID = 2;
-    private static final int CHAR_ID = 3;
-    private static final int VOID_ID = 4;
-    private static final int FORM_ID = 5;
-    private static final int ARRAY_ID = 6;
-    private static final int STRING_ID = 7;
-
-    private static final int OFFSET = 15;
 
     private final ProgramNode root;
     private final Map<DeclarationNode, String> fileErrorHandling;
@@ -63,7 +50,7 @@ public class SymbolTableCreator implements Visitor {
 
     private void initializeTable() {
         // _ID(T x, S y) = dir(x) == dir(y) <- we can ignore types here
-        symbolTable.putFunction(IDENTITY_OP_ID, OperatorOverloadConstants._ID,
+        symbolTable.putFunction(Defaults.IDENTITY_ID, OperatorOverloadConstants._ID,
                 Arrays.asList(Type.WILDCARD, Type.WILDCARD), BOOL);
         addIntegers();
         addForms();
@@ -79,89 +66,89 @@ public class SymbolTableCreator implements Visitor {
 
     public void addIntegers() {
         // +1 for identity operator
-        symbolTable.createClassScope(INT_ID * OFFSET + 1, INT);
+        symbolTable.createClassScope(Defaults.Int.ID, INT);
         List<Type> params = Collections.singletonList(INT);
-        symbolTable.putFunction(INT_ID * OFFSET + 2, OperatorOverloadConstants._PLUS, params, INT);
-        symbolTable.putFunction(INT_ID * OFFSET + 3, OperatorOverloadConstants._MINUS, params, INT);
-        symbolTable.putFunction(INT_ID * OFFSET + 4, OperatorOverloadConstants._MULT, params, INT);
-        symbolTable.putFunction(INT_ID * OFFSET + 5, OperatorOverloadConstants._DIV, params, INT);
-        symbolTable.putFunction(INT_ID * OFFSET + 6, OperatorOverloadConstants._MOD, params, INT);
-        symbolTable.putFunction(INT_ID * OFFSET + 7, OperatorOverloadConstants._GE, params, BOOL);
-        symbolTable.putFunction(INT_ID * OFFSET + 8, OperatorOverloadConstants._GT, params, BOOL);
-        symbolTable.putFunction(INT_ID * OFFSET + 9, OperatorOverloadConstants._LE, params, BOOL);
-        symbolTable.putFunction(INT_ID * OFFSET + 10, OperatorOverloadConstants._LT, params, BOOL);
-        symbolTable.putFunction(INT_ID * OFFSET + 11, OperatorOverloadConstants._PLUS, new ArrayList<>(), INT);
-        symbolTable.putFunction(INT_ID * OFFSET + 12, OperatorOverloadConstants._MINUS, new ArrayList<>(), INT);
-        symbolTable.putFunction(INT_ID * OFFSET + 13, OperatorOverloadConstants._EQUALS, params, BOOL);
-        symbolTable.putFunction(INT_ID * OFFSET + 14, OperatorOverloadConstants._TO, params, new Type(ARRAY, INT));
+        symbolTable.putFunction(Defaults.Int.PLUS_ID, OperatorOverloadConstants._PLUS, params, INT);
+        symbolTable.putFunction(Defaults.Int.MINUS_ID, OperatorOverloadConstants._MINUS, params, INT);
+        symbolTable.putFunction(Defaults.Int.MULT_ID, OperatorOverloadConstants._MULT, params, INT);
+        symbolTable.putFunction(Defaults.Int.DIV_ID, OperatorOverloadConstants._DIV, params, INT);
+        symbolTable.putFunction(Defaults.Int.MOD_ID, OperatorOverloadConstants._MOD, params, INT);
+        symbolTable.putFunction(Defaults.Int.GE_ID, OperatorOverloadConstants._GE, params, BOOL);
+        symbolTable.putFunction(Defaults.Int.GT_ID, OperatorOverloadConstants._GT, params, BOOL);
+        symbolTable.putFunction(Defaults.Int.LE_ID, OperatorOverloadConstants._LE, params, BOOL);
+        symbolTable.putFunction(Defaults.Int.LT_ID, OperatorOverloadConstants._LT, params, BOOL);
+        symbolTable.putFunction(Defaults.Int.PLUS_ID, OperatorOverloadConstants._PLUS, new ArrayList<>(), INT);
+        symbolTable.putFunction(Defaults.Int.MINUS_ID, OperatorOverloadConstants._MINUS, new ArrayList<>(), INT);
+        symbolTable.putFunction(Defaults.Int.EQUALS_ID, OperatorOverloadConstants._EQUALS, params, BOOL);
+        symbolTable.putFunction(Defaults.Int.TO_ID, OperatorOverloadConstants._TO, params, new Type(ARRAY, INT));
         symbolTable.closeScope();
     }
 
     public void addForms() {
-        symbolTable.createClassScope(FORM_ID * OFFSET, FORM);
+        symbolTable.createClassScope(Defaults.Form.ID, FORM);
         List<Type> params = Collections.singletonList(FORM);
-        symbolTable.putFunction(FORM_ID * OFFSET + 1, OperatorOverloadConstants._EQUALS, params, BOOL);
+        symbolTable.putFunction(Defaults.Form.EQUALS_ID, OperatorOverloadConstants._EQUALS, params, BOOL);
         symbolTable.closeScope();
     }
 
     public void addReals() {
-        symbolTable.createClassScope(REAL_ID * OFFSET, REAL);
+        symbolTable.createClassScope(Defaults.Real.ID, REAL);
         List<Type> params = Collections.singletonList(REAL);
-        symbolTable.putFunction(REAL_ID * OFFSET + 1, OperatorOverloadConstants._PLUS, params, REAL);
-        symbolTable.putFunction(REAL_ID * OFFSET + 2, OperatorOverloadConstants._MINUS, params, REAL);
-        symbolTable.putFunction(REAL_ID * OFFSET + 3, OperatorOverloadConstants._MULT, params, REAL);
-        symbolTable.putFunction(REAL_ID * OFFSET + 4, OperatorOverloadConstants._DIV, params, REAL);
-        symbolTable.putFunction(REAL_ID * OFFSET + 5, OperatorOverloadConstants._GE, params, BOOL);
-        symbolTable.putFunction(REAL_ID * OFFSET + 6, OperatorOverloadConstants._GT, params, BOOL);
-        symbolTable.putFunction(REAL_ID * OFFSET + 7, OperatorOverloadConstants._LE, params, BOOL);
-        symbolTable.putFunction(REAL_ID * OFFSET + 8, OperatorOverloadConstants._LT, params, BOOL);
-        symbolTable.putFunction(REAL_ID * OFFSET + 9, OperatorOverloadConstants._PLUS, new ArrayList<>(), REAL);
-        symbolTable.putFunction(REAL_ID * OFFSET + 10, OperatorOverloadConstants._MINUS, new ArrayList<>(), REAL);
-        symbolTable.putFunction(REAL_ID * OFFSET + 11, OperatorOverloadConstants._EQUALS, params, BOOL);
-        symbolTable.putFunction(REAL_ID * OFFSET + 12, OperatorOverloadConstants._TO, params, new Type(ARRAY, REAL));
+        symbolTable.putFunction(Defaults.Real.PLUS_ID, OperatorOverloadConstants._PLUS, params, REAL);
+        symbolTable.putFunction(Defaults.Real.MINUS_ID, OperatorOverloadConstants._MINUS, params, REAL);
+        symbolTable.putFunction(Defaults.Real.MULT_ID, OperatorOverloadConstants._MULT, params, REAL);
+        symbolTable.putFunction(Defaults.Real.DIV_ID, OperatorOverloadConstants._DIV, params, REAL);
+        symbolTable.putFunction(Defaults.Real.GE_ID, OperatorOverloadConstants._GE, params, BOOL);
+        symbolTable.putFunction(Defaults.Real.GT_ID, OperatorOverloadConstants._GT, params, BOOL);
+        symbolTable.putFunction(Defaults.Real.LE_ID, OperatorOverloadConstants._LE, params, BOOL);
+        symbolTable.putFunction(Defaults.Real.LT_ID, OperatorOverloadConstants._LT, params, BOOL);
+        symbolTable.putFunction(Defaults.Real.PLUS_ID, OperatorOverloadConstants._PLUS, new ArrayList<>(), REAL);
+        symbolTable.putFunction(Defaults.Real.MINUS_ID, OperatorOverloadConstants._MINUS, new ArrayList<>(), REAL);
+        symbolTable.putFunction(Defaults.Real.EQUALS_ID, OperatorOverloadConstants._EQUALS, params, BOOL);
+        symbolTable.putFunction(Defaults.Real.TO_ID, OperatorOverloadConstants._TO, params, new Type(ARRAY, REAL));
         symbolTable.closeScope();
     }
 
     public void addBools() {
-        symbolTable.createClassScope(BOOL_ID * OFFSET, BOOL);
+        symbolTable.createClassScope(Defaults.Bool.ID, BOOL);
         List<Type> params = Collections.singletonList(BOOL);
-        symbolTable.putFunction(BOOL_ID * OFFSET + 1, OperatorOverloadConstants._EQUALS, params, BOOL);
-        symbolTable.putFunction(BOOL_ID * OFFSET + 2, OperatorOverloadConstants._AND, params, BOOL);
-        symbolTable.putFunction(BOOL_ID * OFFSET + 3, OperatorOverloadConstants._OR, params, BOOL);
-        symbolTable.putFunction(BOOL_ID * OFFSET + 4, OperatorOverloadConstants._NOT, new ArrayList<>(), BOOL);
+        symbolTable.putFunction(Defaults.Bool.EQUALS_ID, OperatorOverloadConstants._EQUALS, params, BOOL);
+        symbolTable.putFunction(Defaults.Bool.AND_ID, OperatorOverloadConstants._AND, params, BOOL);
+        symbolTable.putFunction(Defaults.Bool.OR_ID, OperatorOverloadConstants._OR, params, BOOL);
+        symbolTable.putFunction(Defaults.Bool.NOT_ID, OperatorOverloadConstants._NOT, new ArrayList<>(), BOOL);
         symbolTable.closeScope();
     }
 
     public void addChars() {
-        symbolTable.createClassScope(CHAR_ID * OFFSET, CHAR);
+        symbolTable.createClassScope(Defaults.Char.ID, CHAR);
         List<Type> params = Collections.singletonList(CHAR);
-        symbolTable.putFunction(CHAR_ID * OFFSET + 1, OperatorOverloadConstants._EQUALS, params, BOOL);
-        symbolTable.putFunction(CHAR_ID * OFFSET + 2, OperatorOverloadConstants._GE, params, BOOL);
-        symbolTable.putFunction(CHAR_ID * OFFSET + 3, OperatorOverloadConstants._GT, params, BOOL);
-        symbolTable.putFunction(CHAR_ID * OFFSET + 4, OperatorOverloadConstants._LE, params, BOOL);
-        symbolTable.putFunction(CHAR_ID * OFFSET + 5, OperatorOverloadConstants._LT, params, BOOL);
+        symbolTable.putFunction(Defaults.Char.EQUALS_ID, OperatorOverloadConstants._EQUALS, params, BOOL);
+        symbolTable.putFunction(Defaults.Char.GE_ID, OperatorOverloadConstants._GE, params, BOOL);
+        symbolTable.putFunction(Defaults.Char.GT_ID, OperatorOverloadConstants._GT, params, BOOL);
+        symbolTable.putFunction(Defaults.Char.LE_ID, OperatorOverloadConstants._LE, params, BOOL);
+        symbolTable.putFunction(Defaults.Char.LT_ID, OperatorOverloadConstants._LT, params, BOOL);
         // TODO not sure about this last one, but it'll probably do
-        symbolTable.putFunction(CHAR_ID * OFFSET + 6, OperatorOverloadConstants._TO, params, new Type(ARRAY, CHAR));
+        symbolTable.putFunction(Defaults.Char.TO_ID, OperatorOverloadConstants._TO, params, new Type(ARRAY, CHAR));
         symbolTable.closeScope();
     }
 
     public void addVoid() {
-        symbolTable.createClassScope(VOID_ID * OFFSET, VOID);
+        symbolTable.createClassScope(Defaults.Void.ID, VOID);
         symbolTable.closeScope();
     }
 
     public void addArrays() {
-        symbolTable.createClassScope(ARRAY_ID * OFFSET, ARRAY_TYPE);
+        symbolTable.createClassScope(Defaults.Array.ID, ARRAY_TYPE);
         List<Type> params = Collections.singletonList(ARRAY_TYPE);
-        symbolTable.putVariable(ARRAY_ID * OFFSET + 1, "size", INT);
-        symbolTable.putFunction(ARRAY_ID * OFFSET + 2, OperatorOverloadConstants._EQUALS, params, BOOL);
+        symbolTable.putVariable(Defaults.Array.SIZE_ID, ARRAY_SIZE, INT);
+        symbolTable.putFunction(Defaults.Array.EQUALS_ID, OperatorOverloadConstants._EQUALS, params, BOOL);
         params = Collections.singletonList(INT);
-        symbolTable.putFunction(ARRAY_ID * OFFSET + 3, "constructor", params, ARRAY_TYPE);
+        symbolTable.putFunction(Defaults.Array.CONSTRUCTOR_ID, "constructor", params, ARRAY_TYPE);
         symbolTable.closeScope();
     }
 
     public void addStrings() {
-        symbolTable.createClassScope(STRING_ID * OFFSET, STRING);
+        symbolTable.createClassScope(Defaults.String.ID, STRING);
         symbolTable.closeScope();
     }
 
@@ -176,12 +163,14 @@ public class SymbolTableCreator implements Visitor {
 
     @Override
     public void visit(ProgramNode node) {
-        for (DeclarationNode n : node.root()) {
-            // Update current file if this node is the first node of that file
-            if (fileErrorHandling.containsKey(n)) {
-                currentFile = fileErrorHandling.get(n);
+        if (node.root() != null) {
+            for (DeclarationNode n : node.root()) {
+                // Update current file if this node is the first node of that file
+                if (fileErrorHandling.containsKey(n)) {
+                    currentFile = fileErrorHandling.get(n);
+                }
+                n.accept(this);
             }
-            n.accept(this);
         }
     }
 
@@ -617,7 +606,7 @@ public class SymbolTableCreator implements Visitor {
                 Function f = symbolTable.getFunction(ve.get(), argumentTypes, node.getId());
                 if (f == null) {
                     error(ve, "Couldn't find function " + functionName + " applied to arguments " +
-                            argumentTypes.stream().map(Type::toString).collect(Collectors.joining(", ")));
+                            argumentTypes);
                 } else {
                     checkNullArguments(arguments, f.parameters);
                     ve.setType(f.returnType);
@@ -649,8 +638,7 @@ public class SymbolTableCreator implements Visitor {
                 // Only method for arrays
                 if (OperatorOverloadConstants._EQUALS.equals(functionName)) {
                     if (argumentTypes.size() != 1) {
-                        error(ve, "Cannot apply " + functionName + " to " + receiver + " and " +
-                                argumentTypes.stream().map(Type::toString).collect(Collectors.joining(", ")));
+                        error(ve, "Cannot apply " + functionName + " to " + receiver + " and " + argumentTypes);
                     } else if (receiverType.realEquals(argumentTypes.get(0))) {
                         error(node.getLexeme() == null ? ve : node,
                                 "Cannot apply to " + receiver + " and " + argumentTypes.get(0));
@@ -669,8 +657,7 @@ public class SymbolTableCreator implements Visitor {
                 Function f = symbolTable.getFunctionHere(functionName, argumentTypes, node.getId());
                 if (f == null) {
                     error(node.getLexeme() == null ? ve : node, "Couldn't find method " + functionName +
-                            " in class " + receiverType + " applied to arguments " +
-                            argumentTypes.stream().map(Type::toString).collect(Collectors.joining(", ")));
+                            " in class " + receiverType + " applied to arguments " + argumentTypes);
                 } else {
                     checkNullArguments(arguments, f.parameters);
                     ve.setType(f.returnType);
@@ -826,8 +813,7 @@ public class SymbolTableCreator implements Visitor {
             Function f = symbolTable.getFunctionHere("constructor", argumentTypes, node.getId());
             if (f == null) {
                 error(node, "Couldn't find constructor of class " + type +
-                        " with the following argument types: " +
-                        argumentTypes.stream().map(Type::toString).collect(Collectors.joining(", ")));
+                        " with the following argument types: " + argumentTypes);
             } else {
                 checkNullArguments(node.getArguments(), f.parameters);
             }

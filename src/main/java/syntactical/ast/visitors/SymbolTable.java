@@ -33,10 +33,7 @@ public class SymbolTable {
         return variableRelations.get(id);
     }
 
-    public Variable getVariable(String variable, int id) {
-        if (variableRelations.containsKey(id)) {
-            return variableRelations.get(id);
-        }
+    private Variable getVariable(String variable) {
         Scope current = currentScope;
         Variable result = null;
         // If variable wasn't in this scope try to find it in previous ones
@@ -44,6 +41,18 @@ public class SymbolTable {
             result = current.variableTable.get(variable);
             current = current.parent;
         }
+        return result;
+    }
+
+    public boolean existsVariable(String variable) {
+        return getVariable(variable) != null;
+    }
+
+    public Variable getVariable(String variable, int id) {
+        if (variableRelations.containsKey(id)) {
+            return variableRelations.get(id);
+        }
+        Variable result = getVariable(variable);
         if (result != null) {
             variableRelations.put(id, result);
         }
@@ -62,11 +71,7 @@ public class SymbolTable {
         return functionRelations.get(id);
     }
 
-    public Function getFunction(String name, Collection<Type> parameters, int id) {
-        if (functionRelations.containsKey(id)) {
-            return functionRelations.get(id);
-        }
-        Func function = new Func(name, parameters.toArray(new Type[0]));
+    private Function getFunction(Func function) {
         Scope current = currentScope;
         Function result = current.functionTable.get(function);
         // If variable wasn't in this scope try to find it in previous ones
@@ -74,6 +79,20 @@ public class SymbolTable {
             current = current.parent;
             result = current.functionTable.get(function);
         }
+        return result;
+    }
+
+    public boolean existsFunction(String name, Collection<Type> parameters) {
+        Func function = new Func(name, parameters.toArray(new Type[0]));
+        return getFunction(function) != null;
+    }
+
+    public Function getFunction(String name, Collection<Type> parameters, int id) {
+        if (functionRelations.containsKey(id)) {
+            return functionRelations.get(id);
+        }
+        Func function = new Func(name, parameters.toArray(new Type[0]));
+        Function result = getFunction(function);
         if (result != null) {
             functionRelations.put(id, result);
         }
@@ -160,6 +179,10 @@ public class SymbolTable {
 
     public void closeScope() {
         currentScope = currentScope.parent;
+    }
+
+    public Iterable<Variable> variables() {
+        return currentScope.variableTable.values();
     }
 
     private static class Scope {

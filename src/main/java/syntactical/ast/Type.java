@@ -109,7 +109,7 @@ public class Type {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), parameter);
+        return Objects.hash(getName());
     }
 
 }

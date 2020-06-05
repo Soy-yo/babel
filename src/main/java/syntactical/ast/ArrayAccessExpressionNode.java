@@ -8,7 +8,7 @@ public class ArrayAccessExpressionNode extends ExpressionNode {
     private ExpressionNode index;
 
     public ArrayAccessExpressionNode(IdGenerator id, ExpressionNode array, ExpressionNode index) {
-        super(id);
+        super(id, array.lexeme);
         this.array = array;
         this.index = index;
     }

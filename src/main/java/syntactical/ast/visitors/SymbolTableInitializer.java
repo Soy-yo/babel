@@ -4,9 +4,7 @@ import error.SemanticException;
 import syntactical.OperatorOverloadConstants;
 import syntactical.ast.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SymbolTableInitializer implements Visitor {
 
@@ -15,8 +13,7 @@ public class SymbolTableInitializer implements Visitor {
     private final Map<DeclarationNode, String> fileErrorHandling;
     private String currentFile;
     private String currentClass;
-    private String currentFormName;
-    private String currentVarName;
+    private int currentFormDepth;
     private int errors;
 
     protected SymbolTableInitializer(ProgramNode root,
@@ -27,8 +24,7 @@ public class SymbolTableInitializer implements Visitor {
         this.fileErrorHandling = fileErrorHandling;
         this.currentFile = null;
         this.currentClass = null;
-        this.currentFormName = null;
-        this.currentVarName = null;
+        this.currentFormDepth = 0;
         this.errors = 0;
     }
 
@@ -39,12 +35,14 @@ public class SymbolTableInitializer implements Visitor {
 
     @Override
     public void visit(ProgramNode node) {
-        for (DeclarationNode n : node.root()) {
-            // Update current file if this node is the first node of that file
-            if (fileErrorHandling.containsKey(n)) {
-                currentFile = fileErrorHandling.get(n);
+        if (node.root() != null) {
+            for (DeclarationNode n : node.root()) {
+                // Update current file if this node is the first node of that file
+                if (fileErrorHandling.containsKey(n)) {
+                    currentFile = fileErrorHandling.get(n);
+                }
+                n.accept(this);
             }
-            n.accept(this);
         }
     }
 
@@ -63,25 +61,14 @@ public class SymbolTableInitializer implements Visitor {
         if (SymbolTableCreator.FORM.equals(type)) {
             symbolTable.openScope(node.getId());
             if (initialValue instanceof AnonymousObjectConstructorExpressionNode) {
-                // "Recursive" definitions are valid if we are in a class
-                if (currentClass == null && symbolTable.inGlobalScope()) {
-                    currentFormName = node.getIdentifier();
-                    initialValue.accept(this);
-                    currentFormName = null;
-                } else {
-                    currentVarName = node.getIdentifier();
-                    initialValue.accept(this);
-                    currentVarName = null;
-                }
+                initialValue.accept(this);
             } else {
                 error(node, "Expected an anonymous object definition");
             }
             symbolTable.closeScope();
         } else {
             // Just to make sure there aren't any recursive initializations
-            currentVarName = node.getIdentifier();
             initialValue.accept(this);
-            currentVarName = null;
         }
         if (!symbolTable.putVariable(node.getId(), node.getIdentifier(), type, node.isConst())) {
             error(node, "Variable already defined in this scope");
@@ -209,10 +196,17 @@ public class SymbolTableInitializer implements Visitor {
 
     @Override
     public void visit(VariableExpressionNode node) {
-        if (currentFormName != null && currentFormName.equals(node.get())
-                || currentVarName != null && currentVarName.equals(node.get())) {
-            error(node, "Recursive initialization of variable " + node.get());
+        Deque<Integer> path = new ArrayDeque<>();
+        int depth = currentFormDepth;
+        while (depth > 0) {
+            path.push(symbolTable.getCurrentScopeId());
+            symbolTable.closeScope();
+            depth--;
         }
+        if (!symbolTable.existsVariable(node.get())) {
+            error(node, "Variable not declared");
+        }
+        symbolTable.restoreScope(path);
     }
 
     @Override
@@ -231,9 +225,11 @@ public class SymbolTableInitializer implements Visitor {
     public void visit(AnonymousObjectConstructorExpressionNode node) {
         // Scope must already be open
         if (node.getFields() != null) {
+            currentFormDepth++;
             for (DeclarationNode n : node.getFields()) {
                 n.accept(this);
             }
+            currentFormDepth--;
         }
     }
 

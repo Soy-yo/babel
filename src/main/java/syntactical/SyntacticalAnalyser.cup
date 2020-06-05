@@ -559,12 +559,12 @@ ConstantExpression    ::= INT: n
 
 ListConstructorExpression ::= STRING: str
                               {: RESULT = ListConstructorExpressionNode.fromString(nextId, str); :}
-                            | SQUARE_L TYPE: type SQUARE_R
-                              {: RESULT = new ListConstructorExpressionNode(nextId, new Type(type)); :}
-                            | SQUARE_L TYPE: type LT Type: param GT SQUARE_R
-                              {: RESULT = new ListConstructorExpressionNode(nextId, new Type(type, param)); :}
-                            | SQUARE_L ListElements: elements SQUARE_R
-                              {: RESULT = new ListConstructorExpressionNode(nextId, elements); :};
+                            | SQUARE_L: s TYPE: type SQUARE_R
+                              {: RESULT = new ListConstructorExpressionNode(nextId, s, new Type(type)); :}
+                            | SQUARE_L: s TYPE: type LT Type: param GT SQUARE_R
+                              {: RESULT = new ListConstructorExpressionNode(nextId, s, new Type(type, param)); :}
+                            | SQUARE_L: s ListElements: elements SQUARE_R
+                              {: RESULT = new ListConstructorExpressionNode(nextId, s, elements); :};
 ListElements              ::= Expression: element
                               {: RESULT = new ArrayList<>(Collections.singletonList(element)); :}
                             | ListElements: elements COMMA Expression: element
