@@ -4,13 +4,13 @@ import lexical.LexicalUnit;
 import syntactical.SyntacticalAnalyser;
 import syntactical.ast.DeclarationNode;
 import syntactical.ast.ProgramNode;
-import syntactical.ast.visitors.ASTPrinter;
 import syntactical.ast.visitors.CodeGenerator;
 import syntactical.ast.visitors.SymbolTable;
 import syntactical.ast.visitors.SymbolTableCreator;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.*;
@@ -29,7 +29,7 @@ public class Compiler {
         this.workingDir = Paths.get(input).getParent().toString();
         this.importedFiles = new HashSet<>(Collections.singleton(new File(input)));
         this.firstNodeOfFiles = new IdentityHashMap<>();
-        this.result = false;
+        this.result = true;
     }
 
     public boolean getResult() {
@@ -50,13 +50,13 @@ public class Compiler {
         return false;
     }
 
-    private boolean compile(ProgramNode program) {
+    private boolean compile(ProgramNode program) throws IOException {
         // TODO stop at some point if result is already false
         mergeFiles(program);
         SymbolTableCreator creator = new SymbolTableCreator(program, firstNodeOfFiles);
         SymbolTable symbolTable = creator.create();
         int errors = creator.errors();
-        new ASTPrinter(program).print();
+        //new ASTPrinter(program).print();
         // If there were any error don't try to generate code
         if (errors > 0) {
             result = false;
@@ -65,8 +65,9 @@ public class Compiler {
         if (!result) {
             return false;
         }
-        CodeGenerator generator = new CodeGenerator(program, null);
-        // TODO generate code
+        String output = input.replace(".bbl", "");
+        CodeGenerator generator = new CodeGenerator(program, output, symbolTable);
+        generator.start();
         return true;
     }
 

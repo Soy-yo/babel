@@ -108,7 +108,13 @@ public class SymbolTable {
     }
 
     public boolean putVariable(int id, String variable, Type type, boolean isConst) {
-        return currentScope.variableTable.putIfAbsent(variable, new Variable(id, variable, type, isConst)) == null;
+        boolean result = currentScope.variableTable.putIfAbsent(
+                variable, new Variable(id, variable, type, isConst, currentScope.depth)
+        ) == null;
+        if (result) {
+            variableRelations.put(id, currentScope.variableTable.get(variable));
+        }
+        return result;
     }
 
     public boolean putVariable(int id, String variable, Type type) {
@@ -192,6 +198,7 @@ public class SymbolTable {
         final Map<Func, Function> functionTable;
         final Map<Integer, Scope> scopes;
         final Scope parent;
+        final int depth;
 
         private Scope(int blockId, Scope parent) {
             this.blockId = blockId;
@@ -199,6 +206,7 @@ public class SymbolTable {
             this.functionTable = new HashMap<>();
             this.scopes = new HashMap<>();
             this.parent = parent;
+            this.depth = parent == null ? 0 : parent.depth + 1;
         }
 
     }

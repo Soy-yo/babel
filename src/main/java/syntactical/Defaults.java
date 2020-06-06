@@ -17,7 +17,7 @@ public class Defaults {
     public static final java.lang.String THIS = "this";
     public static final java.lang.String ARRAY_SIZE = "size";
 
-    public static int IDENTITY_ID = 0;
+    public static final int IDENTITY_ID = 0;
 
     public static class Int {
         public static final int ID = 1;
