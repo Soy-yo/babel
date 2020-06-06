@@ -1,6 +1,7 @@
 package syntactical.ast;
 
 import lexical.LexicalUnit;
+import syntactical.Defaults;
 import syntactical.ast.visitors.Visitor;
 
 import java.util.ArrayList;
@@ -9,9 +10,6 @@ import java.util.List;
 
 public class ListConstructorExpressionNode extends ExpressionNode {
 
-    private static final String ARRAY = "Array";
-    private static final Type CHAR = new Type("Char");
-    private static final Type STRING = new Type(ARRAY, CHAR);
 
     private List<ExpressionNode> elements;
     private List<ExpressionNode> view;
@@ -35,7 +33,7 @@ public class ListConstructorExpressionNode extends ExpressionNode {
     }
 
     public ListConstructorExpressionNode(IdGenerator id, LexicalUnit lexeme, Type type) {
-        this(id, lexeme, new ArrayList<>(), false, new Type(ARRAY, type));
+        this(id, lexeme, new ArrayList<>(), false, new Type(Defaults.ARRAY_STR, type));
     }
 
     public ListConstructorExpressionNode(IdGenerator id, LexicalUnit lexeme) {
@@ -53,28 +51,28 @@ public class ListConstructorExpressionNode extends ExpressionNode {
             if (escaping) {
                 switch (c) {
                     case 't':
-                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\t'"), '\t', CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\t'"), '\t', Defaults.CHAR));
                         break;
                     case 'b':
-                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\b'"), '\b', CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\b'"), '\b', Defaults.CHAR));
                         break;
                     case 'n':
-                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\n'"), '\n', CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\n'"), '\n', Defaults.CHAR));
                         break;
                     case 'r':
-                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\r'"), '\r', CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\r'"), '\r', Defaults.CHAR));
                         break;
                     case 'f':
-                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\f'"), '\f', CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\f'"), '\f', Defaults.CHAR));
                         break;
                     case '0':
-                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\0'"), '\0', CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\0'"), '\0', Defaults.CHAR));
                         break;
                     case '\\':
-                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\\\'"), '\\', CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\\\'"), '\\', Defaults.CHAR));
                         break;
                     case '"':
-                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\\"'"), '"', CHAR));
+                        elements.add(new ConstantExpressionNode(id, new LexicalUnit("'\\\"'"), '"', Defaults.CHAR));
                         break;
                 }
                 escaping = false;
@@ -86,7 +84,7 @@ public class ListConstructorExpressionNode extends ExpressionNode {
                 }
             }
         }
-        return new ListConstructorExpressionNode(id, lexeme, elements, false, STRING);
+        return new ListConstructorExpressionNode(id, lexeme, elements, false, Defaults.STRING);
     }
 
     public List<ExpressionNode> getElements() {

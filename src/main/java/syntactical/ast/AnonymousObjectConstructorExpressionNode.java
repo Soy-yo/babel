@@ -1,6 +1,7 @@
 package syntactical.ast;
 
 import lexical.LexicalUnit;
+import syntactical.Defaults;
 import syntactical.ast.visitors.Visitor;
 
 import java.util.HashSet;
@@ -10,15 +11,13 @@ import java.util.stream.StreamSupport;
 
 public class AnonymousObjectConstructorExpressionNode extends ExpressionNode {
 
-    private static final Type TYPE = new Type("Form");
-
     private VarDeclarationNode root;
     private Set<Name> fieldNames;
 
     public AnonymousObjectConstructorExpressionNode(IdGenerator id,
                                                     LexicalUnit lexeme,
                                                     VarDeclarationNode root) {
-        super(id, lexeme, TYPE);
+        super(id, lexeme, Defaults.FORM);
         this.root = root;
         this.fieldNames = new HashSet<>();
         if (root != null) {

@@ -1,6 +1,7 @@
 package syntactical.ast.visitors;
 
 import error.SemanticException;
+import syntactical.Defaults;
 import syntactical.OperatorOverloadConstants;
 import syntactical.ast.*;
 
@@ -49,16 +50,16 @@ public class SymbolTableInitializer implements Visitor {
     @Override
     public void visit(VarDeclarationNode node) {
         Type type = node.getType();
-        if (SymbolTableCreator.ARRAY_TYPE.equals(type)) {
+        if (Defaults.ARRAY.equals(type)) {
             if (type.depth() == 0) {
                 error(node, "Must give parametric type on Array");
-            } else if (type.contains(SymbolTableCreator.FORM)) {
+            } else if (type.contains(Defaults.FORM)) {
                 error(node, "Arrays of Forms not allowed");
             }
         }
         ExpressionNode initialValue = node.getInitialValue();
         // Generate scope for object definition
-        if (SymbolTableCreator.FORM.equals(type)) {
+        if (Defaults.FORM.equals(type)) {
             symbolTable.openScope(node.getId());
             if (initialValue instanceof AnonymousObjectConstructorExpressionNode) {
                 initialValue.accept(this);
@@ -78,17 +79,17 @@ public class SymbolTableInitializer implements Visitor {
     @Override
     public void visit(FunctionDeclarationNode node) {
         Type returnType = node.getType();
-        if (SymbolTableCreator.ARRAY_TYPE.equals(returnType) && returnType.depth() == 0) {
+        if (Defaults.ARRAY.equals(returnType) && returnType.depth() == 0) {
             error(node, "Must give parametric type on Array");
-        } else if (returnType.contains(SymbolTableCreator.FORM)) {
+        } else if (returnType.contains(Defaults.FORM)) {
             error(node, "Form object cannot be returned by a function/method");
         }
         List<Type> parameterTypes = new ArrayList<>();
         for (VarDeclarationNode p : node.getParameters()) {
             Type t = p.getType();
-            if (SymbolTableCreator.ARRAY_TYPE.equals(t) && t.depth() == 0) {
+            if (Defaults.ARRAY.equals(t) && t.depth() == 0) {
                 error(p, "Must give parametric type on Array");
-            } else if (t.contains(SymbolTableCreator.FORM)) {
+            } else if (t.contains(Defaults.FORM)) {
                 error(p, "Functions/methods cannot have Form objects as parameters");
             }
             parameterTypes.add(t);
@@ -267,11 +268,11 @@ public class SymbolTableInitializer implements Visitor {
             case OperatorOverloadConstants._LT:
             case OperatorOverloadConstants._EQUALS:
                 return parameterTypes.size() != 1 || currentClass.equals(parameterTypes.get(0).getName()) &&
-                        SymbolTableCreator.BOOL.equals(returnType);
+                        Defaults.BOOL.equals(returnType);
             // if 1 param then it is of the same type as this and returns Array<[type of this]>
             case OperatorOverloadConstants._TO:
                 return parameterTypes.size() != 1 || currentClass.equals(parameterTypes.get(0).getName()) &&
-                        new Type(SymbolTableCreator.ARRAY, new Type(currentClass)).equals(returnType);
+                        new Type(Defaults.ARRAY_STR, new Type(currentClass)).equals(returnType);
         }
         return true;
     }

@@ -1,6 +1,21 @@
-package syntactical.ast.visitors;
+package syntactical;
+
+import syntactical.ast.Type;
 
 public class Defaults {
+
+    public static final Type FORM = new Type("Form");
+    public static final Type INT = new Type("Int");
+    public static final Type REAL = new Type("Real");
+    public static final Type BOOL = new Type("Bool");
+    public static final Type CHAR = new Type("Char");
+    public static final Type VOID = new Type("Void");
+    public static final Type STRING = new Type("String");
+    public static final Type DEFAULT = new Type("~Default");
+    public static final java.lang.String ARRAY_STR = "Array";
+    public static final Type ARRAY = new Type(ARRAY_STR, Type.WILDCARD);
+    public static final java.lang.String THIS = "this";
+    public static final java.lang.String ARRAY_SIZE = "size";
 
     public static int IDENTITY_ID = 0;
 

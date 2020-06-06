@@ -1,11 +1,11 @@
 package syntactical.ast;
 
 import lexical.LexicalUnit;
+import syntactical.Defaults;
 
 public abstract class DeclarationNode extends QueueableNode<DeclarationNode> {
 
-    private static final Type STRING = new Type("String");
-    private static final Type CHAR_ARRAY = new Type("Array", new Type("Char"));
+    private static final Type CHAR_ARRAY = new Type(Defaults.ARRAY_STR, Defaults.CHAR);
 
     protected Name name;
 
@@ -13,7 +13,7 @@ public abstract class DeclarationNode extends QueueableNode<DeclarationNode> {
         super(id, lexeme);
         this.name = name.getType() != null &&
                 !(this instanceof ClassDeclarationNode) &&
-                name.getType().realEquals(STRING) ?
+                name.getType().realEquals(Defaults.STRING) ?
                 new Name(name.getIdentifierLexicalUnit(), CHAR_ARRAY) : name;
     }
 

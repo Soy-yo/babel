@@ -1,15 +1,10 @@
 package syntactical.ast;
 
 import lexical.LexicalUnit;
+import syntactical.Defaults;
 import syntactical.ast.visitors.Visitor;
 
 public class ConstantExpressionNode extends ExpressionNode {
-
-    private static final Type INT = new Type("Int");
-    private static final Type REAL = new Type("Real");
-    private static final Type BOOL = new Type("Bool");
-    private static final Type CHAR = new Type("Char");
-    private static final Type VOID = new Type("Void");
 
     private int value;
 
@@ -19,19 +14,19 @@ public class ConstantExpressionNode extends ExpressionNode {
     }
 
     protected ConstantExpressionNode(IdGenerator id, LexicalUnit lexeme, int n) {
-        this(id, lexeme, n, INT);
+        this(id, lexeme, n, Defaults.INT);
     }
 
     protected ConstantExpressionNode(IdGenerator id, LexicalUnit lexeme, float x) {
-        this(id, lexeme, Float.floatToIntBits(x), REAL);
+        this(id, lexeme, Float.floatToIntBits(x), Defaults.REAL);
     }
 
     protected ConstantExpressionNode(IdGenerator id, LexicalUnit lexeme, boolean b) {
-        this(id, lexeme, b ? 0b1 : 0b0, BOOL);
+        this(id, lexeme, b ? 0b1 : 0b0, Defaults.BOOL);
     }
 
     protected ConstantExpressionNode(IdGenerator id, LexicalUnit lexeme, char c) {
-        this(id, lexeme, c, CHAR);
+        this(id, lexeme, c, Defaults.CHAR);
     }
 
     public static ConstantExpressionNode fromInt(IdGenerator id, LexicalUnit lexeme) {
@@ -49,11 +44,11 @@ public class ConstantExpressionNode extends ExpressionNode {
     }
 
     public static ConstantExpressionNode fromChar(IdGenerator id, LexicalUnit lexeme) {
-        return new ConstantExpressionNode(id, lexeme, charValue(lexeme.lexeme()), CHAR);
+        return new ConstantExpressionNode(id, lexeme, charValue(lexeme.lexeme()), Defaults.CHAR);
     }
 
     public static ConstantExpressionNode ofNothing(IdGenerator id, LexicalUnit lexeme) {
-        return new ConstantExpressionNode(id, lexeme, 0b0, VOID);
+        return new ConstantExpressionNode(id, lexeme, 0b0, Defaults.VOID);
     }
 
     public static ConstantExpressionNode ofNull(IdGenerator id, LexicalUnit lexeme) {
