@@ -208,17 +208,32 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(SwitchStatementNode node) {
+        // TODO update sp
         TreeMap<ConstantExpressionNode, StatementNode> map = (TreeMap<ConstantExpressionNode,
             StatementNode>) node.getCases();
+        String endLabel = newLabel.getLabel();
         // switch value should be a primitive
         // we place it on top of the stack
         node.getSwitchExpression().accept(this);
-        // we place the first value on top of the stack
+        // duplicate to compare to first
+        issue("dpl");
+        // put first in stack to compare
+        issue("ldc", String.valueOf(map.firstKey().getValue()));
+        issue("geq");
+        // if false skip switch
+        issueLabeled("fjp", endLabel, 0);
+        // duplicate to compare to last
+        issue("dpl");
+        // put last in stack to compare
+        issue("ldc", String.valueOf(map.lastKey().getValue()));
+        issue("leq");
+        // if false skip switch
+        issueLabeled("fjp", endLabel, 0);
+        // we place the first value on top of the stack for indexing
         issue("ldc", String.valueOf(map.firstKey().getValue()));
         // we subtract them so now we index starting on the first possible value
         issue("sub");
         String defaultLabel;
-        String endLabel = newLabel.getLabel();
         String jumpTable = newLabel.getLabel();
         // we jump to the end of the jumpTable + the value of the expression
         issueLabeled("ixj", jumpTable, 0);
