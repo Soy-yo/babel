@@ -25,7 +25,7 @@ public class SymbolTableCreator implements Visitor {
     public SymbolTableCreator(ProgramNode root, Map<DeclarationNode, String> fileErrorHandling) {
         this.root = root;
         this.fileErrorHandling = fileErrorHandling;
-        this.symbolTable = new SymbolTable();
+        this.symbolTable = new SymbolTable("main");
         this.currentFile = null;
         this.currentClass = null;
         this.currentFunctionType = null;

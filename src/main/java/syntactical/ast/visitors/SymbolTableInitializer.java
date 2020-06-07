@@ -204,7 +204,8 @@ public class SymbolTableInitializer implements Visitor {
             symbolTable.closeScope();
             depth--;
         }
-        if (!symbolTable.existsVariable(node.get())) {
+        Variable v = symbolTable.getVariable(node.get(), node.getId());
+        if (v == null) {
             error(node, "Variable not declared");
         }
         symbolTable.restoreScope(path);

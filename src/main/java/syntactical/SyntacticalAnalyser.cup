@@ -9,18 +9,30 @@ import syntactical.OperatorOverloadConstants;
 
 import java.util.*;
 
-init with {::}
+init with {:
+    action_obj.setIdGenerator(generator);
+:}
 scan with {:
     return analyser.next_token();
 :}
 action code {:
     private IdGenerator nextId = new IdGenerator();
+
+    public void setIdGenerator(IdGenerator generator) {
+        nextId = generator;
+    }
 :}
 parser code {:
     private LexicalAnalyser analyser = (LexicalAnalyser) getScanner();
     private int errors = 0;
     private Deque<SyntacticalException> pendingErrors = new ArrayDeque<>();
     private Map<SyntacticalException, String> reportedErrors = new HashMap<>();
+    private IdGenerator generator;
+
+    public SyntacticalAnalyser(java_cup.runtime.Scanner s, IdGenerator i) {
+        this(s);
+        this.generator = i;
+    }
 
     public int errors() {
         return errors;

@@ -3,6 +3,7 @@ import lexical.LexicalAnalyser;
 import lexical.LexicalUnit;
 import syntactical.SyntacticalAnalyser;
 import syntactical.ast.DeclarationNode;
+import syntactical.ast.IdGenerator;
 import syntactical.ast.ProgramNode;
 import syntactical.ast.visitors.CodeGenerator;
 import syntactical.ast.visitors.SymbolTable;
@@ -23,6 +24,7 @@ public class Compiler {
     private final Set<File> importedFiles;
     private final Map<DeclarationNode, String> firstNodeOfFiles;
     private boolean result;
+    private final IdGenerator generator;
 
     public Compiler(String input) {
         this.input = input;
@@ -30,6 +32,7 @@ public class Compiler {
         this.importedFiles = new HashSet<>(Collections.singleton(new File(input)));
         this.firstNodeOfFiles = new IdentityHashMap<>();
         this.result = true;
+        this.generator = new IdGenerator();
     }
 
     public boolean getResult() {
@@ -39,7 +42,7 @@ public class Compiler {
     public boolean compile() throws Exception {
         System.out.println("[INFO] Compiling " + input);
         LexicalAnalyser la = new LexicalAnalyser(new InputStreamReader(new FileInputStream(input)));
-        SyntacticalAnalyser sa = new SyntacticalAnalyser(la);
+        SyntacticalAnalyser sa = new SyntacticalAnalyser(la, generator);
         Symbol result = sa.parse();
         if (result != null) {
             ProgramNode program = (ProgramNode) result.value;
@@ -56,7 +59,11 @@ public class Compiler {
         SymbolTableCreator creator = new SymbolTableCreator(program, firstNodeOfFiles);
         SymbolTable symbolTable = creator.create();
         int errors = creator.errors();
-        //new ASTPrinter(program).print();
+        //new syntactical.ast.visitors.ASTPrinter(program).print();
+        if (symbolTable.getMainFunction() == null) {
+            System.err.println("[ERROR] main function not declared");
+            errors++;
+        }
         // If there were any error don't try to generate code
         if (errors > 0) {
             result = false;
@@ -87,7 +94,7 @@ public class Compiler {
                 }
                 System.out.println("[INFO] Compiling " + file);
                 LexicalAnalyser la = new LexicalAnalyser(new InputStreamReader(new FileInputStream(fileObj)));
-                SyntacticalAnalyser sa = new SyntacticalAnalyser(la);
+                SyntacticalAnalyser sa = new SyntacticalAnalyser(la, generator);
                 Symbol parsedLib = sa.parse();
                 if (parsedLib == null) {
                     throw new NullPointerException("couldn't parse file " + file);

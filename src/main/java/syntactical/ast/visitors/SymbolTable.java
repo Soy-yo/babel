@@ -14,11 +14,21 @@ public class SymbolTable {
     private final Map<Integer, Function> functionRelations;
     private Scope currentScope;
 
+    private Func mainFunc;
+    private Function mainFunction;
+
     public SymbolTable() {
         this.classTable = new HashMap<>();
         this.variableRelations = new HashMap<>();
         this.functionRelations = new HashMap<>();
         this.currentScope = new Scope(GLOBAL_SCOPE_ID, null);
+        this.mainFunc = null;
+        this.mainFunction = null;
+    }
+
+    public SymbolTable(String mainFunction, Type... arguments) {
+        this();
+        this.mainFunc = new Func(mainFunction, Arrays.copyOf(arguments, arguments.length));
     }
 
     public boolean inGlobalScope() {
@@ -27,6 +37,10 @@ public class SymbolTable {
 
     public int getCurrentScopeId() {
         return currentScope.blockId;
+    }
+
+    public Function getMainFunction() {
+        return mainFunction;
     }
 
     public Variable getVariableById(int id) {
@@ -124,7 +138,14 @@ public class SymbolTable {
     public boolean putFunction(int id, String name, List<Type> parameters, Type type) {
         Func func = new Func(name, parameters.toArray(new Type[0]));
         Function function = new Function(id, name, parameters.toArray(new Type[0]), type);
-        return currentScope.functionTable.putIfAbsent(func, function) == null;
+        if (func.equals(mainFunc)) {
+            mainFunction = function;
+        }
+        boolean result = currentScope.functionTable.putIfAbsent(func, function) == null;
+        if (result) {
+            functionRelations.put(id, function);
+        }
+        return result;
     }
 
     public boolean existsScope(int id) {
