@@ -1,5 +1,7 @@
 package syntactical.ast.visitors;
 
+import syntactical.ast.StatementNode;
+
 public class NewLabel {
 
     private char letter;
@@ -21,6 +23,11 @@ public class NewLabel {
 
     public String getLabel(Function f) {
         return "FN" + f.id;
+    }
+
+
+    public String getLabel(StatementNode s) {
+        return "SW" + s.getId();
     }
 
 }

@@ -132,7 +132,8 @@ nonterminal ReturnStatementNode ReturnStatement;
 nonterminal IfElseStatementNode IfElseStatement;
 nonterminal StatementNode ElsePartStatement;
 nonterminal SwitchStatementNode SwitchStatement;
-nonterminal Map<ConstantExpressionNode,StatementNode> SwitchCasesStatement;
+nonterminal Map<ConstantExpressionNode, StatementNode> SwitchCasesStatement;
+nonterminal StatementNode Default;
 // Loops
 nonterminal WhileStatementNode WhileStatement;
 nonterminal ForStatementNode ForStatement;
@@ -401,22 +402,19 @@ ElsePartStatement ::= ELSE BlockStatement: elseBlock
                     |
                       {: RESULT = null; :};
 
-SwitchStatement      ::= SWITCH Expression: expression CURLY_L SwitchCasesStatement: cases CURLY_R
-                         {: RESULT = new SwitchStatementNode(nextId, expression, cases); :};
+SwitchStatement      ::= SWITCH Expression: expression CURLY_L SwitchCasesStatement: cases
+                         CURLY_R Default: def
+                         {: RESULT = new SwitchStatementNode(nextId, expression, cases, def); :};
 SwitchCasesStatement ::= ConstantExpression: expression ARROW Statement: statement
-                         {: RESULT = new HashMap<>(Collections.singletonMap(expression, statement)); :}
-                       | UNDERSCORE: u ARROW Statement: statement
-                         {: RESULT = new HashMap<>(Collections.singletonMap(
-                                ConstantExpressionNode.special(nextId, u, new Type("~Default")),
-                                                                statement));
-                         :}
+                         {: RESULT = new TreeMap<>(Collections.singletonMap(expression, statement)); :}
                        | SwitchCasesStatement: cases ConstantExpression: expression ARROW Statement: statement
                          {: cases.put(expression, statement); RESULT = cases; :}
-                       | SwitchCasesStatement: cases UNDERSCORE: u ARROW Statement: statement
-                         {: cases.put(
-                                ConstantExpressionNode.special(nextId, u, new Type("~Default")),
-                                                            statement);
-                            RESULT = cases; :};
+                       |
+                         {: RESULT = new TreeMap<>(); :};
+Default ::= UNDERSCORE: u ARROW Statement: statement
+             {: RESULT = statement; :}
+          |
+             {: RESULT = null; :};
 
 // Loops
 WhileStatement ::= WHILE Expression: condition BlockStatement: whileBlock

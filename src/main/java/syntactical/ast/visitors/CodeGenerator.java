@@ -174,8 +174,9 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(ReturnStatementNode node) {
-        // TODO get return expression etc; and this shouldn't be str?
-        issue("lod", "0", "0");
+        issue("lda", "0", "0");
+        node.getReturnExpression().accept(this);
+        issue("sto");
     }
 
     @Override
@@ -207,7 +208,46 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(SwitchStatementNode node) {
-
+        TreeMap<ConstantExpressionNode, StatementNode> map = (TreeMap<ConstantExpressionNode,
+            StatementNode>) node.getCases();
+        // switch value should be a primitive
+        // we place it on top of the stack
+        node.getSwitchExpression().accept(this);
+        // we place the first value on top of the stack
+        issue("ldc", String.valueOf(map.firstKey().getValue()));
+        // we subtract them so now we index starting on the first possible value
+        issue("sub");
+        String defaultLabel;
+        String endLabel = newLabel.getLabel();
+        String jumpTable = newLabel.getLabel();
+        // we jump to the end of the jumpTable + the value of the expression
+        issueLabeled("ixj", jumpTable, 0);
+        if(node.hasDefault()) {
+            defaultLabel = newLabel.getLabel(node.getDef());
+        } else {
+            defaultLabel = endLabel;
+        }
+        // We create a list of labels, all of them point to the default one and it has exactly
+        // the size we need
+        String[] labels = new String[map.lastKey().getValue() - map.firstKey().getValue() + 1];
+        Arrays.fill(labels, defaultLabel);
+        for (Map.Entry<ConstantExpressionNode, StatementNode> entry : node.getCases().entrySet()) {
+            String label = newLabel.getLabel();
+            // we replace this element's label for the actual one
+            labels[entry.getKey().getValue() - map.firstKey().getValue()] = label;
+            // create the label
+            issueLabel(label);
+            // TODO: this could be a block of code, don't know if it'd work
+            entry.getValue().accept(this);
+            issueLabeled("ujp", endLabel, 0);
+        }
+        // so we know were the jump table starts
+        issueLabel(jumpTable);
+        for(int i = 0; i < labels.length; i++) {
+            // create jump table
+            issueLabeled("ujp", labels[i], 0);
+        }
+        issueLabel(endLabel);
     }
 
     @Override

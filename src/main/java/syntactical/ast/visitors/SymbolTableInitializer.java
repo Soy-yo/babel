@@ -49,6 +49,7 @@ public class SymbolTableInitializer implements Visitor {
 
     @Override
     public void visit(VarDeclarationNode node) {
+        // TODO: check that type exists
         Type type = node.getType();
         if (Defaults.ARRAY.equals(type)) {
             if (type.depth() == 0) {
@@ -78,6 +79,7 @@ public class SymbolTableInitializer implements Visitor {
 
     @Override
     public void visit(FunctionDeclarationNode node) {
+        // TODO check that type exists
         Type returnType = node.getType();
         if (Defaults.ARRAY.equals(returnType) && returnType.depth() == 0) {
             error(node, "Must give parametric type on Array");
@@ -112,6 +114,7 @@ public class SymbolTableInitializer implements Visitor {
 
     @Override
     public void visit(ClassDeclarationNode node) {
+        // TODO check that type exists
         Type type = node.getType();
         if (symbolTable.existsClassScope(type)) {
             error(node, "Class already defined");
