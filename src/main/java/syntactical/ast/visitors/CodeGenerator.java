@@ -236,7 +236,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(SwitchStatementNode node) {
-        // TODO prob TreeMap won't work as expected
         TreeMap<ConstantExpressionNode, StatementNode> map = new TreeMap<>(node.getCases());
         String endLabel = newLabel.getLabel();
         // switch value should be a primitive
@@ -484,7 +483,30 @@ public class CodeGenerator implements Visitor {
             }
         }
         if (!generated) {
-            // TODO usual function call
+            int i = 1;
+            for(ExpressionNode e : node.getArguments()) {
+                // Evaluate the argument
+                e.accept(this);
+                // Store it in its position
+                issue("str", "0", String.valueOf(i));
+            }
+            // TODO assing actual values
+            // TODO I actually don't know what this one is
+            int mstValue = 0;
+            // Size of all the parameters
+            int paramSize = node.getArguments().size();
+            // Create the links
+            issue("mst", String.valueOf(mstValue));
+            // Get function
+            Function thisFunction = symbolTable.getFunctionById(node.getFunction().getId());
+            // Save space for parameters, save return address and go to function
+            issueLabeled("cup", newLabel.getLabel(thisFunction), 1, String.valueOf(paramSize));
+            // TODO Change for actual value
+            int staticData = 0;
+            issue("ssp", String.valueOf(staticData));
+            // TODO Change for actual value
+            int maxDepth = 0;
+            issue("sep", String.valueOf(maxDepth));
         }
     }
 

@@ -4,7 +4,7 @@ import lexical.LexicalUnit;
 import syntactical.Defaults;
 import syntactical.ast.visitors.Visitor;
 
-public class ConstantExpressionNode extends ExpressionNode {
+public class ConstantExpressionNode extends ExpressionNode implements Comparable {
 
     private int value;
 
@@ -111,4 +111,8 @@ public class ConstantExpressionNode extends ExpressionNode {
                 + "}";
     }
 
+    @Override
+    public int compareTo(Object o) {
+        return this.value - ((ConstantExpressionNode)o).getValue();
+    }
 }
