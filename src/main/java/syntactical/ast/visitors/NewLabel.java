@@ -25,6 +25,9 @@ public class NewLabel {
         return "FN" + f.id;
     }
 
+    public String getLabel(Variable v) {
+        return "VAR" + v.id;
+    }
 
     public String getLabel(StatementNode s) {
         return "SW" + s.getId();

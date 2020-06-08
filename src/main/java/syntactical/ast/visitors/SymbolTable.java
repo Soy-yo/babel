@@ -191,6 +191,10 @@ public class SymbolTable {
         return classTable.containsKey(type);
     }
 
+    public int classId(Type type) {
+        return classTable.get(type);
+    }
+
     public void createClassScope(int id, Type type) {
         classTable.putIfAbsent(type, id);
         openScope(id);

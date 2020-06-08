@@ -35,6 +35,9 @@ public class SymbolTableCreator implements Visitor {
         initializeTable();
     }
 
+    // TODO check that Type actually exists on variable/function declarations
+
+
     private void initializeTable() {
         // _ID(T x, S y) = dir(x) == dir(y) <- we can ignore types here
         symbolTable.putFunction(Defaults.IDENTITY_ID, OperatorOverloadConstants._ID,
@@ -179,6 +182,9 @@ public class SymbolTableCreator implements Visitor {
                     symbolTable.closeScope();
                 }
             } else {
+                if (!symbolTable.existsClassScope(type)) {
+                    error(node, "Variable type " + type + " does not exist");
+                }
                 initialValue.accept(this);
                 Type found = initialValue.getType();
                 // If initial value was null set its type to the correct one
@@ -261,6 +267,8 @@ public class SymbolTableCreator implements Visitor {
             } else if (type.contains(Defaults.FORM)) {
                 error(node, "Arrays of Forms not allowed");
             }
+        } else if (!symbolTable.existsClassScope(type)) {
+            error(node, "Variable type " + type + " does not exist");
         }
         ExpressionNode initialValue = declaration.getInitialValue();
         if (Defaults.FORM.equals(type)) {
@@ -787,29 +795,15 @@ public class SymbolTableCreator implements Visitor {
             return;
         }
         Deque<Integer> path = symbolTable.openClassScope(type);
-        if (Defaults.ARRAY.equals(type)) {
-            // Array constructors may be Array<*>(Int, ..., Int) depending on dimensions
-            int dimensions = type.depth();
-            if (dimensions == 0) {
-                error(node, "Must give parametric type on Array constructor");
-            } else if (argumentTypes.size() == 0) {
-                error(node, "Must give length of at least the first dimension of the array");
-            } else if (argumentTypes.size() > dimensions) {
-                error(node, "Given more arguments than array dimension on Array constructor");
-            } else if (argumentTypes.stream().anyMatch(t -> !Defaults.INT.realEquals(t))) {
-                error(node, "Array constructor arguments can only be integers");
-            } else {
-                // Just register, we already know the function exists
-                symbolTable.getFunctionHere("constructor", Collections.singletonList(Defaults.INT), node.getId());
-            }
+        if (Defaults.ARRAY.equals(type) && type.depth() == 0) {
+            error(node, "Must give parametric type on Array constructor");
+        }
+        Function f = symbolTable.getFunctionHere("constructor", argumentTypes, node.getId());
+        if (f == null) {
+            error(node, "Couldn't find constructor of class " + type +
+                    " with the following argument types: " + argumentTypes);
         } else {
-            Function f = symbolTable.getFunctionHere("constructor", argumentTypes, node.getId());
-            if (f == null) {
-                error(node, "Couldn't find constructor of class " + type +
-                        " with the following argument types: " + argumentTypes);
-            } else {
-                checkNullArguments(node.getArguments(), f.parameters);
-            }
+            checkNullArguments(node.getArguments(), f.parameters);
         }
         symbolTable.closeScope();
         symbolTable.restoreScope(path);
