@@ -52,7 +52,7 @@ public class ConstantExpressionNode extends ExpressionNode implements Comparable
     }
 
     public static ConstantExpressionNode ofNull(IdGenerator id, LexicalUnit lexeme) {
-        return new ConstantExpressionNode(id, lexeme, 0b0, Type.WILDCARD);
+        return new ConstantExpressionNode(id, lexeme, -1, Type.WILDCARD);
     }
 
     public static ConstantExpressionNode special(IdGenerator id, LexicalUnit lexeme, Type type) {

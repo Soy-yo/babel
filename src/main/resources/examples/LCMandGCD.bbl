@@ -1,3 +1,6 @@
+Array<Int> results = [-1, -1];
+Int index = 0;
+
 // LCM in babel
 Int lcm(Int n1, Int n2) {
     Int lcm;
@@ -24,10 +27,8 @@ Int gcd(Int a, Int b) {
 }
 
 Void print(Int value) {
-    /*
-        dummy function that does nothing
-        representing a print function
-    */
+    results[index] = value;
+    index += 1;
 }
 
 Void main() {

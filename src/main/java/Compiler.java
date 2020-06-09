@@ -5,9 +5,7 @@ import syntactical.SyntacticalAnalyser;
 import syntactical.ast.DeclarationNode;
 import syntactical.ast.IdGenerator;
 import syntactical.ast.ProgramNode;
-import syntactical.ast.visitors.CodeGenerator;
-import syntactical.ast.visitors.SymbolTable;
-import syntactical.ast.visitors.SymbolTableCreator;
+import syntactical.ast.visitors.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,8 +70,9 @@ public class Compiler {
         if (!result) {
             return false;
         }
+        Directions directions = new MemoryAssigner(program, symbolTable).start();
         String output = input.replace(".bbl", "");
-        CodeGenerator generator = new CodeGenerator(program, output, symbolTable);
+        CodeGenerator generator = new CodeGenerator(program, output, symbolTable, directions);
         generator.start();
         return true;
     }
@@ -151,6 +150,7 @@ public class Compiler {
             e.printStackTrace();
         } catch (Exception e) {
             System.err.println("[ERROR] " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
