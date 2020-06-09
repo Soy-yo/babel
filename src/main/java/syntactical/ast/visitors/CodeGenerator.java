@@ -201,8 +201,12 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(ReturnStatementNode node) {
+        // TODO think it's okay
+        // Take mp to stack
         issue("lda", "0", "0");
+        // Take return value to stack
         node.getReturnExpression().accept(this);
+        // Store return value in mp
         issue("sto");
     }
 
@@ -236,6 +240,7 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(SwitchStatementNode node) {
+        // TODO think it's okay
         TreeMap<ConstantExpressionNode, StatementNode> map = new TreeMap<>(node.getCases());
         String endLabel = newLabel.getLabel();
         // switch value should be a primitive
@@ -279,6 +284,7 @@ public class CodeGenerator implements Visitor {
             // create the label
             issueLabel(label);
             // TODO: this could be a block of code, don't know if it'd work
+            // Think it should work
             entry.getValue().accept(this);
             issueLabeled("ujp", endLabel, 0);
         }
