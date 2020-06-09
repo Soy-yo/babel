@@ -33,6 +33,8 @@ public class MemoryAssigner implements Visitor {
                 n.accept(this);
             }
         }
+        // Treating global scope as a function
+        directions.setFunctionSize(SymbolTable.GLOBAL_SCOPE_ID, relativeDir);
     }
 
     @Override
@@ -62,6 +64,7 @@ public class MemoryAssigner implements Visitor {
             relativeDir++;
         }
         node.getCode().accept(this);
+        directions.setFunctionSize(node.getId(), relativeDir);
         relativeDir = previousDir;
     }
 

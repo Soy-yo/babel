@@ -12,11 +12,13 @@ public class Directions {
     private final Map<Integer, Integer> variableDirections;
     private final Map<Type, List<FieldData>> classFields;
     private final Map<Integer, List<FieldData>> formFields;
+    private final Map<Integer, Integer> functionSize;
 
     public Directions() {
         this.variableDirections = new HashMap<>();
         this.classFields = new HashMap<>();
         this.formFields = new HashMap<>();
+        this.functionSize = new HashMap<>();
     }
 
     public void registerVariable(int id, int relativeDir) {
@@ -43,12 +45,20 @@ public class Directions {
         return getField(classFields, type, v);
     }
 
+    public List<FieldData> getClassFields(Type type) {
+        return Collections.unmodifiableList(classFields.get(type));
+    }
+
     public void registerFormField(int id, Variable v, ExpressionNode initialValue) {
         if (!formFields.containsKey(id)) {
             formFields.put(id, new ArrayList<>());
         }
         List<FieldData> vars = formFields.get(id);
         vars.add(new FieldData(v, initialValue, vars.size()));
+    }
+
+    public List<FieldData> getFormFields(int id) {
+        return Collections.unmodifiableList(formFields.get(id));
     }
 
     public FieldData getFormField(int id, Variable v) {
@@ -60,6 +70,14 @@ public class Directions {
             return null;
         }
         return new FormTree(id);
+    }
+
+    public void setFunctionSize(int id, int size) {
+        functionSize.put(id, size);
+    }
+
+    public int getFunctionSize(int id) {
+        return functionSize.get(id);
     }
 
     private static <T> FieldData getField(Map<T, List<FieldData>> map, T key, Variable v) {

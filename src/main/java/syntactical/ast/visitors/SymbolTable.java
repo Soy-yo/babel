@@ -6,7 +6,7 @@ import java.util.*;
 
 public class SymbolTable {
 
-    private static final int GLOBAL_SCOPE_ID = -1;
+    public static final int GLOBAL_SCOPE_ID = -1;
 
     // Only global classes allowed
     private final Map<Type, Integer> classTable;
@@ -123,7 +123,7 @@ public class SymbolTable {
 
     public boolean putVariable(int id, String variable, Type type, boolean isConst) {
         boolean result = currentScope.variableTable.putIfAbsent(
-                variable, new Variable(id, variable, type, isConst, currentScope.depth)
+                variable, new Variable(id, variable, type, isConst, currentScope.blockId == GLOBAL_SCOPE_ID)
         ) == null;
         if (result) {
             variableRelations.put(id, currentScope.variableTable.get(variable));
