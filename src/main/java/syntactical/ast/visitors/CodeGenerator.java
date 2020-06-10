@@ -288,10 +288,15 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(SwitchStatementNode node) {
-        // TODO default isn't working
         // TODO think it's okay
         TreeMap<ConstantExpressionNode, StatementNode> map = new TreeMap<>(node.getCases());
+        String defaultLabel;
         String endLabel = newLabel.getLabel();
+        if (node.hasDefault()) {
+            defaultLabel = newLabel.getLabel(node.getDef());
+        } else {
+            defaultLabel = endLabel;
+        }
         // switch value should be a primitive
         // we place it on top of the stack
         node.getSwitchExpression().accept(this);
@@ -301,27 +306,21 @@ public class CodeGenerator implements Visitor {
         issue("ldc", String.valueOf(map.firstKey().getValue()));
         issue("geq");
         // if false skip switch
-        issueLabeled("fjp", endLabel, 0);
+        issueLabeled("fjp", defaultLabel, 0);
         // duplicate to compare to last
         issue("dpl");
         // put last in stack to compare
         issue("ldc", String.valueOf(map.lastKey().getValue()));
         issue("leq");
         // if false skip switch
-        issueLabeled("fjp", endLabel, 0);
+        issueLabeled("fjp", defaultLabel, 0);
         // we place the first value on top of the stack for indexing
         issue("ldc", String.valueOf(map.firstKey().getValue()));
         // we subtract them so now we index starting on the first possible value
         issue("sub");
-        String defaultLabel;
         String jumpTable = newLabel.getLabel();
         // we jump to the end of the jumpTable + the value of the expression
         issueLabeled("ixj", jumpTable, 0);
-        if (node.hasDefault()) {
-            defaultLabel = newLabel.getLabel(node.getDef());
-        } else {
-            defaultLabel = endLabel;
-        }
         // We create a list of labels, all of them point to the default one and it has exactly
         // the size we need
         String[] labels = new String[map.lastKey().getValue() - map.firstKey().getValue() + 1];
@@ -335,6 +334,11 @@ public class CodeGenerator implements Visitor {
             // Think it should work
             entry.getValue().accept(this);
             issueLabeled("ujp", endLabel, 0);
+        }
+        if(node.hasDefault()) {
+          issueLabel(defaultLabel);
+          node.getDef().accept(this);
+          issueLabeled("ujp", endLabel, 0);
         }
         // so we know were the jump table starts
         issueLabel(jumpTable);

@@ -2,8 +2,7 @@ package syntactical.ast;
 
 import syntactical.ast.visitors.Visitor;
 
-import javax.swing.plaf.nimbus.State;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -16,18 +15,18 @@ public class SwitchStatementNode extends StatementNode {
     public SwitchStatementNode(
             IdGenerator id,
             ExpressionNode switchExpression,
-            Map<ConstantExpressionNode, StatementNode> cases, StatementNode def) {
+            Map<ConstantExpressionNode, StatementNode> cases) {
         super(id, null);
         this.switchExpression = switchExpression;
+        this.def = null;
+        for(Map.Entry<ConstantExpressionNode, StatementNode> entry : cases.entrySet()) {
+            if (entry.getKey().getType().equals(new Type("~Default"))) {
+                def = entry.getValue();
+                cases.remove(entry.getKey());
+                break;
+            }
+        }
         this.cases = new TreeMap<>(cases);
-        this.def = def;
-    }
-
-    public SwitchStatementNode(
-        IdGenerator id,
-        ExpressionNode switchExpression,
-        Map<ConstantExpressionNode, StatementNode> cases) {
-        this(id, switchExpression, cases, null);
     }
 
     public ExpressionNode getSwitchExpression() {

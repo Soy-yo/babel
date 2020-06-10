@@ -402,6 +402,7 @@ public class SymbolTableCreator implements Visitor {
             }
             e.getValue().accept(this);
         }
+        node.getDef().accept(this);
     }
 
     @Override
