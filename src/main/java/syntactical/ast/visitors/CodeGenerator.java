@@ -12,17 +12,23 @@ public class CodeGenerator implements Visitor {
 
     private static final int OFFSET = 5;
 
+    // Main node
     private final ASTNode root;
-    private final String file;
+
+    // Utility structures
     private final SymbolTable symbolTable;
     private final Directions directions;
+
+    // Actual code generation
+    private final List<Instruction> code;
+    private final BufferedWriter writer;
+
+    // Dynamic control variables
     private int currentSP;
-    private int globalSP;
     private int currentPC;
     private Type currentClass;
     private boolean inGlobalScope;
-    private List<Instruction> code;
-    private BufferedWriter writer;
+
     // Label generator
     private final NewLabel newLabel;
     private final Map<String, List<Integer>> missingLabels;
@@ -33,20 +39,17 @@ public class CodeGenerator implements Visitor {
 
     public CodeGenerator(ASTNode root, String file, SymbolTable symbolTable, Directions directions) throws IOException {
         this.root = root;
-        this.file = file;
         this.symbolTable = symbolTable;
         this.directions = directions;
-        // TODO theoretically STORE[0] = main program MP
+        this.code = new ArrayList<>();
+        this.writer = new BufferedWriter(new FileWriter(file));
         this.currentSP = 0;
-        this.globalSP = 0;
         this.currentPC = 0;
         this.currentClass = null;
         this.inGlobalScope = true;
-        this.code = new ArrayList<>();
         this.newLabel = new NewLabel();
         this.missingLabels = new HashMap<>();
         this.labels = new HashMap<>();
-        this.writer = new BufferedWriter(new FileWriter(file));
     }
 
     public void start() throws IOException {
@@ -58,7 +61,7 @@ public class CodeGenerator implements Visitor {
     @Override
     public void visit(ProgramNode node) {
         int declarationsSize = directions.getFunctionSize(SymbolTable.GLOBAL_SCOPE_ID);
-        // TODO check
+        // TODO check (might be ent p q)
         // Activate "global scope function" so all variables can be acceded with same formula
         issue("ssp", "" + (declarationsSize + OFFSET));
         currentSP = declarationsSize + OFFSET - 1;
@@ -120,15 +123,15 @@ public class CodeGenerator implements Visitor {
     public void visit(FunctionDeclarationNode node) {
         Function f = symbolTable.getFunctionById(node.getId());
         issueLabel(newLabel.getLabel(f));
+        // Size of parameters and local variables
         int size = directions.getFunctionSize(node.getId());
-        // +1 for "this"
-        int parameterSize = node.getParameters().size() + (currentClass != null ? 1 : 0);
         // TODO use ent p q? - we need to update EP
         // Make room for local variables
-        issue("ssp", "" + (parameterSize + size + OFFSET));
+        issue("ssp", "" + (size + OFFSET));
         // Reset current SP
         int previousSP = currentSP;
-        currentSP = parameterSize + size + OFFSET - 1;
+        // TODO check -1
+        currentSP = size + OFFSET - 1;
         boolean g = inGlobalScope;
         inGlobalScope = false;
         node.getCode().accept(this);
@@ -141,21 +144,17 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(ConstructorDeclarationNode node) {
-        // TODO return manually
         // TODO check this
         Function f = symbolTable.getFunctionById(node.getId());
-        issueLabel(newLabel.getLabel(f));
-        Type previousClass = currentClass;
         Type type = node.getType();
-        // Notify that we are now inside the class
-        currentClass = type;
+        issueLabel(newLabel.getLabel(f));
         int size = directions.getFunctionSize(node.getId());
-        // +1 for "this"
-        int parameterSize = node.getParameters().size() + 1;
-        issue("ssp", "" + (parameterSize + size + OFFSET));
+        // TODO use ent p q? - we need to update EP
+        issue("ssp", "" + (size + OFFSET));
         // Reset current SP
         int previousSP = currentSP;
-        currentSP = parameterSize + size + OFFSET - 1;
+        // TODO check -1
+        currentSP = size + OFFSET - 1;
         List<Directions.FieldData> fields = directions.getClassFields(type);
         // Allocate memory for all fields in the class
         alloc(fields.size());
@@ -177,9 +176,15 @@ public class CodeGenerator implements Visitor {
         }
         // Save "this" in the first parameter
         issue("str", "0", "" + OFFSET);
-        // TODO update EP (use ent p q?)
+        boolean g = inGlobalScope;
+        inGlobalScope = false;
         node.getCode().accept(this);
-        currentClass = previousClass;
+        // Save this as return value and ignore any other possible return
+        issue("lod", "0", "" + OFFSET);
+        issue("str", "0", "0");
+        // Return
+        issue("retf");
+        inGlobalScope = g;
         currentSP = previousSP;
     }
 
@@ -219,11 +224,7 @@ public class CodeGenerator implements Visitor {
         ExpressionNode target = node.getTarget();
         switch (method) {
             case NONE:
-                //target.accept(this);
-                // Assignment statement can only occur inside a function
-                Variable v = symbolTable.getVariableById(target.getId());
-                int offset = directions.getVariableDir(v.id);
-                issue("lda", v.isGlobal ? "1" : "0", "" + (offset + OFFSET));
+                variableAccess((VariableExpressionNode) target);
                 break;
             case FIELD:
                 pointAccess(target, node.getAccessExpression());
@@ -253,6 +254,8 @@ public class CodeGenerator implements Visitor {
         node.getReturnExpression().accept(this);
         // Store return value in mp
         issue("sto");
+        // Return
+        issue("retf");
     }
 
     @Override
@@ -285,6 +288,7 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(SwitchStatementNode node) {
+        // TODO default isn't working
         // TODO think it's okay
         TreeMap<ConstantExpressionNode, StatementNode> map = new TreeMap<>(node.getCases());
         String endLabel = newLabel.getLabel();
@@ -328,8 +332,6 @@ public class CodeGenerator implements Visitor {
             labels[entry.getKey().getValue() - map.firstKey().getValue()] = label;
             // create the label
             issueLabel(label);
-            // TODO: this could be a block of code, don't know if it'd work <- now blocks just put code so it should
-            // TODO: this could be a block of code, don't know if it'd work
             // Think it should work
             entry.getValue().accept(this);
             issueLabeled("ujp", endLabel, 0);
@@ -362,12 +364,13 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(ForStatementNode node) {
+        // TODO think it's okay
         VarDeclarationNode variable = node.getVariable();
         ExpressionNode iterable = node.getIterable();
         Variable v = symbolTable.getVariableById(variable.getId());
         int offset = directions.getVariableDir(v.id);
         String forEndLabel = newLabel.getLabel();
-        boolean generated = false;
+        boolean toFor = false;
         if (iterable instanceof FunctionCallExpressionNode) {
             FunctionCallExpressionNode iterableFunction = (FunctionCallExpressionNode) iterable;
             Function f = symbolTable.getFunctionById(iterableFunction.getId());
@@ -397,12 +400,48 @@ public class CodeGenerator implements Visitor {
                 issue("inc", "1");
                 // Jump to loop start
                 issue("ujp", "" + forStart);
-                generated = true;
+                toFor = true;
             }
         }
-        if (!generated) {
-            // TODO access to iterable[i]
+        if (!toFor) {
+            // It's a for loop over an array
             iterable.accept(this);
+            // Load index
+            issue("ldc", "0");
+            int forStart = currentPC;
+            // Save it
+            issue("str", "0", "0");
+            // Duplicate array for future accesses
+            issue("dpl");
+            // Get array.size
+            issue("ind");
+            // Retrieve i again
+            issue("lod", "0", "0");
+            // index < size
+            issue("grt");
+            // Jump outside the loop if condition is false
+            issueLabeled("fjp", forEndLabel, 0);
+            // We will need array pointer again
+            issue("dpl");
+            // And index
+            issue("lod", "0", "0");
+            // index++ as we want to ignore size's location
+            issue("inc", "1");
+            // Don't lose it
+            issue("dpl");
+            // Save it incremented
+            issue("str", "0", "0");
+            // array pointer + index (+1)
+            issue("add");
+            // Get array[index]
+            issue("ind");
+            // Store in into the loop variable
+            issue("str", "0", "" + (offset + OFFSET));
+            // And get index again for the next iteration
+            issue("lod", "0", "0");
+            node.getBlock().accept(this);
+            // Jump to loop start
+            issue("ujp", "" + forStart);
         }
         issueLabel(forEndLabel);
         // Remove duplicated right or array
@@ -492,8 +531,7 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(FunctionCallExpressionNode node) {
-        // TODO update SP
-        // TODO special cases as well for Form == Form, Array == Array, Primitive ... Primitive and maybe Int % Int
+        // TODO special cases as well for Form == Form, Array == Array, Primitive ... Primitive
         Function f = symbolTable.getFunctionById(node.getId());
         ExpressionNode function = node.getFunction();
         List<ExpressionNode> args = node.getArguments();
@@ -547,11 +585,18 @@ public class CodeGenerator implements Visitor {
             // Create activation frame
             issue("mst", inGlobalScope ? "0" : "1");
             // Now SP should be pointing to the first parameter direction
-            int argsSize = args.size() + (function instanceof PointExpressionNode ? 1 : 0);
-            if (function instanceof PointExpressionNode) {
-                // Send "this"
-                ExpressionNode receiver = ((PointExpressionNode) function).getHost();
-                receiver.accept(this);
+            int argsSize = args.size();
+            if (f.isMethod) {
+                argsSize++;
+                if (function instanceof PointExpressionNode) {
+                    // Send "this"
+                    ExpressionNode receiver = ((PointExpressionNode) function).getHost();
+                    receiver.accept(this);
+                } else {
+                    // The function is a method but it's not being called with point expression
+                    // Then "this" is implicit "this": load it
+                    issue("lod", "0", "" + OFFSET);
+                }
             }
             for (ExpressionNode e : args) {
                 // Evaluate the argument
@@ -573,14 +618,22 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(VariableExpressionNode node) {
-        // TODO probably okay, but be careful with the else if branch
+        // TODO think it's okay,
+        // Starts with SP and ends with SP + 1 with variable contents on top of the stack
+        variableAccess(node);
+        // Get whatever it is in that direction
+        issue("ind");
+    }
+
+    private void variableAccess(VariableExpressionNode node) {
+        // TODO make sure else if branch is okay
         // Starts with SP and ends with SP + 1: contents of variable
         Variable v = symbolTable.getVariableById(node.getId());
         if (directions.existsVariable(v.id)) {
             // Variable is global/local
             int offset = directions.getVariableDir(v.id);
             String base = inGlobalScope ? "0" : v.isGlobal ? "1" : "0";
-            issue("lod", base, "" + (offset + OFFSET));
+            issue("lda", base, "" + (offset + OFFSET));
         } else if (currentClass != null) {
             // Variable is class field
             // Load "this" (is the first parameter of the method)
@@ -590,8 +643,6 @@ public class CodeGenerator implements Visitor {
                 // Set the direction to the pointer to this + the offset of the field
                 issue("inc", "" + data.index);
             }
-            // Get the field
-            issue("ind");
         } else {
             throw new IllegalStateException("Unknown variable " + v);
         }
@@ -663,15 +714,10 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(ConstructorCallExpressionNode node) {
-        // TODO when reloading the size of the array, maybe do it as if it was a normal variable (relative to MP etc)
-        //      so we don't have to hack it too much
         // Starts with SP and NP and ends with SP + 1 with direction of NP - size of object allocated
         Function f = symbolTable.getFunctionById(node.getId());
-        Type type = f.returnType;
-        // TODO test if it works (if it does we have to do it also inside functions)
         List<ExpressionNode> arguments = node.getArguments();
         if (f.id == Defaults.Array.CONSTRUCTOR_ID) {
-            // TODO fix
             ExpressionNode size = arguments.get(0);
             // This must return the size on top of the stack
             size.accept(this);
@@ -679,7 +725,6 @@ public class CodeGenerator implements Visitor {
             issue("dpl");
             // Save the size in MP to use it later
             issue("str", "0", "0");
-            // Notify that we are now inside the class
             // Load MP direction so result of new is saved there
             issue("lda", "0", "0");
             // Reload the size
@@ -688,23 +733,31 @@ public class CodeGenerator implements Visitor {
             issue("inc", "1");
             // Create room for size elements in the heap and put the pointer in MP
             issue("new");
+            // TODO any better way so we don't have to use it this direction?
+            // Save size into temporary direction: 1 as directions 0-4 are unused (but we might be using 0)
+            issue("sro", "1");
             // Reload result from MP
             issue("lod", "0", "0");
-            // At this point we have (size, pointer) on top of the stack
-
-
-            // Duplicate the pointer so we don't lose it
-            issue("dpl");
-            // Reload the size again
-            issue("ldo", "" + (globalSP - 2));
+            // And reload size
+            issue("ldo", "1");
             // Save the size in the first position of the array
             issue("sto");
+            // And finally reload result of the expression from MP
+            issue("lod", "0", "0");
             // TODO if parameter is primitive fill it with zeroes
-            // Copy pointer over size so we don't generate garbage
-            issue("sli");
         } else {
-            // TODO put parameters (ignore this as we don't know it yet)
-            issueLabeled("ujp", newLabel.getLabel(f), 0);
+            // Create activation frame
+            issue("mst", inGlobalScope ? "0" : "1");
+            // Now SP should be pointing to the first parameter direction
+            int argsSize = arguments.size() + 1;
+            // Put null in "this" parameter for the moment
+            issue("ldc", "-1");
+            for (ExpressionNode e : arguments) {
+                // Evaluate the argument
+                e.accept(this);
+            }
+            // Save space for parameters, save return address and go to function
+            issueLabeled("cup", newLabel.getLabel(f), 1, "" + argsSize);
         }
     }
 
@@ -794,19 +847,6 @@ public class CodeGenerator implements Visitor {
         return null;
     }
 
-    private String convertType(Type type) {
-        if (Defaults.INT.realEquals(type)) {
-            return "i";
-        } else if (Defaults.BOOL.realEquals(type)) {
-            return "b";
-        } else if (Defaults.REAL.realEquals(type)) {
-            return "r";
-        } else if (Defaults.CHAR.realEquals(type)) {
-            return "c";
-        }
-        return "a";
-    }
-
     private void issue(String instruction, String... parameters) {
         code.add(new Instruction(instruction, Arrays.asList(parameters)));
         updateSP(InstructionsMap.get(instruction));
@@ -854,7 +894,6 @@ public class CodeGenerator implements Visitor {
     private void updateSP(int n) {
         // TODO update EP if needed
         currentSP += n;
-        globalSP += n;
     }
 
     private void writeCode() throws IOException {

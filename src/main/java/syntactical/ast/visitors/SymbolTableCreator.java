@@ -212,12 +212,13 @@ public class SymbolTableCreator implements Visitor {
     @Override
     public void visit(FunctionDeclarationNode node) {
         BlockStatementNode block = node.getCode();
+        // TODO make sure it's safe to set class id for "this"
+        // Save current scope id in case we are inside a class so we can add "this" as a parameter
+        int thisId = symbolTable.getCurrentScopeId();
         // Create block here to add all parameters to scope
         symbolTable.openScope(block.getId());
         if (currentClass != null) {
-            // TODO make sure it's safe to set class id for "this"
-            int thisId = symbolTable.getCurrentScopeId();
-            symbolTable.putVariable(thisId, Defaults.THIS, new Type(currentClass));
+            symbolTable.putVariable(thisId, Defaults.THIS, new Type(currentClass), true);
         }
         for (VarDeclarationNode param : node.getParameters()) {
             symbolTable.putVariable(param.getId(), param.getIdentifier(), param.getType());

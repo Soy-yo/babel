@@ -150,7 +150,6 @@ public class Compiler {
             e.printStackTrace();
         } catch (Exception e) {
             System.err.println("[ERROR] " + e.getMessage());
-            e.printStackTrace();
         }
     }
 

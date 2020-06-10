@@ -1,3 +1,9 @@
+Array<Int> stdout = [0];
+Int index = 0;
+BinaryTree([1,2,3,4,5]) bt;
+BinaryTree bt2 = BinaryTree([3,1,4,69,62,7]);
+BinaryTree bt3;
+
 class Node {
     Int value;
     Node left;
@@ -14,8 +20,16 @@ class Node {
              return this;
          }
          value += other.value;
-         left = left.merge(other.left);
-         right = right.merge(other.right);
+         if left === null {
+            left = other.left;
+         } else {
+            left = left.merge(other.left);
+         }
+         if right === null {
+            right = other.right;
+         } else {
+            right = right.merge(other.right);
+         }
          return this;
     }
 
@@ -49,25 +63,20 @@ class BinaryTree {
     }
 
     constructor(Array<Int> arr) {
-       for Int a in arr {
+        for Int a in arr {
             add(a);
-       }
+        }
     }
 
     Node addRecursive(Node current, Int value) {
         if current === null {
             return Node(value);
         }
-
         if value < current.value() {
             current.setLeft(addRecursive(current.left(), value));
         } else if value > current.value() {
             current.setRight(addRecursive(current.right(), value));
-        } else {
-            // value already exists
-            return current;
         }
-
         return current;
     }
 
@@ -90,15 +99,11 @@ class BinaryTree {
 }
 
 Void print(Int value) {
-    /*
-        dummy function that does nothing
-        representing a print function
-    */
+    stdout[index] = value;
+    index += 1;
 }
 
 Void main() {
-    BinaryTree([1,2,3,4,5]) bt;
     print(bt.findSmallestValue());
-    BinaryTree([3,1,4,69,62,7]) bt2;
-    BinaryTree bt3 = bt + bt2;
+    bt3 = bt + bt2;
 }
