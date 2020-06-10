@@ -1,9 +1,11 @@
+String print = "\0\0\0\0\0\0\0\0\0\0\0\0";
+
 Void print(String text) {
-    /*
-        dummy function that does nothing
-        representing a print function
-    */
-    return;
+    Int i = 0;
+    for Char c in text {
+        print[i] = c;
+        i += 1;
+    }
 }
 
 Void main() {

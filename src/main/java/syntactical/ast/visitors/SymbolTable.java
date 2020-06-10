@@ -137,7 +137,9 @@ public class SymbolTable {
 
     public boolean putFunction(int id, String name, List<Type> parameters, Type type) {
         Func func = new Func(name, parameters.toArray(new Type[0]));
-        Function function = new Function(id, name, parameters.toArray(new Type[0]), type);
+        // If current scope is not global scope then function is actually a method
+        Function function = new Function(id, name, parameters.toArray(new Type[0]), type,
+                getCurrentScopeId() != GLOBAL_SCOPE_ID);
         if (func.equals(mainFunc)) {
             mainFunction = function;
         }

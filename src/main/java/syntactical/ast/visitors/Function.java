@@ -12,12 +12,14 @@ public class Function {
     final String name;
     final Type[] parameters;
     final Type returnType;
+    final boolean isMethod;
 
-    Function(int id, String name, Type[] parameters, Type returnType) {
+    Function(int id, String name, Type[] parameters, Type returnType, boolean isMethod) {
         this.id = id;
         this.name = name;
         this.parameters = parameters;
         this.returnType = returnType;
+        this.isMethod = isMethod;
     }
 
     @Override
