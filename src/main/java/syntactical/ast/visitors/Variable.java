@@ -10,14 +10,14 @@ public class Variable {
     final String name;
     final Type type;
     final boolean isConst;
-    final int depth;
+    final boolean isGlobal;
 
-    Variable(int id, String name, Type type, boolean isConst, int depth) {
+    Variable(int id, String name, Type type, boolean isConst, boolean isGlobal) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.isConst = isConst;
-        this.depth = depth;
+        this.isGlobal = isGlobal;
     }
 
     @Override

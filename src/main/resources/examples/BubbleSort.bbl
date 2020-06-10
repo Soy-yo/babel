@@ -1,3 +1,5 @@
+Array<Int> arr = [64, 34, 25, 12, 22, 11, 90];
+
 // Bubble sort in babel
 Void bubbleSort(Array<Int> arr) {
     Int n = arr.size;
@@ -13,31 +15,6 @@ Void bubbleSort(Array<Int> arr) {
     }
 }
 
-/* Prints the array */
-Void printArray(Array<Int> arr) {
-    for Int x in arr {
-        print(x);
-        print(' ');
-    }
-    print('\n');
-}
-
-Void print(Char c) {
-    /*
-        dummy function that does nothing
-        representing a print function
-    */
-}
-
-Void print(Int n) {
-    /*
-        dummy function that does nothing
-        representing a print function
-    */
-}
-
 Void main() {
-    Array<Int> arr = [64, 34, 25, 12, 22, 11, 90];
     bubbleSort(arr);
-    printArray(arr);
 }
