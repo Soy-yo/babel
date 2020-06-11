@@ -1,11 +1,9 @@
 package syntactical.ast.visitors;
 
-import syntactical.Defaults;
 import syntactical.ast.ExpressionNode;
 import syntactical.ast.Type;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Directions {
 
@@ -65,13 +63,6 @@ public class Directions {
         return getField(formFields, id, v);
     }
 
-    public FormTree getFormTree(int id) {
-        if (!formFields.containsKey(id)) {
-            return null;
-        }
-        return new FormTree(id);
-    }
-
     public void setFunctionSize(int id, int size) {
         functionSize.put(id, size);
     }
@@ -102,39 +93,6 @@ public class Directions {
             this.variable = variable;
             this.initialValue = initialValue;
             this.index = index;
-        }
-    }
-
-    class FormTree {
-        private final int rootId;
-
-        private FormTree(int rootId) {
-            this.rootId = rootId;
-        }
-
-        Set<Variable> fields() {
-            List<FieldData> fields = formFields.get(rootId);
-            return Collections.unmodifiableSet(
-                    fields.stream().map(d -> d.variable).collect(Collectors.toSet())
-            );
-        }
-
-        boolean equals(FormTree other) {
-            Set<Variable> thisFields = fields();
-            Set<Variable> otherFields = other.fields();
-            if (!thisFields.equals(otherFields)) {
-                return false;
-            }
-            // Recursively check Forms
-            for (Variable v : thisFields) {
-                if (Defaults.FORM.equals(v.type)) {
-                    Variable w = otherFields.stream().filter(u -> u.equals(v)).findFirst().get();
-                    if (!new FormTree(v.id).equals(new FormTree(w.id))) {
-                        return false;
-                    }
-                }
-            }
-            return true;
         }
     }
 

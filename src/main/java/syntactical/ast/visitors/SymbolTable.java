@@ -14,6 +14,8 @@ public class SymbolTable {
     private final Map<Integer, Function> functionRelations;
     private Scope currentScope;
 
+    private final Map<Integer, List<Integer>> pendingFunctionRelations;
+
     private Func mainFunc;
     private Function mainFunction;
 
@@ -22,6 +24,7 @@ public class SymbolTable {
         this.variableRelations = new HashMap<>();
         this.functionRelations = new HashMap<>();
         this.currentScope = new Scope(GLOBAL_SCOPE_ID, null);
+        this.pendingFunctionRelations = new HashMap<>();
         this.mainFunc = null;
         this.mainFunction = null;
     }
@@ -121,6 +124,20 @@ public class SymbolTable {
         return result;
     }
 
+    public void linkFunctionManually(int callerId, int declarationId) {
+        if (functionRelations.containsKey(declarationId)) {
+            // Declaration already exists so link to it
+            functionRelations.put(callerId, functionRelations.get(declarationId));
+        } else if (pendingFunctionRelations.containsKey(declarationId)) {
+            List<Integer> value = pendingFunctionRelations.get(declarationId);
+            value.add(callerId);
+        } else {
+            List<Integer> value = new ArrayList<>();
+            value.add(callerId);
+            pendingFunctionRelations.put(declarationId, value);
+        }
+    }
+
     public boolean putVariable(int id, String variable, Type type, boolean isConst) {
         boolean result = currentScope.variableTable.putIfAbsent(
                 variable, new Variable(id, variable, type, isConst, currentScope.blockId == GLOBAL_SCOPE_ID)
@@ -137,15 +154,22 @@ public class SymbolTable {
 
     public boolean putFunction(int id, String name, List<Type> parameters, Type type) {
         Func func = new Func(name, parameters.toArray(new Type[0]));
-        // If current scope is not global scope then function is actually a method
+        // If current scope is not global scope then function is actually a method (extra functions are methods as well)
         Function function = new Function(id, name, parameters.toArray(new Type[0]), type,
-                getCurrentScopeId() != GLOBAL_SCOPE_ID);
+                getCurrentScopeId() != GLOBAL_SCOPE_ID || pendingFunctionRelations.containsKey(id));
         if (func.equals(mainFunc)) {
             mainFunction = function;
         }
         boolean result = currentScope.functionTable.putIfAbsent(func, function) == null;
         if (result) {
             functionRelations.put(id, function);
+            if (pendingFunctionRelations.containsKey(id)) {
+                // For every function waiting for this one add all those links
+                for (int callerId : pendingFunctionRelations.get(id)) {
+                    functionRelations.put(callerId, function);
+                }
+                pendingFunctionRelations.remove(id);
+            }
         }
         return result;
     }

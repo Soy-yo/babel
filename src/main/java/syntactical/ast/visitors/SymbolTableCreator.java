@@ -20,9 +20,12 @@ public class SymbolTableCreator implements Visitor {
     private Deque<Integer> pointRecPath;
     private int pointRecDepth;
 
+    private final SpecialFunctionCreator sfc;
+    private final Queue<FunctionDeclarationNode> extraDeclarations;
+
     private int errors;
 
-    public SymbolTableCreator(ProgramNode root, Map<DeclarationNode, String> fileErrorHandling) {
+    public SymbolTableCreator(ProgramNode root, Map<DeclarationNode, String> fileErrorHandling, IdGenerator generator) {
         this.root = root;
         this.fileErrorHandling = fileErrorHandling;
         this.symbolTable = new SymbolTable("main");
@@ -32,6 +35,8 @@ public class SymbolTableCreator implements Visitor {
         this.currentFormDepth = 0;
         this.pointRecPath = null;
         this.pointRecDepth = 0;
+        this.sfc = new SpecialFunctionCreator(symbolTable, generator);
+        this.extraDeclarations = new ArrayDeque<>();
         initializeTable();
     }
 
@@ -166,6 +171,17 @@ public class SymbolTableCreator implements Visitor {
                     currentFile = fileErrorHandling.get(n);
                 }
                 n.accept(this);
+                while (!extraDeclarations.isEmpty()) {
+                    // This will only work for methods T.function(T, ...)
+                    FunctionDeclarationNode e = extraDeclarations.poll();
+                    e.linkedAfter(n);
+                    List<Type> params = e.getParameters().stream()
+                            .map(DeclarationNode::getType)
+                            .collect(Collectors.toList());
+                    // Put manually since all functions have already been added
+                    symbolTable.putFunction(e.getId(), e.getIdentifier(), params, e.getType());
+                    e.accept(this);
+                }
             }
         }
     }
@@ -182,7 +198,7 @@ public class SymbolTableCreator implements Visitor {
                     symbolTable.closeScope();
                 }
             } else {
-                if (!symbolTable.existsClassScope(type)) {
+                if (!existsType(type)) {
                     error(node, "Variable type " + type + " does not exist");
                 }
                 initialValue.accept(this);
@@ -213,6 +229,9 @@ public class SymbolTableCreator implements Visitor {
     public void visit(FunctionDeclarationNode node) {
         BlockStatementNode block = node.getCode();
         // TODO make sure it's safe to set class id for "this"
+        if (!existsType(node.getType())) {
+            error(node, "Type " + node.getType() + " does not exist");
+        }
         // Save current scope id in case we are inside a class so we can add "this" as a parameter
         int thisId = symbolTable.getCurrentScopeId();
         // Create block here to add all parameters to scope
@@ -221,6 +240,9 @@ public class SymbolTableCreator implements Visitor {
             symbolTable.putVariable(thisId, Defaults.THIS, new Type(currentClass), true);
         }
         for (VarDeclarationNode param : node.getParameters()) {
+            if (!existsType(param.getType())) {
+                error(param, "Type " + param.getType() + " does not exist");
+            }
             symbolTable.putVariable(param.getId(), param.getIdentifier(), param.getType());
         }
         symbolTable.closeScope();
@@ -268,7 +290,7 @@ public class SymbolTableCreator implements Visitor {
             } else if (type.contains(Defaults.FORM)) {
                 error(node, "Arrays of Forms not allowed");
             }
-        } else if (!symbolTable.existsClassScope(type)) {
+        } else if (!existsType(type)) {
             error(node, "Variable type " + type + " does not exist");
         }
         ExpressionNode initialValue = declaration.getInitialValue();
@@ -642,12 +664,16 @@ public class SymbolTableCreator implements Visitor {
                 if (OperatorOverloadConstants._EQUALS.equals(functionName)) {
                     if (argumentTypes.size() != 1) {
                         error(ve, "Cannot apply " + functionName + " to " + receiver + " and " + argumentTypes);
-                    } else if (receiverType.realEquals(argumentTypes.get(0))) {
+                    } else if (!receiverType.realEquals(argumentTypes.get(0))) {
                         error(node.getLexeme() == null ? ve : node,
-                                "Cannot apply to " + receiver + " and " + argumentTypes.get(0));
+                                "Cannot apply to " + receiver.getType() + " and " + argumentTypes.get(0));
                     } else {
-                        // Ignore result as we already know which function it is
-                        symbolTable.getFunctionHere(functionName, argumentTypes, node.getId());
+                        // We need to create a special function for this
+                        FunctionDeclarationNode extra = sfc.arrayEquals(receiverType, node, node.getLexeme() == null ?
+                                ve.getLexeme() : node.getLexeme());
+                        if (extra != null) {
+                            extraDeclarations.add(extra);
+                        }
                         ve.setType(Defaults.BOOL);
                         pe.setType(Defaults.BOOL);
                         node.setType(Defaults.BOOL);
@@ -792,7 +818,7 @@ public class SymbolTableCreator implements Visitor {
             // Unrecognized argument type: don't try to find the the constructor as it won't exist
             return;
         }
-        if (!symbolTable.existsClassScope(type)) {
+        if (!existsType(type)) {
             error(node, "Trying to call a constructor of a class that doesn't exist");
             return;
         }
@@ -824,6 +850,17 @@ public class SymbolTableCreator implements Visitor {
     @Override
     public void visit(ErrorExpressionNode node) {
 
+    }
+
+    private boolean existsType(Type type) {
+        if (!symbolTable.existsClassScope(type)) {
+            return false;
+        }
+        Type parameter = type.getParameter();
+        if (parameter == null || parameter == Type.WILDCARD) {
+            return true;
+        }
+        return existsType(parameter);
     }
 
     private void error(ASTNode node, String message) {

@@ -535,7 +535,7 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(FunctionCallExpressionNode node) {
-        // TODO special cases as well for Form == Form, Array == Array, Primitive ... Primitive
+        // TODO special cases as well for Form == Form, Primitive ... Primitive
         Function f = symbolTable.getFunctionById(node.getId());
         ExpressionNode function = node.getFunction();
         List<ExpressionNode> args = node.getArguments();

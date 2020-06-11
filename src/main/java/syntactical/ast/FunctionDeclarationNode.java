@@ -31,7 +31,7 @@ public class FunctionDeclarationNode extends DeclarationNode {
         Name name,
         Collection<Name> parameterNames,
         BlockStatementNode code) {
-        this(id, null, name, parameterNames, code);
+        this(id, name.getIdentifierLexicalUnit(), name, parameterNames, code);
     }
 
     public List<VarDeclarationNode> getParameters() {

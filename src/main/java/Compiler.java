@@ -54,7 +54,7 @@ public class Compiler {
     private boolean compile(ProgramNode program) throws IOException {
         // TODO stop at some point if result is already false
         mergeFiles(program);
-        SymbolTableCreator creator = new SymbolTableCreator(program, firstNodeOfFiles);
+        SymbolTableCreator creator = new SymbolTableCreator(program, firstNodeOfFiles, generator);
         SymbolTable symbolTable = creator.create();
         int errors = creator.errors();
         //new syntactical.ast.visitors.ASTPrinter(program).print();
