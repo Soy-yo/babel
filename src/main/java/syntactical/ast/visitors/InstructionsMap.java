@@ -12,7 +12,6 @@ public class InstructionsMap {
     }
 
     static {
-        // TODO check none is missing
         map.put("add", -1);
         map.put("sub", -1);
         map.put("mul", -1);
@@ -48,18 +47,18 @@ public class InstructionsMap {
         map.put("str", -1);
         map.put("mst", 5);
         map.put("cup", 0);
-        // TODO not constant: check manually
+        // Not constant: check manually
         map.put("ssp", 0);
         map.put("sep", 0);
-        // TODO not constant: check manually
+        // Not constant: check manually
         map.put("ent", 0);
-        // TODO not constant: check manually
+        // Not constant: check manually
         map.put("retf", 0);
-        // TODO not constant: check manually
-        map.put("retp", -1);
-        // TODO not constant: check manually
+        // Not constant: check manually
+        map.put("retp", 0);
+        // Not constant: check manually
         map.put("movs", 0);
-        // TODO not constant: check manually
+        // Not constant: check manually
         map.put("movd", 0);
         map.put("smp", 0);
         map.put("cupi", 0);

@@ -1,3 +1,7 @@
+Int age1;
+Int age2;
+Int sum;
+
 Void main() {
     Form student = {
         String name = "John",
@@ -5,9 +9,11 @@ Void main() {
         Real height = 1.83
     };
 
-    print(student.name);
+    age1 = student.age;
+    //print(student.name);
     student.age = 50;
-    print(student.age);
+    //print(student.age);
+    age2 = student.age;
 
     Form teacher = {
         String name = "John",
@@ -15,9 +21,9 @@ Void main() {
         Real height = 1.83
     };
 
-    print(teacher == student);
+    //print(teacher == student);
     Form origin = { Int x = 0, Int y = 0 };
-    print(student == origin);
+    //print(student == origin);
 
     Form tree = {
         Form left = { Form left = {}, Int value = 0, Form right = {} },
@@ -25,26 +31,5 @@ Void main() {
         Form right = { Form left = {}, Int value = 5, Form right = {} }
     };
 
-    Int sum = tree.value + tree.left.value + tree.right.value;
-}
-
-Void print(String text) {
-    /*
-        dummy function that does nothing
-        representing a print function
-    */
-}
-
-Void print(Int n) {
-    /*
-        dummy function that does nothing
-        representing a print function
-    */
-}
-
-Void print(Bool b) {
-    /*
-        dummy function that does nothing
-        representing a print function
-    */
+    sum = tree.value + tree.left.value + tree.right.value;
 }

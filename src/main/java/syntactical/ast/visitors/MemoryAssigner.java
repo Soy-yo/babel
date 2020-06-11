@@ -43,6 +43,7 @@ public class MemoryAssigner implements Visitor {
         relativeDir++;
         if (Defaults.FORM.equals(node.getType())) {
             currentForm = node.getId();
+            directions.registerForm(currentForm);
             // Add also Form fields
             node.getInitialValue().accept(this);
             currentForm = null;
@@ -193,6 +194,7 @@ public class MemoryAssigner implements Visitor {
                     // Visit also recursive Form constructor
                     Integer previousForm = currentForm;
                     currentForm = var.getId();
+                    directions.registerForm(currentForm);
                     var.getInitialValue().accept(this);
                     currentForm = previousForm;
                 }

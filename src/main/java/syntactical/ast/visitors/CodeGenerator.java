@@ -676,24 +676,26 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(AnonymousObjectConstructorExpressionNode node) {
-        int i = 0;
-        for (DeclarationNode n : node.getFields()) {
-            ExpressionNode initialValue = ((VarDeclarationNode) n).getInitialValue();
-            // Duplicate the pointer to the Form
-            issue("dpl");
-            if (i > 0) {
-                // Add the offset of this field
-                issue("inc", "" + i);
+        if (node.getFields() != null) {
+            int i = 0;
+            for (DeclarationNode n : node.getFields()) {
+                ExpressionNode initialValue = ((VarDeclarationNode) n).getInitialValue();
+                // Duplicate the pointer to the Form
+                issue("dpl");
+                if (i > 0) {
+                    // Add the offset of this field
+                    issue("inc", "" + i);
+                }
+                if (Defaults.FORM.equals(n.getType())) {
+                    // Allocate memory for the fields
+                    List<Directions.FieldData> fields = directions.getFormFields(n.getId());
+                    alloc(fields.size());
+                }
+                initialValue.accept(this);
+                // Store the initial value in the correct position
+                issue("sto");
+                i++;
             }
-            if (Defaults.FORM.equals(n.getType())) {
-                // Allocate memory for the fields
-                List<Directions.FieldData> fields = directions.getFormFields(n.getId());
-                alloc(fields.size());
-            }
-            initialValue.accept(this);
-            // Store the initial value in the correct position
-            issue("sto");
-            i++;
         }
     }
 

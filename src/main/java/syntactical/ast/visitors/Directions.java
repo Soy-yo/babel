@@ -47,10 +47,14 @@ public class Directions {
         return Collections.unmodifiableList(classFields.get(type));
     }
 
-    public void registerFormField(int id, Variable v, ExpressionNode initialValue) {
+    public void registerForm(int id) {
         if (!formFields.containsKey(id)) {
             formFields.put(id, new ArrayList<>());
         }
+    }
+
+    public void registerFormField(int id, Variable v, ExpressionNode initialValue) {
+        registerForm(id);
         List<FieldData> vars = formFields.get(id);
         vars.add(new FieldData(v, initialValue, vars.size()));
     }
