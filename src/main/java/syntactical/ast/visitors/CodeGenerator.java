@@ -26,6 +26,9 @@ public class CodeGenerator implements Visitor {
     // Dynamic control variables
     private int currentSP;
     private int currentPC;
+    private int currentEP;
+    private int maxEP;
+    private int localMaxEP;
     private Type currentClass;
     private boolean inGlobalScope;
 
@@ -45,6 +48,8 @@ public class CodeGenerator implements Visitor {
         this.writer = new BufferedWriter(new FileWriter(file));
         this.currentSP = 0;
         this.currentPC = 0;
+        this.currentEP = 0;
+        this.maxEP = 0;
         this.currentClass = null;
         this.inGlobalScope = true;
         this.newLabel = new NewLabel();
@@ -61,9 +66,9 @@ public class CodeGenerator implements Visitor {
     @Override
     public void visit(ProgramNode node) {
         int declarationsSize = directions.getFunctionSize(SymbolTable.GLOBAL_SCOPE_ID);
-        // TODO check (might be ent p q)
+        String epLabel = newLabel.getLabel();
+        issueLabeled("ent", epLabel, 0, "" + (declarationsSize + OFFSET));
         // Activate "global scope function" so all variables can be acceded with same formula
-        issue("ssp", "" + (declarationsSize + OFFSET));
         currentSP = declarationsSize + OFFSET - 1;
         if (node.root() != null) {
             for (DeclarationNode n : node.root()) {
@@ -93,6 +98,7 @@ public class CodeGenerator implements Visitor {
             }
             issueLabel(end);
         }
+        issueLabel(epLabel, maxEP);
         issue("stp");
     }
 
@@ -125,9 +131,11 @@ public class CodeGenerator implements Visitor {
         issueLabel(newLabel.getLabel(f));
         // Size of parameters and local variables
         int size = directions.getFunctionSize(node.getId());
-        // TODO use ent p q? - we need to update EP
         // Make room for local variables
-        issue("ssp", "" + (size + OFFSET));
+        String epLabel = newLabel.getLabel();
+        currentEP = 0;
+        localMaxEP = 0;
+        issueLabeled("ent", epLabel, 0, "" + (size + OFFSET));
         // Reset current SP
         int previousSP = currentSP;
         // TODO check -1
@@ -140,6 +148,7 @@ public class CodeGenerator implements Visitor {
         // TODO check if this is the return we want
         // Extra return in case the function doesn't have one
         issue("retf");
+        issueLabel(epLabel, localMaxEP);
     }
 
     @Override
@@ -149,8 +158,10 @@ public class CodeGenerator implements Visitor {
         Type type = node.getType();
         issueLabel(newLabel.getLabel(f));
         int size = directions.getFunctionSize(node.getId());
-        // TODO use ent p q? - we need to update EP
-        issue("ssp", "" + (size + OFFSET));
+        String epLabel = newLabel.getLabel();
+        currentEP = 0;
+        localMaxEP = 0;
+        issueLabeled("ent", epLabel, 0, "" + (size + OFFSET));
         // Reset current SP
         int previousSP = currentSP;
         // TODO check -1
@@ -184,6 +195,7 @@ public class CodeGenerator implements Visitor {
         issue("str", "0", "0");
         // Return
         issue("retf");
+        issueLabel(epLabel, localMaxEP);
         inGlobalScope = g;
         currentSP = previousSP;
     }
@@ -895,9 +907,23 @@ public class CodeGenerator implements Visitor {
         labels.put(label, currentPC);
     }
 
+    private void issueLabel(String label, int value) {
+        List<Integer> missing = missingLabels.get(label);
+        if (missing != null) {
+            for (Integer i : missing) {
+                code.get(i).withLabelValue("" + value);
+            }
+            missingLabels.remove(label);
+        }
+        labels.put(label, value);
+    }
+
     private void updateSP(int n) {
         // TODO update EP if needed
         currentSP += n;
+        currentEP += n;
+        maxEP = currentSP > maxEP ? currentSP : maxEP;
+        localMaxEP = currentEP > localMaxEP ? currentEP : localMaxEP;
     }
 
     private void writeCode() throws IOException {
