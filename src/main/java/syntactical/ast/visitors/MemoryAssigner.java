@@ -85,6 +85,13 @@ public class MemoryAssigner implements Visitor {
                     VarDeclarationNode field = (VarDeclarationNode) n;
                     directions.registerClassField(type, symbolTable.getVariableById(field.getId()),
                             field.getInitialValue());
+                    if (Defaults.FORM.equals(n.getType())) {
+                        currentForm = n.getId();
+                        directions.registerForm(currentForm);
+                        // Add also Form fields
+                        ((VarDeclarationNode) n).getInitialValue().accept(this);
+                        currentForm = null;
+                    }
                 } else {
                     n.accept(this);
                 }

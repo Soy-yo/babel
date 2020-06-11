@@ -174,6 +174,15 @@ public class CodeGenerator implements Visitor {
                 issue("ldc", "" + i);
                 issue("add");
             }
+            if (Defaults.FORM.equals(d.variable.type)) {
+                // Allocate memory for the fields
+                List<Directions.FieldData> formFields = directions.getFormFields(d.variable.id);
+                if (formFields == null) {
+                    alloc(1);
+                } else {
+                    alloc(formFields.size());
+                }
+            }
             d.initialValue.accept(this);
             // Store expression result in its corresponding direction
             issue("sto");
