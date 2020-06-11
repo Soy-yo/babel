@@ -1,33 +1,31 @@
+Array<Char> stdin = ['B', 'X', 'A', 'C'];
+Int index = 0;
+Int result = -1;
+
 Bool doAction(Char action) {
     switch action {
-        'A' -> print("You chose A\n");
-        'B' -> print("You chose B\n");
+        'A' -> result = 1;
+        'B' -> result = 2;
         'C' -> {
-            print("You chose C\n");
             return false;
         }
-        _ -> print("Unknown action\n");
+        _ -> result = 666;
     }
     return true;
 }
 
 Char readChar() {
-    return '\0';
-}
-
-Void print(String text) {
-    /*
-        dummy function that does nothing
-        representing a print function
-    */
+    Char c = stdin[index];
+    index += 1;
+    return c;
 }
 
 Void main() {
     Bool continue = true;
     while continue {
-        print("Choose action: ");
+        //print("Choose action: ");
         Char action = readChar();
         continue = doAction(action);
     }
-    print("Program terminated");
+    //print("Program terminated");
 }
