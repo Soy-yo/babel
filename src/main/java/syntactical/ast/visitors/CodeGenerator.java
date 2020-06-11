@@ -27,8 +27,6 @@ public class CodeGenerator implements Visitor {
     private int currentSP;
     private int currentPC;
     private int currentEP;
-    private int maxEP;
-    private int localMaxEP;
     private Type currentClass;
     private boolean inGlobalScope;
 
@@ -36,9 +34,6 @@ public class CodeGenerator implements Visitor {
     private final NewLabel newLabel;
     private final Map<String, List<Integer>> missingLabels;
     private final Map<String, Integer> labels;
-
-    // TODO update EP
-    // TODO check if it should be ... + OFFSET - 1 or just ... + OFFSET
 
     public CodeGenerator(ASTNode root, String file, SymbolTable symbolTable, Directions directions) throws IOException {
         this.root = root;
@@ -49,7 +44,6 @@ public class CodeGenerator implements Visitor {
         this.currentSP = 0;
         this.currentPC = 0;
         this.currentEP = 0;
-        this.maxEP = 0;
         this.currentClass = null;
         this.inGlobalScope = true;
         this.newLabel = new NewLabel();
@@ -67,9 +61,10 @@ public class CodeGenerator implements Visitor {
     public void visit(ProgramNode node) {
         int declarationsSize = directions.getFunctionSize(SymbolTable.GLOBAL_SCOPE_ID);
         String epLabel = newLabel.getLabel();
-        issueLabeled("ent", epLabel, 0, "" + (declarationsSize + OFFSET));
         // Activate "global scope function" so all variables can be acceded with same formula
-        currentSP = declarationsSize + OFFSET - 1;
+        currentSP = 0;
+        issue("ssp", "" + (declarationsSize + OFFSET));
+        issueLabeled("sep", epLabel, 0);
         if (node.root() != null) {
             for (DeclarationNode n : node.root()) {
                 // Visit global variables first
@@ -98,13 +93,12 @@ public class CodeGenerator implements Visitor {
             }
             issueLabel(end);
         }
-        issueLabel(epLabel, maxEP);
+        issueLabel(epLabel, currentEP);
         issue("stp");
     }
 
     @Override
     public void visit(VarDeclarationNode node) {
-        // TODO think it's okay
         ExpressionNode initialValue = node.getInitialValue();
         if (initialValue == null) {
             issue("ldc", "-1");
@@ -133,39 +127,38 @@ public class CodeGenerator implements Visitor {
         int size = directions.getFunctionSize(node.getId());
         // Make room for local variables
         String epLabel = newLabel.getLabel();
-        currentEP = 0;
-        localMaxEP = 0;
-        issueLabeled("ent", epLabel, 0, "" + (size + OFFSET));
-        // Reset current SP
+        // Reset current SP/EP
         int previousSP = currentSP;
-        // TODO check -1
-        currentSP = size + OFFSET - 1;
+        currentSP = 0;
+        int previousEP = currentEP;
+        currentEP = 0;
+        issue("ssp", "" + (size + OFFSET));
+        issueLabeled("sep", epLabel, 0);
         boolean g = inGlobalScope;
         inGlobalScope = false;
         node.getCode().accept(this);
         inGlobalScope = g;
-        currentSP = previousSP;
-        // TODO check if this is the return we want
         // Extra return in case the function doesn't have one
         issue("retf");
-        issueLabel(epLabel, localMaxEP);
+        issueLabel(epLabel, currentEP);
+        currentEP = previousEP;
+        currentSP = previousSP;
     }
 
     @Override
     public void visit(ConstructorDeclarationNode node) {
-        // TODO check this
         Function f = symbolTable.getFunctionById(node.getId());
         Type type = node.getType();
         issueLabel(newLabel.getLabel(f));
         int size = directions.getFunctionSize(node.getId());
         String epLabel = newLabel.getLabel();
-        currentEP = 0;
-        localMaxEP = 0;
-        issueLabeled("ent", epLabel, 0, "" + (size + OFFSET));
-        // Reset current SP
+        // Reset current SP/EP
         int previousSP = currentSP;
-        // TODO check -1
-        currentSP = size + OFFSET - 1;
+        currentSP = 0;
+        int previousEP = currentEP;
+        currentEP = 0;
+        issue("ssp", "" + (size + OFFSET));
+        issueLabeled("sep", epLabel, 0);
         List<Directions.FieldData> fields = directions.getClassFields(type);
         // Allocate memory for all fields in the class
         alloc(fields.size());
@@ -195,14 +188,14 @@ public class CodeGenerator implements Visitor {
         issue("str", "0", "0");
         // Return
         issue("retf");
-        issueLabel(epLabel, localMaxEP);
+        issueLabel(epLabel, currentEP);
         inGlobalScope = g;
+        currentEP = previousEP;
         currentSP = previousSP;
     }
 
     @Override
     public void visit(ClassDeclarationNode node) {
-        // TODO think it's okay
         currentClass = node.getType();
         if (node.getContentRoot() != null) {
             for (DeclarationNode n : node.getContentRoot()) {
@@ -216,7 +209,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(BlockStatementNode node) {
-        // TODO think it's okay
         if (node.root() != null) {
             for (StatementNode n : node.root()) {
                 n.accept(this);
@@ -231,7 +223,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(AssignmentStatementNode node) {
-        // TODO think it's okay
         Designator.AccessMethod method = node.getAccessMethod();
         ExpressionNode target = node.getTarget();
         switch (method) {
@@ -251,7 +242,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(FunctionCallStatementNode node) {
-        // TODO think it's okay
         node.asExpression().accept(this);
         // Ignore return value
         issue("str", "0", "0");
@@ -259,7 +249,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(ReturnStatementNode node) {
-        // TODO think it's okay
         // Take mp to stack
         issue("lda", "0", "0");
         // Take return value to stack
@@ -272,7 +261,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(IfElseStatementNode node) {
-        // TODO think it's okay
         String ifFalseLabel = newLabel.getLabel();
         if (node.getElsePart() != null) {
             String ifEndLabel = newLabel.getLabel();
@@ -300,7 +288,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(SwitchStatementNode node) {
-        // TODO think it's okay
         TreeMap<ConstantExpressionNode, StatementNode> map = new TreeMap<>(node.getCases());
         String defaultLabel;
         String endLabel = newLabel.getLabel();
@@ -347,10 +334,10 @@ public class CodeGenerator implements Visitor {
             entry.getValue().accept(this);
             issueLabeled("ujp", endLabel, 0);
         }
-        if(node.hasDefault()) {
-          issueLabel(defaultLabel);
-          node.getDef().accept(this);
-          issueLabeled("ujp", endLabel, 0);
+        if (node.hasDefault()) {
+            issueLabel(defaultLabel);
+            node.getDef().accept(this);
+            issueLabeled("ujp", endLabel, 0);
         }
         // so we know were the jump table starts
         issueLabel(jumpTable);
@@ -363,7 +350,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(WhileStatementNode node) {
-        // TODO think it's okay
         String whileLabel = String.valueOf(currentPC);
         String whileEndLabel = newLabel.getLabel();
         // Write code for condition
@@ -380,7 +366,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(ForStatementNode node) {
-        // TODO think it's okay
         VarDeclarationNode variable = node.getVariable();
         ExpressionNode iterable = node.getIterable();
         Variable v = symbolTable.getVariableById(variable.getId());
@@ -466,7 +451,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(PointExpressionNode node) {
-        // TODO think it's okay
         // Starts with SP and ends with SP + 1 with the value of host.field on top of the stack
         pointAccess(node.getHost(), node.getField());
         // Finally get the field
@@ -503,7 +487,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(ArrayAccessExpressionNode node) {
-        // TODO think it's okay
         // Starts with SP and ends with SP + 1: contents of array[index] (if no error)
         arrayAccess(node.getArray(), node.getIndex());
         // Get whatever it is in that direction
@@ -617,24 +600,14 @@ public class CodeGenerator implements Visitor {
             for (ExpressionNode e : args) {
                 // Evaluate the argument
                 e.accept(this);
-                // TODO probably there's no need to save it anywhere
-                // Store it in its position
-                //issue("str", "0", String.valueOf(i));
             }
-            // TODO function should just be f
-            // Get function
-            //Function thisFunction = symbolTable.getFunctionById(node.getFunction().getId());
             // Save space for parameters, save return address and go to function
             issueLabeled("cup", newLabel.getLabel(f), 1, "" + argsSize);
-            // TODO I think it is the function the one which have to do this
-            //issue("ssp", String.valueOf(staticData));
-            //issue("sep", String.valueOf(maxDepth));
         }
     }
 
     @Override
     public void visit(VariableExpressionNode node) {
-        // TODO think it's okay,
         // Starts with SP and ends with SP + 1 with variable contents on top of the stack
         variableAccess(node);
         // Get whatever it is in that direction
@@ -666,7 +639,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(ConstantExpressionNode node) {
-        // TODO think it's okay
         // Starts with SP and ends with SP + 1: constant
         if (node.getType().equals(Defaults.BOOL)) {
             issue("ldc", "" + (node.getValue() == 0b1));
@@ -677,13 +649,11 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(ListConstructorExpressionNode node) {
-        // TODO think it's okay
         // Starts with SP and ends with SP + 1: direction of the array
         // new instruction is stupid and needs to know where to put the pointer
         List<ExpressionNode> elements = node.getElements();
         // Allocate memory for all the elements (+1 for the size)
         alloc(elements.size() + 1);
-        // TODO any better way to do this?
         // And we will use it multiple times
         issue("dpl");
         // Load again the size
@@ -706,7 +676,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(AnonymousObjectConstructorExpressionNode node) {
-        // TODO think it's okay
         int i = 0;
         for (DeclarationNode n : node.getFields()) {
             ExpressionNode initialValue = ((VarDeclarationNode) n).getInitialValue();
@@ -897,14 +866,7 @@ public class CodeGenerator implements Visitor {
     }
 
     private void issueLabel(String label) {
-        List<Integer> missing = missingLabels.get(label);
-        if (missing != null) {
-            for (Integer i : missing) {
-                code.get(i).withLabelValue("" + currentPC);
-            }
-            missingLabels.remove(label);
-        }
-        labels.put(label, currentPC);
+        issueLabel(label, currentPC);
     }
 
     private void issueLabel(String label, int value) {
@@ -919,11 +881,10 @@ public class CodeGenerator implements Visitor {
     }
 
     private void updateSP(int n) {
-        // TODO update EP if needed
         currentSP += n;
-        currentEP += n;
-        maxEP = currentSP > maxEP ? currentSP : maxEP;
-        localMaxEP = currentEP > localMaxEP ? currentEP : localMaxEP;
+        if (currentSP > currentEP) {
+            currentEP = currentSP;
+        }
     }
 
     private void writeCode() throws IOException {
