@@ -5,22 +5,23 @@ import syntactical.Defaults;
 import syntactical.OperatorOverloadConstants;
 import syntactical.ast.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static syntactical.ast.Designator.ofArray;
 
 public class SpecialFunctionCreator {
 
     private final SymbolTable symbolTable;
     private final IdGenerator generator;
     private final Map<String, Integer> arraysSeen;
+    private final Map<String, Integer> toSeen;
     private int counter;
 
     public SpecialFunctionCreator(SymbolTable symbolTable, IdGenerator generator) {
         this.symbolTable = symbolTable;
         this.generator = generator;
         this.arraysSeen = new HashMap<>();
+        this.toSeen = new HashMap<>();
         this.counter = 0;
     }
 
@@ -86,6 +87,61 @@ public class SpecialFunctionCreator {
         counter++;
         symbolTable.linkFunctionManually(original.getId(), function.getId());
         arraysSeen.put(type.toString(), function.getId());
+        return function;
+    }
+
+
+    public FunctionDeclarationNode to(Type type, FunctionCallExpressionNode original,
+                                      LexicalUnit lexeme) {
+        /*
+        Array<type> _to(type a, type b) {
+            if b < a {return null;}
+            else { Array<type> arr = Array(b - a);}
+            for type i in a..b {
+                arr[i - a] = i;
+            }
+            return arr;
+        }
+        */
+        if (toSeen.containsKey(type.toString())) {
+            symbolTable.linkFunctionManually(original.getId(), toSeen.get(type.toString()));
+            return null;
+        }
+        FunctionDeclarationNode function = new FunctionDeclarationNode(generator, lexeme,
+            new Name(new LexicalUnit("_to" + counter), Defaults.ARRAY),
+            Arrays.asList(
+                new Name(new LexicalUnit("a"), type),
+                new Name(new LexicalUnit("b"), type)
+            ),
+            new BlockStatementNode(generator,
+                new IfElseStatementNode(generator,
+                    lt(variable("b"), variable("a"), lexeme),
+                    new BlockStatementNode(generator,
+                        new ReturnStatementNode(generator, lexeme, nothing())
+                    ), new VarDeclarationNode(generator,
+                    new Name(new LexicalUnit("arr"), Defaults.ARRAY),
+                    new ConstructorCallExpressionNode(generator, Defaults.ARRAY,
+                        Collections.singleton(FunctionCallExpressionNode.operator(generator, lexeme, variable("b"),
+                            OperatorOverloadConstants._MINUS, variable("a"))))).asStatement()
+                ).linkedTo(
+                    new ForStatementNode(generator, new Name(new LexicalUnit("i"), type),
+                        FunctionCallExpressionNode.operator(generator, lexeme,
+                            variable("a"),
+                            OperatorOverloadConstants._TO, variable("b")),
+                        new BlockStatementNode(generator, new AssignmentStatementNode(generator,
+                            ofArray(new ArrayAccessExpressionNode(generator, variable("arr"),
+                                FunctionCallExpressionNode.operator(generator, lexeme, variable(
+                                    "i"), OperatorOverloadConstants._MINUS, variable("a")))),
+                                variable("i")))
+                    ).linkedTo(
+                        new ReturnStatementNode(generator, lexeme, variable("arr"))
+                    )
+                )
+            )
+        );
+        counter++;
+        symbolTable.linkFunctionManually(original.getId(), function.getId());
+        toSeen.put(type.toString(), function.getId());
         return function;
     }
 
@@ -224,12 +280,22 @@ public class SpecialFunctionCreator {
         );
     }
 
+    private FunctionCallExpressionNode lt(ExpressionNode left, ExpressionNode right,
+                                         LexicalUnit lexeme) {
+        return FunctionCallExpressionNode.operator(generator, lexeme, left,
+            OperatorOverloadConstants._LT, right);
+    }
+
     private ConstantExpressionNode bool(boolean b) {
         return ConstantExpressionNode.fromBoolean(generator, new LexicalUnit("" + b));
     }
 
     private ConstantExpressionNode integer(int n) {
         return ConstantExpressionNode.fromInt(generator, new LexicalUnit("" + n));
+    }
+
+    private ConstantExpressionNode nothing() {
+        return ConstantExpressionNode.ofNull(generator, new LexicalUnit(""));
     }
 
 }

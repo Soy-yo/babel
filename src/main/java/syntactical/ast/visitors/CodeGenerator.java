@@ -561,6 +561,10 @@ public class CodeGenerator implements Visitor {
                 }
             } else if (args.size() == 1) {
                 // Binary
+                if(f.id == Defaults.Int.TO_ID || f.id == Defaults.Char.TO_ID || f.id == Defaults.Real.TO_ID) {
+                    to(((PointExpressionNode) function).getHost(), args.get(0));
+                    generated = true;
+                }
                 String code = binaryOperator(f.id);
                 if (code != null) {
                     ((PointExpressionNode) function).getHost().accept(this);
@@ -659,7 +663,9 @@ public class CodeGenerator implements Visitor {
     @Override
     public void visit(ListConstructorExpressionNode node) {
         // Starts with SP and ends with SP + 1: direction of the array
-        // new instruction is stupid and needs to know where to put the pointer
+        // TODO (remove the word stupid) new instruction is stupid and needs to know where to put
+        //  the
+        //  pointer
         List<ExpressionNode> elements = node.getElements();
         // Allocate memory for all the elements (+1 for the size)
         alloc(elements.size() + 1);
@@ -841,6 +847,85 @@ public class CodeGenerator implements Visitor {
                 return "not";
         }
         return null;
+    }
+
+    private void to(ExpressionNode first, ExpressionNode last) {
+        last.accept(this);
+        first.accept(this);
+        issue("sub");
+        issue("ldc", "1");
+        issue("add");
+        // Duplicate size to use it later
+        issue("dpl");
+        // Save the size in MP to use it later
+        issue("str", "0", "0");
+        // Load MP direction so result of new is saved there
+        issue("lda", "0", "0");
+        // Reload the size
+        issue("lod", "0", "0");
+        // +1 for the extra element
+        issue("inc", "1");
+        // Create room for size elements in the heap and put the pointer in MP
+        issue("new");
+        // Save size into temporary direction: 1 as directions 0-4 are unused (but we might be using 0)
+        issue("sro", "1");
+        // Reload result from MP
+        issue("lod", "0", "0");
+        // And reload size
+        issue("ldo", "1");
+        // Save the size in the first position of the array
+        issue("sto");
+        // And finally reload result of the expression from MP
+        issue("lod", "0", "0");
+        // And we will use it multiple times
+        issue("dpl");
+        // We have the direction of the array on the top of the stack
+        /*
+        int i = 0;
+        while (i + first <= last) {
+            arr[i + 1] = first + i;
+            i++;
+        }
+        */
+        // i = 0;
+        issue("ldc", "0");
+        String whileLabel = String.valueOf(currentPC);
+        String whileEndLabel = newLabel.getLabel();
+        // duplicate i, we will use it later
+        issue("dpl");
+        // put first in stack
+        first.accept(this);
+        // first + i
+        issue("add");
+        // put last in stack
+        last.accept(this);
+        // first + i <= last
+        issue("leq");
+        // If condition is false jump to #whileEndLabel
+        issueLabeled("fjp", whileEndLabel, 0);
+        // Write while block code
+        issue("dpl");
+        issue("dpl");
+        // swap i and direction
+        issue("sro", "1");
+        issue("lod", "0", "0");
+        // direction = direction + i + 1
+        issue("add");
+        issue("inc", "1");
+        // bring back i
+        issue("ldo" , "1");
+        // bring first
+        first.accept(this);
+        // first + i
+        issue("add");
+        // sp[dir + i + 1] = first + i
+        issue("sto");
+        // i++
+        issue("inc", "1");
+        // Jump back to first instruction of condition
+        issue("ujp", whileLabel);
+        // Issue label so while knows were to jump when condition is false
+        issueLabel(whileEndLabel);
     }
 
     private void issue(String instruction, String... parameters) {
