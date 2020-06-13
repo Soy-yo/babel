@@ -844,8 +844,15 @@ public class CodeGenerator implements Visitor {
     }
 
     private void to(ExpressionNode first, ExpressionNode last) {
-        last.accept(this);
         first.accept(this);
+        last.accept(this);
+        // save it into temporary direction
+        issue("sro", "2");
+        // save it into temporary direction
+        issue("sro", "3");
+        // bring them back
+        issue("ldo", "2");
+        issue("ldo", "3");
         issue("sub");
         issue("ldc", "1");
         issue("add");
@@ -888,11 +895,11 @@ public class CodeGenerator implements Visitor {
         // Duplicate i, we will use it later
         issue("dpl");
         // Put first in stack
-        first.accept(this);
+        issue("ldo", "3");
         // first + i
         issue("add");
         // Put last in stack
-        last.accept(this);
+        issue("ldo", "2");
         // first + i <= last
         issue("leq");
         // If condition is false jump to #whileEndLabel
@@ -909,7 +916,7 @@ public class CodeGenerator implements Visitor {
         // Bring back i
         issue("ldo" , "1");
         // Bring first
-        first.accept(this);
+        issue("ldo", "3");
         // first + i
         issue("add");
         // SP[dir + i + 1] = first + i
