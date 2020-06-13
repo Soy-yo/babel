@@ -539,7 +539,6 @@ public class CodeGenerator implements Visitor {
 
     @Override
     public void visit(FunctionCallExpressionNode node) {
-        // TODO special cases as well for Form == Form, Primitive ... Primitive
         Function f = symbolTable.getFunctionById(node.getId());
         ExpressionNode function = node.getFunction();
         List<ExpressionNode> args = node.getArguments();
@@ -561,7 +560,7 @@ public class CodeGenerator implements Visitor {
                 }
             } else if (args.size() == 1) {
                 // Binary
-                if(f.id == Defaults.Int.TO_ID || f.id == Defaults.Char.TO_ID || f.id == Defaults.Real.TO_ID) {
+                if (f.id == Defaults.Int.TO_ID || f.id == Defaults.Char.TO_ID || f.id == Defaults.Real.TO_ID) {
                     to(((PointExpressionNode) function).getHost(), args.get(0));
                     generated = true;
                 }
@@ -628,7 +627,6 @@ public class CodeGenerator implements Visitor {
     }
 
     private void variableAccess(VariableExpressionNode node) {
-        // TODO make sure else if branch is okay
         // Starts with SP and ends with SP + 1: contents of variable
         Variable v = symbolTable.getVariableById(node.getId());
         if (directions.existsVariable(v.id)) {
@@ -663,9 +661,7 @@ public class CodeGenerator implements Visitor {
     @Override
     public void visit(ListConstructorExpressionNode node) {
         // Starts with SP and ends with SP + 1: direction of the array
-        // TODO (remove the word stupid) new instruction is stupid and needs to know where to put
-        //  the
-        //  pointer
+        // TODO (remove the word stupid) new instruction is stupid and needs to know where to put the pointer
         List<ExpressionNode> elements = node.getElements();
         // Allocate memory for all the elements (+1 for the size)
         alloc(elements.size() + 1);
@@ -735,7 +731,6 @@ public class CodeGenerator implements Visitor {
             issue("inc", "1");
             // Create room for size elements in the heap and put the pointer in MP
             issue("new");
-            // TODO any better way so we don't have to use it this direction?
             // Save size into temporary direction: 1 as directions 0-4 are unused (but we might be using 0)
             issue("sro", "1");
             // Reload result from MP
@@ -746,7 +741,6 @@ public class CodeGenerator implements Visitor {
             issue("sto");
             // And finally reload result of the expression from MP
             issue("lod", "0", "0");
-            // TODO if parameter is primitive fill it with zeroes
         } else {
             // Create activation frame
             issue("mst", inGlobalScope ? "0" : "1");
@@ -891,13 +885,13 @@ public class CodeGenerator implements Visitor {
         issue("ldc", "0");
         String whileLabel = String.valueOf(currentPC);
         String whileEndLabel = newLabel.getLabel();
-        // duplicate i, we will use it later
+        // Duplicate i, we will use it later
         issue("dpl");
-        // put first in stack
+        // Put first in stack
         first.accept(this);
         // first + i
         issue("add");
-        // put last in stack
+        // Put last in stack
         last.accept(this);
         // first + i <= last
         issue("leq");
@@ -906,19 +900,19 @@ public class CodeGenerator implements Visitor {
         // Write while block code
         issue("dpl");
         issue("dpl");
-        // swap i and direction
+        // Swap i and direction
         issue("sro", "1");
         issue("lod", "0", "0");
         // direction = direction + i + 1
         issue("add");
         issue("inc", "1");
-        // bring back i
+        // Bring back i
         issue("ldo" , "1");
-        // bring first
+        // Bring first
         first.accept(this);
         // first + i
         issue("add");
-        // sp[dir + i + 1] = first + i
+        // SP[dir + i + 1] = first + i
         issue("sto");
         // i++
         issue("inc", "1");

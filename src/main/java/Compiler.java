@@ -21,7 +21,7 @@ public class Compiler {
     private final String workingDir;
     private final Set<File> importedFiles;
     private final Map<DeclarationNode, String> firstNodeOfFiles;
-    private boolean result;
+    private int errors;
     private final IdGenerator generator;
 
     public Compiler(String input) {
@@ -29,12 +29,12 @@ public class Compiler {
         this.workingDir = Paths.get(input).getParent().toString();
         this.importedFiles = new HashSet<>(Collections.singleton(new File(input)));
         this.firstNodeOfFiles = new IdentityHashMap<>();
-        this.result = true;
+        this.errors = 0;
         this.generator = new IdGenerator();
     }
 
     public boolean getResult() {
-        return result;
+        return errors == 0;
     }
 
     public boolean compile() throws Exception {
@@ -42,21 +42,22 @@ public class Compiler {
         LexicalAnalyser la = new LexicalAnalyser(new InputStreamReader(new FileInputStream(input)));
         SyntacticalAnalyser sa = new SyntacticalAnalyser(la, generator);
         Symbol result = sa.parse();
+        errors = sa.errors();
         if (result != null) {
             ProgramNode program = (ProgramNode) result.value;
-            this.result = compile(program);
-            System.out.println("[INFO] Compile process ended " + (this.result ? "successfully" : "with errors"));
-            return this.result;
+            return compile(program);
         }
         return false;
     }
 
     private boolean compile(ProgramNode program) throws IOException {
-        // TODO stop at some point if result is already false
         mergeFiles(program);
+        if (errors > 30) {
+            throw new IllegalStateException("Compiler found too many errors and won't continue");
+        }
         SymbolTableCreator creator = new SymbolTableCreator(program, firstNodeOfFiles, generator);
         SymbolTable symbolTable = creator.create();
-        int errors = creator.errors();
+        errors += creator.errors();
         //new syntactical.ast.visitors.ASTPrinter(program).print();
         if (symbolTable.getMainFunction() == null) {
             System.err.println("[ERROR] main function not declared");
@@ -64,10 +65,7 @@ public class Compiler {
         }
         // If there were any error don't try to generate code
         if (errors > 0) {
-            result = false;
-            System.err.println("[ERROR] Found " + errors + " error(s) during type checking and variable linking");
-        }
-        if (!result) {
+            System.err.println("[ERROR] Found " + errors + " error(s) during compilation");
             return false;
         }
         Directions directions = new MemoryAssigner(program, symbolTable).start();
@@ -82,9 +80,11 @@ public class Compiler {
         boolean first = true;
         DeclarationNode insertionPoint = null;
         for (LexicalUnit lu : program.importedFiles()) {
-            // TODO if there were errors in input some may be empty strings ""
-            // don't generate code in such cases
             String file = lu.lexeme();
+            if ("".equals(file)) {
+                // There were errors importing this file
+                continue;
+            }
             try {
                 File fileObj = new File(workingDir + "/" + file + ".bbl");
                 // Don't add same file multiple times
@@ -95,6 +95,7 @@ public class Compiler {
                 LexicalAnalyser la = new LexicalAnalyser(new InputStreamReader(new FileInputStream(fileObj)));
                 SyntacticalAnalyser sa = new SyntacticalAnalyser(la, generator);
                 Symbol parsedLib = sa.parse();
+                errors += sa.errors();
                 if (parsedLib == null) {
                     throw new NullPointerException("couldn't parse file " + file);
                 }
@@ -116,12 +117,11 @@ public class Compiler {
                 System.out.println("[INFO] Ended compiling " + file);
             } catch (Exception e) {
                 System.err.println("[ERROR] imported file " + file + " contains errors: " + e.getMessage());
-                result = false;
+                errors++;
             }
         }
     }
 
-    // TODO efficiency ?
     private static <T> T getLast(Iterable<T> it) {
         T result = null;
         for (T x : it) {
@@ -142,11 +142,11 @@ public class Compiler {
         try {
             Compiler compiler = new Compiler(input);
             if (compiler.compile()) {
-                System.out.println("File " + input + " compiled successfully");
+                System.out.println("[INFO] Compile process ended successfully");
             } else {
-                // TODO message
+                System.out.println("[INFO] Compile process ended with errors");
             }
-        } catch (NullPointerException e) {
+        } catch (NullPointerException | ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
         } catch (Exception e) {
             System.err.println("[ERROR] " + e.getMessage());

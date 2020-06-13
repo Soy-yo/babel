@@ -40,9 +40,6 @@ public class SymbolTableCreator implements Visitor {
         initializeTable();
     }
 
-    // TODO check that Type actually exists on variable/function declarations
-
-
     private void initializeTable() {
         // _ID(T x, S y) = dir(x) == dir(y) <- we can ignore types here
         symbolTable.putFunction(Defaults.IDENTITY_ID, OperatorOverloadConstants._ID,
@@ -83,8 +80,6 @@ public class SymbolTableCreator implements Visitor {
 
     public void addForms() {
         symbolTable.createClassScope(Defaults.Form.ID, Defaults.FORM);
-        List<Type> params = Collections.singletonList(Defaults.FORM);
-        symbolTable.putFunction(Defaults.Form.EQUALS_ID, OperatorOverloadConstants._EQUALS, params, Defaults.BOOL);
         symbolTable.closeScope();
     }
 
@@ -127,7 +122,6 @@ public class SymbolTableCreator implements Visitor {
         symbolTable.putFunction(Defaults.Char.GT_ID, OperatorOverloadConstants._GT, params, Defaults.BOOL);
         symbolTable.putFunction(Defaults.Char.LE_ID, OperatorOverloadConstants._LE, params, Defaults.BOOL);
         symbolTable.putFunction(Defaults.Char.LT_ID, OperatorOverloadConstants._LT, params, Defaults.BOOL);
-        // TODO not sure about this last one, but it'll probably do
         symbolTable.putFunction(Defaults.Char.TO_ID, OperatorOverloadConstants._TO, params, new Type(Defaults.ARRAY_STR,
                 Defaults.CHAR));
         symbolTable.closeScope();
@@ -190,6 +184,9 @@ public class SymbolTableCreator implements Visitor {
     public void visit(VarDeclarationNode node) {
         Type type = node.getType();
         ExpressionNode initialValue = node.getInitialValue();
+        if (!existsType(type)) {
+            error(node, "Variable type " + type + " does not exist");
+        }
         if (initialValue != null) {
             if (Defaults.FORM.equals(type)) {
                 if (initialValue instanceof AnonymousObjectConstructorExpressionNode) {
@@ -198,9 +195,6 @@ public class SymbolTableCreator implements Visitor {
                     symbolTable.closeScope();
                 }
             } else {
-                if (!existsType(type)) {
-                    error(node, "Variable type " + type + " does not exist");
-                }
                 initialValue.accept(this);
                 Type found = initialValue.getType();
                 // If initial value was null set its type to the correct one
@@ -228,7 +222,6 @@ public class SymbolTableCreator implements Visitor {
     @Override
     public void visit(FunctionDeclarationNode node) {
         BlockStatementNode block = node.getCode();
-        // TODO make sure it's safe to set class id for "this"
         if (!existsType(node.getType())) {
             error(node, "Type " + node.getType() + " does not exist");
         }
@@ -548,7 +541,6 @@ public class SymbolTableCreator implements Visitor {
                         }
                     }
                 } else {
-                    // TODO check if it actually exists or leave it like this?
                     error(field, "Field " + fieldName + " in class " + hostType +
                             " might be private - use getters or setters");
                 }
@@ -867,6 +859,9 @@ public class SymbolTableCreator implements Visitor {
         errors++;
         SemanticException error = new SemanticException(currentFile, node.getLexeme(), message);
         System.err.println("[ERROR] " + error.getMessage());
+        if (errors > 20) {
+            throw new IllegalStateException("Compiler found too many errors and won't continue");
+        }
     }
 
     private void checkNullOnPrimitive(Type possiblyNull, Type possiblyPrimitive, ASTNode node) {
