@@ -58,7 +58,7 @@ public class Compiler {
         SymbolTableCreator creator = new SymbolTableCreator(program, firstNodeOfFiles, generator);
         SymbolTable symbolTable = creator.create();
         errors += creator.errors();
-        new syntactical.ast.visitors.ASTPrinter(program).print();
+        //new syntactical.ast.visitors.ASTPrinter(program).print();
         if (symbolTable.getMainFunction() == null) {
             System.err.println("[ERROR] main function not declared");
             errors++;
