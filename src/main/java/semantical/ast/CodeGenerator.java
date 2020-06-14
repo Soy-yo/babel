@@ -1,7 +1,8 @@
-package syntactical.ast.visitors;
+package semantical.ast;
 
 import syntactical.Defaults;
 import syntactical.ast.*;
+import syntactical.ast.visitors.Visitor;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -661,7 +662,7 @@ public class CodeGenerator implements Visitor {
     @Override
     public void visit(ListConstructorExpressionNode node) {
         // Starts with SP and ends with SP + 1: direction of the array
-        // TODO (remove the word stupid) new instruction is stupid and needs to know where to put the pointer
+        // new instruction needs to know where to put the pointer
         List<ExpressionNode> elements = node.getElements();
         // Allocate memory for all the elements (+1 for the size)
         alloc(elements.size() + 1);

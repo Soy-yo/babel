@@ -1,9 +1,10 @@
-package syntactical.ast.visitors;
+package semantical.ast;
 
 import error.SemanticException;
 import syntactical.Defaults;
 import syntactical.OperatorOverloadConstants;
 import syntactical.ast.*;
+import syntactical.ast.visitors.Visitor;
 
 import java.util.*;
 

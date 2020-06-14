@@ -1,7 +1,8 @@
-package syntactical.ast.visitors;
+package semantical.ast;
 
 import syntactical.Defaults;
 import syntactical.ast.*;
+import syntactical.ast.visitors.Visitor;
 
 public class MemoryAssigner implements Visitor {
 

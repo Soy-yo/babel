@@ -185,4 +185,4 @@ opOr = \|\|
 {opNot}                   {return onRead(() -> ops.opNotUnit());}
 {opAnd}                   {return onRead(() -> ops.opAndUnit());}
 {opOr}                    {return onRead(() -> ops.opOrUnit());}
-[^]                       {throwError();}
+[^]                       {return onRead(() -> ops.wrong();}

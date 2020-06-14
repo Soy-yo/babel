@@ -1,11 +1,11 @@
 import java_cup.runtime.Symbol;
 import lexical.LexicalAnalyser;
 import lexical.LexicalUnit;
+import semantical.ast.*;
 import syntactical.SyntacticalAnalyser;
 import syntactical.ast.DeclarationNode;
 import syntactical.ast.IdGenerator;
 import syntactical.ast.ProgramNode;
-import syntactical.ast.visitors.*;
 
 import java.io.File;
 import java.io.FileInputStream;

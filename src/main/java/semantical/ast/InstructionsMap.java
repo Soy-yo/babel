@@ -1,4 +1,4 @@
-package syntactical.ast.visitors;
+package semantical.ast;
 
 import java.util.HashMap;
 import java.util.Map;

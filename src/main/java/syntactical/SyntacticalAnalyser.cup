@@ -94,7 +94,7 @@ terminal LexicalUnit IDENTIFIER, GLOBAL, THIS, TYPE, IMPORT, INT, REAL, CHAR, ST
          IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, UNDERSCORE, PARENTH_L, PARENTH_R,
          SQUARE_L, SQUARE_R, CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT, COMMA, PLUS_ASSIGN, PLUS, MINUS_ASSIGN, MINUS,
          MULT_ASSIGN, MULT, DIV_ASSIGN, DIV, MOD_ASSIGN, MOD, LE, LT, GE, GT, IDENTITY, EQUALS, NEQ, ASSIGNMENT, NOT,
-         AND, OR, END;
+         AND, OR, END, WRONG;
 
 // Program
 nonterminal ProgramNode Program;
@@ -529,6 +529,9 @@ Expr9       ::= PARENTH_L Expression0: expression PARENTH_R
                 {: RESULT = expression; :}
               | ConstructorCallExpression: expression
                 {: RESULT = expression; :}
+              | Expression0 WRONG Expression0
+                {: parser.report_error("Unrecognized character", null); RESULT = new
+                ErrorExpressionNode(nextId); :}
               | error
                 {: parser.report_error("Expected an expression", null); RESULT = new ErrorExpressionNode(nextId); :};
 

@@ -480,7 +480,7 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
 					case -6:
 						break;
 					case 6:
-						{throwError();}
+						{return onRead(() -> ops.wrong();}
 					case -7:
 						break;
 					case 7:
@@ -700,7 +700,7 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
 					case -61:
 						break;
 					case 62:
-						{throwError();}
+						{return onRead(() -> ops.wrong();}
 					case -62:
 						break;
 					case 63:
@@ -716,7 +716,7 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
 					case -65:
 						break;
 					case 67:
-						{throwError();}
+						{return onRead(() -> ops.wrong();}
 					case -66:
 						break;
 					case 68:
@@ -728,7 +728,7 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
 					case -68:
 						break;
 					case 71:
-						{throwError();}
+						{return onRead(() -> ops.wrong();}
 					case -69:
 						break;
 					case 72:
@@ -740,7 +740,7 @@ public class LexicalAnalyser implements java_cup.runtime.Scanner {
 					case -71:
 						break;
 					case 75:
-						{throwError();}
+						{return onRead(() -> ops.wrong();}
 					case -72:
 						break;
 					case 76:

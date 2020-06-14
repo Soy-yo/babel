@@ -248,6 +248,10 @@ public class Operations {
         return createUnit(EOF);
     }
 
+    public LexicalUnit wrong() {
+        return createUnit(WRONG);
+    }
+
     public void error() {
         throw new LexicalException(analyser.row(), analyser.column(), analyser.lexeme());
     }

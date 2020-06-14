@@ -1,4 +1,4 @@
-package syntactical.ast.visitors;
+package semantical.ast;
 
 import syntactical.ast.StatementNode;
 

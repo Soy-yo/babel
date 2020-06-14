@@ -27,7 +27,7 @@ Void main() {
 
     Form tree = {
         Form left = { Form left = {}, Int value = 0, Form right = {} },
-        Int value = 3,
+        Int value = 3^2,
         Form right = { Form left = {}, Int value = 5, Form right = {} }
     };
 
