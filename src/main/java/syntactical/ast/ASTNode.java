@@ -22,7 +22,9 @@ public abstract class ASTNode implements Visitable {
         return id;
     }
 
-    public LexicalUnit getLexeme() { return lexeme; }
+    public LexicalUnit getLexeme() {
+        return lexeme;
+    }
 
     @Override
     public String toString() {

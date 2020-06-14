@@ -17,7 +17,23 @@ public class Defaults {
     public static final java.lang.String THIS = "this";
     public static final java.lang.String ARRAY_SIZE = "size";
 
+    private static final Type CHAR_ARRAY = new Type(ARRAY_STR, CHAR);
+
     public static final int IDENTITY_ID = 0;
+
+    public static Type fixType(Type type) {
+        if (type == null) {
+            return null;
+        }
+        if (type.realEquals(Defaults.STRING)) {
+            return CHAR_ARRAY;
+        }
+        Type param = fixType(type.getParameter());
+        if (type.getParameter() != param) {
+            return new Type(type.getNameLexicalUnit(), param);
+        }
+        return type;
+    }
 
     public static class Int {
         public static final int ID = 1;

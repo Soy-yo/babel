@@ -249,7 +249,7 @@ public class Operations {
     }
 
     public LexicalUnit wrong() {
-        return createUnit(WRONG);
+        return createUnit(error);
     }
 
     public void error() {

@@ -1,4 +1,4 @@
-package semantical.ast;
+package semantical;
 
 import error.SemanticException;
 import syntactical.Defaults;

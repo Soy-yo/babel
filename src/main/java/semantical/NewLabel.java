@@ -1,4 +1,4 @@
-package semantical.ast;
+package semantical;
 
 import syntactical.ast.StatementNode;
 

@@ -113,6 +113,6 @@ public class ConstantExpressionNode extends ExpressionNode implements Comparable
 
     @Override
     public int compareTo(ConstantExpressionNode o) {
-        return this.value - ((ConstantExpressionNode)o).getValue();
+        return this.value - ((ConstantExpressionNode) o).getValue();
     }
 }

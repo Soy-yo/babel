@@ -1,4 +1,4 @@
-package semantical.ast;
+package semantical;
 
 import java.util.HashMap;
 import java.util.Map;

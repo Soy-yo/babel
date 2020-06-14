@@ -27,10 +27,10 @@ public class FunctionDeclarationNode extends DeclarationNode {
     }
 
     public FunctionDeclarationNode(
-        IdGenerator id,
-        Name name,
-        Collection<Name> parameterNames,
-        BlockStatementNode code) {
+            IdGenerator id,
+            Name name,
+            Collection<Name> parameterNames,
+            BlockStatementNode code) {
         this(id, name.getIdentifierLexicalUnit(), name, parameterNames, code);
     }
 

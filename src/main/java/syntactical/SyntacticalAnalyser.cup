@@ -94,7 +94,7 @@ terminal LexicalUnit IDENTIFIER, GLOBAL, THIS, TYPE, IMPORT, INT, REAL, CHAR, ST
          IF, ELSE, SWITCH, FOR, WHILE, IN, RETURN, CONST, CLASS, CONSTRUCTOR, UNDERSCORE, PARENTH_L, PARENTH_R,
          SQUARE_L, SQUARE_R, CURLY_L, CURLY_R, ARROW, ELLIPSIS, POINT, COMMA, PLUS_ASSIGN, PLUS, MINUS_ASSIGN, MINUS,
          MULT_ASSIGN, MULT, DIV_ASSIGN, DIV, MOD_ASSIGN, MOD, LE, LT, GE, GT, IDENTITY, EQUALS, NEQ, ASSIGNMENT, NOT,
-         AND, OR, END, WRONG;
+         AND, OR, END;
 
 // Program
 nonterminal ProgramNode Program;
@@ -202,7 +202,6 @@ Declaration     ::= GlobalVarConstDeclaration: declaration
                     {: RESULT = declaration; :}
                   | ClassDeclaration: declaration
                     {: RESULT = declaration; :}
-                  // TODO quitar esto y dejar sólo error?
                   | error END
                     {: parser.report_error("Expected a declaration", null);
                       RESULT = new ErrorDeclarationNode(nextId); :}
@@ -259,19 +258,21 @@ InitialValueExpression    ::= Expression: expression
 Identifier                 ::= IDENTIFIER: id
                                {: RESULT = id; :}
                              | error
-                               {: parser.report_error("Expected a non uppercase identifier", null); RESULT = null; :}
+                               {: parser.report_error("Expected a non uppercase identifier", null);
+                                    RESULT = new LexicalUnit("error"); :}
                              | TYPE error
-                               {: parser.report_error("Expected a non uppercase identifier", null); RESULT = null; :};
+                               {: parser.report_error("Expected a non uppercase identifier", null);
+                                    RESULT = new LexicalUnit("error"); :};
 Global                     ::= GLOBAL: global
                                {: RESULT = global; :}
                              | error
-                               {: parser.report_error("Expected an uppercase identifier", null); RESULT = null; :}
+                               {: parser.report_error("Expected an uppercase identifier", null);
+                                    RESULT = new LexicalUnit("error"); :}
                              | TYPE error
-                               {: parser.report_error("Expected an uppercase identifier", null); RESULT = null; :};
+                               {: parser.report_error("Expected an uppercase identifier", null);
+                                    RESULT = new LexicalUnit("error"); :};
 
 // Functions
-// TODO errores de funciones sin usar después las llaves dan errores irrecuperables (no sé cómo solucionarlo, es todo una mierda)
-// TODO lo mismo se aplica más alante a los constructores
 FunctionDeclaration ::= BaseVarDeclaration: name FunctionParameters: parameters BlockStatement: block
                         {: RESULT = new FunctionDeclarationNode(nextId, name, parameters, block); :};
 FunctionParameters  ::= PARENTH_L PARENTH_R
@@ -529,9 +530,6 @@ Expr9       ::= PARENTH_L Expression0: expression PARENTH_R
                 {: RESULT = expression; :}
               | ConstructorCallExpression: expression
                 {: RESULT = expression; :}
-              | Expression0 WRONG Expression0
-                {: parser.report_error("Unrecognized character", null); RESULT = new
-                ErrorExpressionNode(nextId); :}
               | error
                 {: parser.report_error("Expected an expression", null); RESULT = new ErrorExpressionNode(nextId); :};
 

@@ -10,9 +10,7 @@ Void main() {
     };
 
     age1 = student.age;
-    //print(student.name);
     student.age = 50;
-    //print(student.age);
     age2 = student.age;
 
     Form teacher = {
@@ -21,9 +19,7 @@ Void main() {
         Real height = 1.83
     };
 
-    //print(teacher == student);
     Form origin = { Int x = 0, Int y = 0 };
-    //print(student == origin);
 
     Form tree = {
         Form left = { Form left = {}, Int value = 0, Form right = {} },

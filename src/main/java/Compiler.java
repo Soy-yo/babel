@@ -1,7 +1,7 @@
 import java_cup.runtime.Symbol;
 import lexical.LexicalAnalyser;
 import lexical.LexicalUnit;
-import semantical.ast.*;
+import semantical.*;
 import syntactical.SyntacticalAnalyser;
 import syntactical.ast.DeclarationNode;
 import syntactical.ast.IdGenerator;
@@ -58,7 +58,7 @@ public class Compiler {
         SymbolTableCreator creator = new SymbolTableCreator(program, firstNodeOfFiles, generator);
         SymbolTable symbolTable = creator.create();
         errors += creator.errors();
-        //new syntactical.ast.visitors.ASTPrinter(program).print();
+        new syntactical.ast.visitors.ASTPrinter(program).print();
         if (symbolTable.getMainFunction() == null) {
             System.err.println("[ERROR] main function not declared");
             errors++;
@@ -146,10 +146,12 @@ public class Compiler {
             } else {
                 System.out.println("[INFO] Compile process ended with errors");
             }
-        } catch (NullPointerException | ArrayIndexOutOfBoundsException e) {
-            e.printStackTrace();
         } catch (Exception e) {
-            System.err.println("[ERROR] " + e.getMessage());
+            if (e.getMessage() == null) {
+                e.printStackTrace();
+            } else {
+                System.err.println("[ERROR] " + e.getMessage());
+            }
         }
     }
 

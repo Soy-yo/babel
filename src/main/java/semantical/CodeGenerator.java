@@ -1,4 +1,4 @@
-package semantical.ast;
+package semantical;
 
 import syntactical.Defaults;
 import syntactical.ast.*;
@@ -662,7 +662,6 @@ public class CodeGenerator implements Visitor {
     @Override
     public void visit(ListConstructorExpressionNode node) {
         // Starts with SP and ends with SP + 1: direction of the array
-        // new instruction needs to know where to put the pointer
         List<ExpressionNode> elements = node.getElements();
         // Allocate memory for all the elements (+1 for the size)
         alloc(elements.size() + 1);
@@ -776,6 +775,7 @@ public class CodeGenerator implements Visitor {
 
     private void alloc(int size) {
         // Starts with SP and NP and ends with SP + 1 and NP - size with pointer to new NP in STORE[SP]
+        // new instruction needs to know where to put the pointer
         // Load MP direction so result of new is saved there
         issue("lda", "0", "0");
         // Load the number of elements
@@ -915,7 +915,7 @@ public class CodeGenerator implements Visitor {
         issue("add");
         issue("inc", "1");
         // Bring back i
-        issue("ldo" , "1");
+        issue("ldo", "1");
         // Bring first
         issue("ldo", "3");
         // first + i

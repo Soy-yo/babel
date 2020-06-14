@@ -1,4 +1,4 @@
-package semantical.ast;
+package semantical;
 
 import syntactical.Defaults;
 import syntactical.ast.*;

@@ -2,7 +2,6 @@ package syntactical.ast;
 
 import syntactical.ast.visitors.Visitor;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -19,7 +18,7 @@ public class SwitchStatementNode extends StatementNode {
         super(id, null);
         this.switchExpression = switchExpression;
         this.def = null;
-        for(Map.Entry<ConstantExpressionNode, StatementNode> entry : cases.entrySet()) {
+        for (Map.Entry<ConstantExpressionNode, StatementNode> entry : cases.entrySet()) {
             if (entry.getKey().getType().equals(new Type("~Default"))) {
                 def = entry.getValue();
                 cases.remove(entry.getKey());
