@@ -335,14 +335,21 @@ public class SymbolTableCreator implements Visitor {
                 VariableExpressionNode field = ((PointExpressionNode) designable).getField();
                 Variable v = symbolTable.getVariableById(field.getId());
                 if (v != null && v.isConst) {
-                    error(designable, "Trying to assign a value to a constant field");
+                    error(field, "Trying to assign a value to a constant field");
                 }
             }
             break;
         }
         if (expected != null) {
             if (Defaults.FORM.equals(expected)) {
-                error(designable, "Form objects cannot be reassigned");
+                switch (method) {
+                    case NONE:
+                        error(node.getTarget(), "Form objects cannot be reassigned");
+                        break;
+                    case FIELD:
+                        error(node.getAccessExpression(), "Form objects cannot be reassigned");
+                        break;
+                }
             }
             if (found == Type.WILDCARD) {
                 checkNullOnPrimitive(found, expected, value);

@@ -1,23 +1,37 @@
 Array<Char> stdin = ['B', 'X', 'A', 'C'];
-Int index = 0;
+Array<Int> stdout = [-1, -1, -1, -1];
+Int stdinIndex = 0;
+Int stdoutIndex = 0;
 Int result = -1;
 
 Bool doAction(Char action) {
     switch action {
-        'A' -> result = 1;
-        'B' -> result = 2;
-        'C' -> {
-            return false;
+        'A' -> {
+            result = 1;
+            print(result);
         }
-        _ -> result = 666;
+        'B' -> {
+            result = 2;
+            print(result);
+        }
+        'C' -> return false;
+        _ -> {
+            result = 666;
+            print(result);
+        }
     }
     return true;
 }
 
 Char readChar() {
-    Char c = stdin[index];
-    index += 1;
+    Char c = stdin[stdinIndex];
+    stdinIndex += 1;
     return c;
+}
+
+Void print(Int x) {
+    stdout[stdoutIndex] = x;
+    stdoutIndex += 1;
 }
 
 Void main() {

@@ -77,9 +77,10 @@ public class MemoryAssigner implements Visitor {
 
     @Override
     public void visit(ClassDeclarationNode node) {
+        Type type = node.getType();
+        directions.registerClass(type);
         if (node.getContentRoot() != null) {
             currentClassId = node.getId();
-            Type type = node.getType();
             for (DeclarationNode n : node.getContentRoot()) {
                 // Register all fields and just visit methods
                 if (n instanceof VarDeclarationNode) {

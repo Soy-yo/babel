@@ -31,6 +31,12 @@ public class Directions {
         return variableDirections.get(id);
     }
 
+    public void registerClass(Type type) {
+        if (!classFields.containsKey(type)) {
+            classFields.put(type, new ArrayList<>());
+        }
+    }
+
     public void registerClassField(Type type, Variable v, ExpressionNode initialValue) {
         if (!classFields.containsKey(type)) {
             classFields.put(type, new ArrayList<>());

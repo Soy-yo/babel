@@ -107,7 +107,7 @@ public class CodeGenerator implements Visitor {
             if (Defaults.FORM.equals(node.getType())) {
                 // Allocate memory for the fields
                 List<Directions.FieldData> fields = directions.getFormFields(node.getId());
-                if (fields == null) {
+                if (fields == null || fields.isEmpty()) {
                     alloc(1);
                 } else {
                     alloc(fields.size());
@@ -162,7 +162,11 @@ public class CodeGenerator implements Visitor {
         issueLabeled("sep", epLabel, 0);
         List<Directions.FieldData> fields = directions.getClassFields(type);
         // Allocate memory for all fields in the class
-        alloc(fields.size());
+        if (fields.isEmpty()) {
+            alloc(1);
+        } else {
+            alloc(fields.size());
+        }
         for (int i = 0; i < fields.size(); i++) {
             Directions.FieldData d = fields.get(i);
             if (d.initialValue == null) {
@@ -178,7 +182,7 @@ public class CodeGenerator implements Visitor {
             if (Defaults.FORM.equals(d.variable.type)) {
                 // Allocate memory for the fields
                 List<Directions.FieldData> formFields = directions.getFormFields(d.variable.id);
-                if (formFields == null) {
+                if (formFields == null || formFields.isEmpty()) {
                     alloc(1);
                 } else {
                     alloc(formFields.size());
@@ -700,7 +704,11 @@ public class CodeGenerator implements Visitor {
                 if (Defaults.FORM.equals(n.getType())) {
                     // Allocate memory for the fields
                     List<Directions.FieldData> fields = directions.getFormFields(n.getId());
-                    alloc(fields.size());
+                    if (fields == null || fields.isEmpty()) {
+                        alloc(1);
+                    } else {
+                        alloc(fields.size());
+                    }
                 }
                 initialValue.accept(this);
                 // Store the initial value in the correct position

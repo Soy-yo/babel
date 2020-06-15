@@ -6,7 +6,7 @@ Void main() {
     Form student = {
         String name = "John",
         Int age = 22,
-        Real height = 1.83
+        Bool attended = true
     };
 
     age1 = student.age;
@@ -16,16 +16,23 @@ Void main() {
     Form teacher = {
         String name = "John",
         Int age = 50,
-        Real height = 1.83
+        Bool attended = true
     };
 
-    Form origin = { Int x = 0, Int y = 0 };
+    Form origin = { const Int x = 0, const Int y = 0 };
 
+    // Can't assign a value to a constant field!
+    // origin.x = 15;
+
+    // Form of Forms
     Form tree = {
         Form left = { Form left = {}, Int value = 0, Form right = {} },
-        Int value = 3^2,
+        Int value = 3,
         Form right = { Form left = {}, Int value = 5, Form right = {} }
     };
+
+    // Can't reassign a Form neither!
+    // tree.right.left = {};
 
     sum = tree.value + tree.left.value + tree.right.value;
 }
