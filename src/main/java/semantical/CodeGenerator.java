@@ -862,6 +862,7 @@ public class CodeGenerator implements Visitor {
         // bring them back
         issue("ldo", "2");
         issue("ldo", "3");
+        // subtract them find size of array
         issue("sub");
         issue("ldc", "1");
         issue("add");
@@ -885,8 +886,6 @@ public class CodeGenerator implements Visitor {
         issue("ldo", "1");
         // Save the size in the first position of the array
         issue("sto");
-        // And finally reload result of the expression from MP
-        // issue("lod", "0", "0");
         /*
         int i = 0;
         while (i + first <= last) {
@@ -939,6 +938,7 @@ public class CodeGenerator implements Visitor {
         issue("ujp", whileLabel);
         // Issue label so while knows were to jump when condition is false
         issueLabel(whileEndLabel);
+        // Bring array direction to the top of the stack for further use
         issue("lod", "0", "0");
     }
 
