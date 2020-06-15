@@ -20,10 +20,14 @@ Array<First> fromArray(Array<Int> arr) {
     return result;
 }
 
+Array<Int>(4) arr;
+Array<Int> other = 2...5;
+Array<Int> third;
+Array<First> classed = Array<First>(3);
+Array<First> compare;
+Array<Bool> last = [false, false, false];
 
 Void main() {
-    Int x = 3;
-    Array<Int> arr = Array<Int>(4);
 
     Int i = 0;
     while i < 4 {
@@ -31,24 +35,20 @@ Void main() {
         i += 1;
     }
 
-    Array<Int> other = 2...5;
-
-    Array<Int> third;
+    // These arrays should be equal so third=[4, 5, 6, 7, 8, 9, 10]
     if other == arr {
         third = 4...10;
     } else {
         third = [7,8,9,10,11];
     }
 
-    Array<First> classed = Array<First>(3);
     for Int j in 1...3 {
-        classed[i] = First(i);
+        classed[j - 1] = First(j);
     }
 
-    Array<First> compare = fromArray(1...3);
+    compare = fromArray(1...3);
 
-    Array<Bool> last = [false, false, false];
-
+    // These should be equal as well
     if classed == compare {
         last = [true, true, true];
     }
