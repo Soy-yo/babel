@@ -886,10 +886,7 @@ public class CodeGenerator implements Visitor {
         // Save the size in the first position of the array
         issue("sto");
         // And finally reload result of the expression from MP
-        issue("lod", "0", "0");
-        // And we will use it multiple times
-        issue("dpl");
-        // We have the direction of the array on the top of the stack
+        // issue("lod", "0", "0");
         /*
         int i = 0;
         while (i + first <= last) {
@@ -899,10 +896,13 @@ public class CodeGenerator implements Visitor {
         */
         // i = 0;
         issue("ldc", "0");
+        // save i
+        issue("sro", "1");
         String whileLabel = String.valueOf(currentPC);
         String whileEndLabel = newLabel.getLabel();
-        // Duplicate i, we will use it later
-        issue("dpl");
+        issueLabel(whileLabel);
+        // bring i to stack
+        issue("ldo", "1");
         // Put first in stack
         issue("ldo", "3");
         // first + i
@@ -914,11 +914,10 @@ public class CodeGenerator implements Visitor {
         // If condition is false jump to #whileEndLabel
         issueLabeled("fjp", whileEndLabel, 0);
         // Write while block code
-        issue("dpl");
-        issue("dpl");
-        // Swap i and direction
-        issue("sro", "1");
+        // Bring array direction to stack
         issue("lod", "0", "0");
+        // Bring i to stack
+        issue("ldo", "1");
         // direction = direction + i + 1
         issue("add");
         issue("inc", "1");
@@ -930,12 +929,17 @@ public class CodeGenerator implements Visitor {
         issue("add");
         // SP[dir + i + 1] = first + i
         issue("sto");
+        // bring back i
+        issue("ldo", "1");
         // i++
         issue("inc", "1");
+        // save new i
+        issue("sro", "1");
         // Jump back to first instruction of condition
         issue("ujp", whileLabel);
         // Issue label so while knows were to jump when condition is false
         issueLabel(whileEndLabel);
+        issue("lod", "0", "0");
     }
 
     private void issue(String instruction, String... parameters) {
