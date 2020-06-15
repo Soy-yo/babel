@@ -16,7 +16,6 @@ import java.util.*;
 
 public class Compiler {
 
-
     private final String input;
     private final String workingDir;
     private final Set<File> importedFiles;

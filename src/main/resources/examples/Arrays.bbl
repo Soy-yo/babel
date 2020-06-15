@@ -1,0 +1,56 @@
+class First {
+    Int value;
+
+    constructor(Int value) {
+        this.value = value;
+    }
+
+    Bool _equals(First other) {
+        return this.value == other.value;
+    }
+}
+
+Array<First> fromArray(Array<Int> arr) {
+    Array<First> result = Array<First>(arr.size);
+    Int j = 0;
+    for Int i in arr {
+        result[j] = First(i);
+        j += 1;
+    }
+    return result;
+}
+
+
+Void main() {
+    Int x = 3;
+    Array<Int> arr = Array<Int>(4);
+
+    Int i = 0;
+    while i < 4 {
+        arr[i] = i + 2;
+        i += 1;
+    }
+
+    Array<Int> other = 2...5;
+
+    Array<Int> third;
+    if other == arr {
+        third = 4...10;
+    } else {
+        third = [7,8,9,10,11];
+    }
+
+    Array<First> classed = Array<First>(3);
+    for Int j in 1...3 {
+        classed[i] = First(i);
+    }
+
+    Array<First> compare = fromArray(1...3);
+
+    Array<Bool> last = [false, false, false];
+
+    if classed == compare {
+        last = [true, true, true];
+    }
+
+}
